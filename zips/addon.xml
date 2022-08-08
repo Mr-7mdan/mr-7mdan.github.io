@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="script.parentalguide" name="ParentalGuide" version="100.6.0" provider-name="robwebset">
+	<requires>
+		<import addon="xbmc.python" version="3.0.0"/>
+		<import addon="script.module.beautifulsoup4" version="4.9.3"/>
+		<import addon="script.module.simplejson" version="3.3.0"/>
+		<import addon="script.module.requests" version="2.27.1" />
+	</requires>
+  	<extension point="xbmc.python.script" library="default.py"/>
+	<extension point="xbmc.service" library="service.py" start="login"/>
+	<extension point="kodi.context.item" library="default.py">
+		<item>
+			<label>Parental Guide (Imdb)</label>
+			<visible>String.IsEmpty(Window(videos).Property("ParentalGuideHideContextMenu")) + [Container.Content(movies) | Container.Content(tvshows) | [String.IsEqual(ListItem.dbtype,movie) | String.IsEqual(ListItem.dbtype,tvshow)]]</visible>
+		</item>
+	</extension>
+	<extension point="kodi.context.item" library="ParentalGuide.py">
+		<item>
+			<label>32038</label>
+			<visible>String.IsEmpty(Window(videos).Property("ParentalGuideHideContextMenu")) + [Container.Content(movies) | Container.Content(tvshows) | [String.IsEqual(ListItem.dbtype,movie) | String.IsEqual(ListItem.dbtype,tvshow)]]</visible>
+		</item>
+	</extension>
+	<extension point="xbmc.addon.metadata">
+		<summary lang="en">Check if a movie or TV show is family friendly</summary>
+		<description lang="en">Supplies details for how suitable a movie or TV show is for children.</description>
+		<language></language>
+		<platform>all</platform>
+		<license>See LICENSE.txt</license>
+		<forum>https://github.com/robwebset/script.parentalguide</forum>
+		<assets>
+			<icon>icon.png</icon>
+			<fanart>fanart.jpg</fanart>
+			<screenshot>resources/screenshot-01.jpg</screenshot>
+			<screenshot>resources/screenshot-02.jpg</screenshot>
+			<screenshot>resources/screenshot-03.jpg</screenshot>
+			<banner>resources/banner.png</banner>
+			<logo>resources/logo.png</logo>
+		</assets>
+	</extension>
+</addon>
