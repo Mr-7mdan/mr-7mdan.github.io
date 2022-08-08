@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <addon id="repository.mr-7mdan" 
+			name="Mr-7mdan Repository" 
+			version="0.0.1" 
+			provider-name="mr-7mdan">
+        <extension point="xbmc.addon.repository" name="mr-7mdan Repository">
+            <dir>
+			<info compressed="false">https://raw.githubusercontent.com/Mr-7mdan/parentalguide/main/script.parentalguide/addon.xml</info>
+            <checksum>https://raw.githubusercontent.com/Mr-7mdan/parentalguide/main/script.parentalguide/addon.xml.md5</checksum>
+            <datadir zip="true">https://github.com/mr-7mdan/parentalguide/raw/main/script.parentalguide</datadir>
+            <hashes>false</hashes>
+			</dir>
+            <dir>
+                <info compressed="false">https://raw.githubusercontent.com/Gujal00/smrzips/master/addons.xml</info>
+                <checksum>https://raw.githubusercontent.com/Gujal00/smrzips/master/addons.xml.md5</checksum>
+                <datadir zip="true">https://raw.githubusercontent.com/Gujal00/smrzips/master/zips/</datadir>
+            </dir>
+            <dir>
+                <info compressed="false">https://raw.githubusercontent.com/jsergio123/zips/master/addons.xml</info>
+                <checksum>https://raw.githubusercontent.com/jsergio123/zips/master/addons.xml.md5</checksum>
+                <datadir zip="true">https://raw.githubusercontent.com/jsergio123/zips/master/</datadir>
+            </dir>
+        </extension>
+        <extension point="xbmc.addon.metadata">
+            <summary>Mr-7mdan Personal Repo</summary>
+            <description>Mr-7mdan Personal Repo Desc</description>
+            <platform>all</platform>
+    </extension>
+</addon>
