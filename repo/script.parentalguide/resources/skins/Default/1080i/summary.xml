@@ -362,16 +362,16 @@
                             <height>80</height>
                             <visible>!$EXP[Exp_ContextMenu_HasBasic]</visible>
                         </include>
-                        
-                        <control type="image">
+<!-- ########################Logo############################## -->
+<!--                         <control type="image">
                             <top>10</top>
-                            <!-- <centerright>100%</centerright> -->
+                            <centerright>100%</centerright>
                             <height>25</height>
                             <aspectratio>keep</aspectratio>    
                             <texture colordiffuse="$VAR[ColorSelected]">providers/$INFO[Window(home).Property(ParentalGuide.provider)].png</texture>
                             <visible>true</visible>
                             <animation effect="slide" end="context_slide_arrow_no" condition="$EXP[Exp_ContextMenu_HasIcon]">Conditional</animation>
-                        </control>
+                        </control> -->
 <!--                         <control type="label">
                                 <description>debug selected item</description>
                                 <top>10</top>

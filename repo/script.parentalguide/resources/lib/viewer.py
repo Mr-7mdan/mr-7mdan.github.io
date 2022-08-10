@@ -241,11 +241,7 @@ class SummaryViewer(ParentalGuideViewer):
                     if i>0:
                         PreviousDesc = details[i-1]['description']
                         Description = Description.replace(PreviousDesc,"")
-                    
-                    
-                    BoldKeywords = ["bare breasts", "nipples ", "penis ", "Penis ", "dick ", "intercourse ", "making love", "sucking ", "blowjob ", "anal", "Blowjob ", "Anal", "sex scene", "buttock ", "rape ", "raping", "raped ", "sex scenes", "having sex", "nudity ", "nude", "naked", "boob", "breast"]
-                    
-                    
+                    BoldKeywords = ["bare breasts", "nipples ", "penis ", "Penis ", "dick ", "intercourse ", "making love", "sucking ", "blowjob ", "anal", "Blowjob ", "Anal", "sex scene", "buttock ", "rape ", "raping", "raped ", "sex scenes", "having sex", "nudity ", "nude", "naked", "boob", "breast"]                 
                     for word in BoldKeywords:
                         Description = Description.replace(word,"[B]" + word + "[/B]")
                                         

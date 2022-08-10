@@ -129,7 +129,6 @@
         </include>
     </includes>
     
-    
     <controls>
         <include content="Object_Overlay">
             <param name="delay" value="300" />
@@ -139,13 +138,11 @@
                 <param name="windowopen_delay" value="600" />
             </include>
             <include>Animation_FadeOut</include>
-            <include content="Object_Include" condition="$EXP[Exp_ContextMenu_HasPoster]">
-                <width>1440</width>
-                <aspectratio>keep</aspectratio>
+            <include content="Object_Width" condition="$EXP[Exp_ContextMenu_HasPoster]">
+                <param name="width">1440</param>
             </include>
-            <include content="Object_Include" condition="!$EXP[Exp_ContextMenu_HasPoster]">
-                <width> </width>
-                <aspectratio>keep</aspectratio>
+            <include content="Object_Width" condition="!$EXP[Exp_ContextMenu_HasPoster]">
+                <param name="width">1645</param>
             </include>
             <include>Dimension_Context</include>
             <include>Dialog_ContextMenu_Header</include>
@@ -169,39 +166,13 @@
                 </include>
             </control>
 
-            <control type="image">
-                <top>-150</top>
-                <centerright>100%</centerright>
-                <!-- <left>40</left> -->
-                <height>50</height>
-                <!-- <width>300</width> -->
-                <aspectratio>keep</aspectratio>
-                <texture colordiffuse="$VAR[ColorSelected]" flipy="false">$INFO[Window(home).Property(ParentalGuide.1.Rating)]</texture>
-                <visible>true</visible>
-                <animation effect="slide" end="context_slide_arrow_no" condition="!$EXP[Exp_ContextMenu_HasPoster] + !$EXP[Exp_ContextMenu_HasIcon]">Conditional</animation>
-            </control>
-                    
             <!-- Menu -->
             <control type="group">
                 <right>0</right>
                 <width>925</width>
-<!--                 <include content="Object_MenuHeader">
-                    <param name="label" value="$INFO[Window(home).Property(ParentalGuide.Desc.title)]" />
+                <include content="Object_MenuHeader">
+                    <param name="label" value="[B]$INFO[Window(home).Property(ParentalGuide.Desc.section)][/B]  ($INFO[Window(home).Property(ParentalGuide.Sec.Cat)] - $INFO[Window(home).Property(ParentalGuide.Votes.section)])" />
                     <param name="font" value="font_medium_bold" />
-                </include> -->
-                <include content="Object_Control">
-                    <param name="control" value="image" />
-                    <top>0</top>
-                    <align>left</align>
-                    <bottom>250</bottom>
-                    <left>150</left>
-                    <height>100</height>
-                    <width>600</width>
-                    <aspectratio>keep</aspectratio>
-                    <font>font_plotbox_dialog</font>
-                    <pagecontrol>61</pagecontrol>
-                    <autoscroll delay="8000" time="4000" repeat="12000">false</autoscroll>
-                    <!-- <texture>$INFO[Window(home).Property(ParentalGuide.1.Rating)]</texture> -->
                 </include>
                 <include content="Object_Control">
                     <param name="control" value="textbox" />
@@ -212,12 +183,9 @@
                     <align>left</align>
                     <textcolor>dialog_fg_70</textcolor>
                     <font>font_plotbox_dialog</font>
-                    <!-- <label fallback="19055">$INFO[Window(Home).Property(ContextMenu.Tagline),[B]$LOCALIZE[202][/B][CR],[CR][CR]] $INFO[Window(home).Property(ParentalGuide.Desc.Nudity)],[B]$LOCALIZE[31028][/B][CR],]$VAR[Label_OverlayCritics]</label> -->
-                    <label fallback="19055">[B]$INFO[Window(home).Property(ParentalGuide.Desc.section)][/B][CR]($INFO[Window(home).Property(ParentalGuide.Votes.section)])[CR]$INFO[Window(home).Property(ParentalGuide.Desc.Summary)]</label>
+                    <label fallback="19055">[CR]$INFO[Window(home).Property(ParentalGuide.Desc.Summary)]</label>
                     <pagecontrol>61</pagecontrol>
-                    <autoscroll delay="8000" time="4000" repeat="12000">true</autoscroll>
-                    <visible>true</visible>
-                    <!-- <visible>Control.HasFocus(4500)</visible> -->
+                    <autoscroll delay="8000" time="4000" repeat="12000">false</autoscroll>
                 </include>
                 <include content="Dialog_Scrollbar">
                     <right>0</right>
