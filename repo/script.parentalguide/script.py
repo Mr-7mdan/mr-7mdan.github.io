@@ -52,5 +52,5 @@ VotesProperty = ("ParentalGuide.Votes.%s") % cat
 FinalVotes = xbmcgui.Window(10000).getProperty(VotesProperty)
 xbmcgui.Window(10000).setProperty('ParentalGuide.Votes.section', str(FinalVotes))
 #Load Window
-Snippit = xbmcgui.WindowXMLDialog('Custom_1333_Plot.xml', CWD, text=cat)
-Snippit.doModal()
+# Snippit = xbmcgui.WindowXMLDialog('Custom_1333_Plot.xml', CWD, text=cat)
+# Snippit.doModal()

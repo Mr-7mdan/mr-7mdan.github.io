@@ -1,0 +1,588 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<window type="dialog" id="3001">
+    <includes>
+
+        <include name="Dialog_Background">
+            <param name="shadows" default="true" />
+            <param name="overlay" default="false" />
+            <param name="overlay_texture" default="special://skin/fanart.jpg" />
+            <param name="overlay_fallback" default="special://skin/fanart.jpg" />
+            <param name="overlay_colordiffuse" default="overlay_hard" />
+            <param name="overlay_visible" default="true" />
+            <param name="overlay_animation" default="true" />
+            <definition>
+                <control type="group">
+                    <control type="image">
+                        <include condition="$PARAM[shadows]">Texture_Shadow_20</include>
+                        <include>Texture_Dialog</include>
+                    </control>
+                    <include content="Object_Control" condition="$PARAM[overlay]">
+                        <param name="control" value="image" />
+                        <aspectratio scalediffuse="false">scale</aspectratio>
+                        <texture background="true" colordiffuse="$PARAM[overlay_colordiffuse]" diffuse="diffuse/dialog_w1760_h800.png" fallback="$PARAM[overlay_fallback]">$PARAM[overlay_texture]</texture>
+                        <include condition="$PARAM[overlay_animation]">Animation_FadeIn_Delay</include>
+                        <include condition="$PARAM[overlay_animation]">Animation_FadeOut</include>
+                        <visible>$PARAM[overlay_visible]</visible>
+                    </include>
+                    <nested />
+                </control>
+            </definition>
+        </include>
+		<include name="Dialog_Context_Image">
+			<param name="right" default="context_icon_w" />
+			<param name="icon" default="$VAR[Image_ContextPoster]" />
+			<definition>
+				<control type="group">
+					<right>$PARAM[right]</right>
+					<include content="Dialog_Overlay">
+						<param name="flipx" value="true" />
+					</include>
+					<include content="Object_Separator">
+						<right>0</right>
+					</include>
+					<include content="Dialog_Group">
+						<include content="Object_BigPoster">
+							<param name="diffuse" value="$PARAM[diffuse]" />
+							<param name="icon" value="$PARAM[icon]" />
+							<param name="colordiffuse" value="shadow_soft" />
+							<param name="posterback_colordiffuse" value="$PARAM[posterback_colordiffuse]" />
+							<param name="aspectratio" value="$PARAM[aspectratio]" />
+						</include>
+					</include>
+				</control>
+			</definition>
+		</include>
+<!-- Left Content -->
+		<include content="Dialog_Group">
+			<control type="group">
+				<right>dialog_button_width</right>
+				<control type="group">
+					<right>dialog_pad</right>
+					<include content="List_DialogSelect">
+						<param name="id" value="3" />
+						<left>-dialog_pad</left>
+						<pagecontrol>61</pagecontrol>
+						<onright>61</onright>
+					</include>
+					<include content="List_DialogSelect" condition="!Window.IsVisible(script-skinshortcuts.xml)">
+						<param name="id" value="6" />
+						<param name="detailed" value="True" />
+						<param name="item_height" value="row_height_x200" />
+						<left>-dialog_pad</left>
+						<pagecontrol>62</pagecontrol>
+						<onright>62</onright>
+					</include>
+					<include content="List_DialogSelect" condition="Window.IsVisible(script-skinshortcuts.xml)">
+						<param name="id" value="6" />
+						<param name="itemlayout_include">Layout_SkinShortcuts</param>
+						<left>-dialog_pad</left>
+						<pagecontrol>62</pagecontrol>
+						<onright>62</onright>
+					</include>
+
+					<include content="Dialog_Scrollbar">
+						<onright>9000</onright>
+						<onleft>3</onleft>
+						<visible>Control.IsVisible(3)</visible>
+					</include>
+					<include content="Dialog_Scrollbar">
+						<param name="id" value="62" />
+						<onright>9000</onright>
+						<onleft>6</onleft>
+						<visible>Control.IsVisible(6)</visible>
+					</include>
+				</control>
+			</control>
+		</include>
+		<include name="Object_Separator">
+			<param name="colordiffuse" default="dialog_fg_12" />
+			<param name="horizontal" default="false" />
+			<definition>
+				<include content="Object_Control" condition="!$PARAM[horizontal]">
+					<param name="control" value="image" />
+					<nested />
+					<width>1</width>
+					<texture colordiffuse="$PARAM[colordiffuse]">common/white.png</texture>
+				</include>
+				<include content="Object_Control" condition="$PARAM[horizontal]">
+					<param name="control" value="image" />
+					<nested />
+					<height>1</height>
+					<texture colordiffuse="$PARAM[colordiffuse]">common/white.png</texture>
+				</include>
+			</definition>
+		</include>
+		<include content="Object_Overlay">
+			<param name="delay" value="300" />
+		</include>	
+		<include name="Dialog_Info_RightSide">
+			<param name="left" default="big_poster_w" />
+			<definition>
+				<control type="group">
+					<left>$PARAM[left]</left>
+					<include>Animation_Right_Delay</include>
+					<include content="Object_Control" condition="Skin.String(DividerStyle,Split) + Skin.String(BackgroundStyle,Blur) + Skin.String(ForegroundStyle,KeyArt)">
+						<param name="control" value="image" />
+						<aspectratio scalediffuse="false">scale</aspectratio>
+						<include content="Object_Include" condition="Skin.HasSetting(DividerShadows)">
+							<texture background="true" colordiffuse="main_flix">$VAR[Background_Fanart_Var]</texture>
+						</include>
+						<texture background="true" diffuse="diffuse/flixart.png" colordiffuse="main_flix">$VAR[Background_Fanart_Var]</texture>
+						<visible>!Window.IsActive(1120)</visible>
+						<animation effect="fade" start="0" end="100" time="800" delay="0">Visible</animation>
+						<animation effect="fade" start="100" end="0" time="400">Hidden</animation>
+					</include>
+					<control type="group">
+						<right>-$PARAM[left]</right>
+						<include content="Object_Control" condition="Skin.String(DividerStyle,Split) + Skin.String(BackgroundStyle,Blur) + Skin.String(ForegroundStyle,KeyArt)">
+							<param name="control" value="image" />
+							<aspectratio scalediffuse="false">scale</aspectratio>
+							<texture background="true" colordiffuse="main_flix">$VAR[Background_Fanart_Var]</texture>
+							<visible>Window.IsActive(1120)</visible>
+							<animation effect="fade" start="0" end="100" time="800">Visible</animation>
+							<animation effect="fade" start="100" end="0" time="1200">Hidden</animation>
+						</include>
+						<include content="Object_DividerPanel" condition="Skin.String(DividerStyle,Split)">
+							<param name="shadow_left" value="true" />
+						</include>
+					</control>
+					<nested />
+				</control>
+			</definition>
+		</include>
+
+<!-- Standard -->
+		<include condition="!Window.IsVisible(videoosd) + !String.IsEqual(Window(Home).Property(DialogSettings.Style),mediafilter)">Object_Overlay</include>
+        <include content="Dialog_Background" condition="!String.IsEqual(Window(Home).Property(DialogSettings.Style),mediafilter)">
+            <visible>!Window.IsVisible(DialogSubtitles.xml)</visible>
+            <visible>!Window.IsVisible(DialogSlider.xml)</visible>
+            <include>Animation_SlideIn_Dialog</include>
+            <include condition="Window.IsVisible(videoosd)">Dimension_DialogSelect_OSD</include>
+            <include condition="!Window.IsVisible(videoosd)">Dimension_DialogSelect</include>
+            <include>Dialog_Overlay_Buttons</include>
+            <include content="Dialog_Header">
+                <param name="id" value="2" />
+                <include content="Object_Include" condition="Window.IsVisible(videoosd)">
+                    <align>left</align>
+                </include>
+            </include>
+            <include content="Dialog_Group">
+                <control type="group">
+                    <right>0</right>
+                    <width>dialog_button_width</width>
+                    <control type="grouplist" id="9000">
+                        <onleft>61</onleft>
+                        <itemgap>20</itemgap>
+                        <control type="button" id="28" description="OK">
+                            <height>row_height</height>
+                        </control>
+                        <control type="button" id="29" description="Cancel">
+                            <height>row_height</height>
+                        </control>
+                        <control type="button" id="30" description="Clear">
+                            <height>row_height</height>
+                        </control>
+                    </control>
+                </control>
+                <control type="group">
+                    <right>dialog_button_width</right>
+                    <control type="group">
+                        <right>dialog_pad</right>
+                        <control type="grouplist" id="5">
+                            <left>-dialog_pad</left>
+                            <pagecontrol>61</pagecontrol>
+                            <onright>61</onright>
+                        </control>
+                        <include content="Dialog_Scrollbar">
+                            <onright>9000</onright>
+                            <onleft>5</onleft>
+                        </include>
+                    </control>
+                </control>
+            </include>
+        </include>
+		<include name="Action_Plotbox_OnUp">
+			<param name="fanart" default="$ESCINFO[ListItem.Art(fanart)]" />
+			<param name="poster" default="$ESCINFO[ListItem.Art(poster)]" />
+			<definition>
+				<onup>SetProperty(Fanart,$PARAM[fanart],1113)</onup>
+				<onup>SetProperty(Poster,$PARAM[poster],1113)</onup>
+				<onup>SetProperty(Title,"$VAR[Label_Title]",1113)</onup>
+				<onup>SetProperty(Year,$ESCINFO[ListItem.Year],1113)</onup>
+				<onup>SetProperty(ClearLogo,$ESCINFO[Window(Home).Property(TMDbHelper.ListItem.CropImage)],1113)</onup>
+				<onup>SetProperty(Tagline,$ESCINFO[ListItem.Tagline],1113)</onup>
+				<onup>SetProperty(Plot,$VAR[Label_Plot_ESC],1113)</onup>
+				<onup>ActivateWindow(1113)</onup>
+			</definition>
+		</include>
+		
+	</includes>
+
+	<defaultcontrol always="true">304</defaultcontrol>
+    <menucontrol>9000</menucontrol>
+	<animation effect="slide" start="0" end="-big_poster_w" time="800" tween="cubic" easing="out" condition="Window.IsActive(1120)" reversible="false">Conditional</animation>
+	<animation effect="slide" end="0" start="-big_poster_w" time="800" tween="cubic" easing="out" condition="!Window.IsActive(1120)" reversible="false">Conditional</animation>
+	<control type="group">
+                <width>big_poster_w</width>
+                <include>Animation_Left_Delay</include>
+                <include content="Object_BigPoster">
+                    <param name="diffuse" value="diffuse/poster_w544_h800.png" />
+                    <include>Dimension_Info</include>
+                </include>
+            </control>
+    <zorder>1</zorder>
+	
+    <coordinates>
+        <origin x="0" y="0" />
+    </coordinates>
+	<!--Controls -->
+    <controls>
+        <control type="image" id="99">
+            <description>Background</description>
+            <width>1920</width>
+            <height>1080</height>
+			<!-- <texture>blur.jpg</texture> -->
+			<include condition="true">Animation_FadeIn_Delay</include>
+			<include condition="true">Animation_FadeOut</include>
+			<visible>true</visible>
+			<texture background="true" fallback="$PARAM[fallback]" colordiffuse="main_flix">$VAR[Image_ContextFanart]</texture>
+        </control>
+        <control type="image" id="100">
+            <height>1080</height>
+            <texture>common/dim-top.png</texture>
+        </control>
+		<!-- Context Poster -->
+		<control type="group">
+			<visible>$EXP[Exp_ContextMenu_HasPoster]</visible>
+			<include>Animation_Left_Delay</include>
+            <width>435</width>
+            <height>640</height>
+			<left>50</left>
+			<top>50</top>
+			<include content="Dialog_Context_Image">
+				<param name="diffuse" value="diffuse/poster_w435_h640.png" />
+			</include>
+		</control>
+<!--         <control type="image" id="101">
+            <description>Poster image</description>
+			<include>Animation_Left_Delay</include>
+			<left>85</left>
+			<top>85</top>
+            <width>217.5</width>
+            <height>320</height>
+			<texture condition="!String.IsEmpty(Window(Home).Property(ContextMenu.Poster))">$INFO[Window(Home).Property(ContextMenu.Poster)]</texture>
+			<texture condition="$EXP[Exp_ContextMenu_HasPoster]">$INFO[Window(Home).Property(TMDbHelper.ListItem.Poster)]</texture>
+			<texture condition="!String.IsEmpty(Window(Home).Property(ContextMenu.Icon))">$INFO[Window(Home).Property(ContextMenu.Icon)]</texture>
+			<texture diffuse="diffuse/poster_w435_h640.png">diffuse/poster_w435_h640.png</texture>
+        </control> -->
+        <control type="image" id="1011">
+            <description>Poster fade</description>
+			<right>50</right>
+			<top>50</top>
+            <width>435</width>
+            <height>640</height>
+			<visible>false</visible>
+			<texture condition="!String.IsEmpty(Window(Home).Property(ContextMenu.Poster))">diffuse/poster_fade.png</texture>
+			<texture condition="$EXP[Exp_ContextMenu_HasPoster]">diffuse/poster_fade.png</texture>
+        </control>
+        <control type="image" id="102">
+            <description>Dialog Header image</description>
+            <posx>0</posx>
+            <posy>0</posy>
+            <width>780</width>
+            <height>50</height>
+            <texture></texture>
+        </control>
+        <control type="image" id="103">
+            <description>Separator</description>
+			<include>Animation_Top_Delay</include>
+            <top>10</top>
+            <left>30</left>
+			<align>center</align>
+            <width>1080</width>
+            <height>2</height>
+            <texture>separator.png</texture>
+        </control>
+		
+        <control type="image" id="1033">
+            <description>icon</description>
+            <bottom>100</bottom>
+            <right>100</right>
+			<align>center</align>
+            <width>300</width>
+            <height>300</height>
+            <texture>$INFO[Window(home).Property(ParentalGuide.RatingIcon)]</texture>
+        </control>
+		
+        <control type="label" id="201">
+            <description>Window Title</description>
+            <posx>50</posx>
+            <posy>30</posy>
+            <width>1920</width>
+            <height>20</height>
+			<textcolor>ffffffff</textcolor>		<!-- white -->
+			<scroll>false</scroll>
+			<label>[B][UPPERCASE]$INFO[Window(home).Property(ParentalGuide.title)][/UPPERCASE][/B]</label>
+			<include>Animation_Top_Delay</include>
+        </control>
+		<control type="group">
+			<orientation>vertical</orientation>
+            <itemgap>200</itemgap>
+			<left>550</left>
+			<top>85</top>
+			<width>1300</width>
+			<height>1000</height>
+            <visible>true</visible>
+            <animation effect="fade" start="0" end="100" time="300" delay="100">Visible</animation>
+			<pagecontrol>203</pagecontrol>
+			<control type="button" id="2022">
+				<description>Desc Button</description>
+				<align>left</align>
+				<label>$INFO[Window(home).Property(ParentalGuide.Desc.Nudity)]</label>
+				<textcolor>e7dedede</textcolor>		
+				<onright>2023</onright>
+				<onleft>203</onleft>
+				<onup>203</onup>
+				<ondown>203</ondown>
+				<height>300</height>
+				<aligny>top</aligny>
+				<align>left</align>
+				<scroll>true</scroll>
+				<autoscroll>true</autoscroll>
+				<wrapmultiline>true</wrapmultiline>
+				<visible>true</visible>
+				<include content="scrollbar"></include>
+				<pagecontrol>203</pagecontrol>
+			</control>
+			<control type="button" id="2023">
+				<description>Desc Button</description>
+				<aligny>top</aligny>
+				<align>left</align>
+				<label>$INFO[Window(home).Property(ParentalGuide.Desc.Language)]</label>
+				<size>6</size>
+				<textcolor>e7dedede</textcolor>	
+				<top>305</top>	
+				<height>300</height>				
+				<onright>302</onright>
+				<onleft>2022</onleft>
+				<onup>203</onup>
+				<ondown>203</ondown>
+				<vscroll>true</vscroll>
+				<autoscroll>true</autoscroll>
+				<wrapmultiline>true</wrapmultiline>
+				<visible>true</visible>
+				<include content="scrollbar"></include>
+				<pagecontrol>203</pagecontrol>
+			</control>
+			<control type="button" id="2024">
+				<description>Desc Button</description>
+				<aligny>top</aligny>
+				<align>left</align>
+				<label>$INFO[Window(home).Property(ParentalGuide.Desc.Violence)]</label>
+				<size>8</size>
+				<textcolor>e7dedede</textcolor>		
+				<height>300</height>	
+				<top>610</top>
+				<onright>302</onright>
+				<onleft>2022</onleft>
+				<onup>203</onup>
+				<ondown>203</ondown>
+				<top>520</top>
+				<vscroll>true</vscroll>
+				<autoscroll>true</autoscroll>
+				<wrapmultiline>false</wrapmultiline>
+				<visible>true</visible>
+				<include content="scrollbar"></include>
+				<pagecontrol>203</pagecontrol>
+			</control>
+		</control>
+
+		<control type="scrollbar" id="203">
+            <description>Scrollbar for Viewer</description>
+            <posx>10</posx>
+            <top>420</top>
+            <width>25</width>
+            <height>550</height>
+            <texturesliderbackground border="0,14,0,14">ScrollBarV.png</texturesliderbackground>
+            <texturesliderbar border="0,14,0,14">ScrollBarV_bar.png</texturesliderbar>
+            <texturesliderbarfocus border="0,14,0,14">ScrollBarV_bar_focus.png</texturesliderbarfocus>
+            <textureslidernib>ScrollBarNib.png</textureslidernib>
+            <textureslidernibfocus>ScrollBarNib.png</textureslidernibfocus>
+            <colordiffuse>FFCCCCCC</colordiffuse>
+            <pulseonselect>True</pulseonselect>
+            <orientation>vertical</orientation>
+            <showonepage>false</showonepage>
+            <onleft>301</onleft>
+            <onright>303</onright>
+        </control>
+        <control type="button" id="301">
+            <description>Details Button</description>
+            <posx>30</posx>
+            <bottom>50</bottom>
+            <width>220</width>
+            <height>40</height>
+            <align>center</align>
+            <label>$ADDON[script.parentalguide 32013]</label>
+			<textcolor>ffffffff</textcolor>		<!-- white -->
+            <onright>302</onright>
+            <onleft>203</onleft>
+            <onup>203</onup>
+            <ondown>203</ondown>
+        </control>
+        <control type="button" id="302">
+            <description>Close Button</description>
+            <posx>280</posx>
+            <bottom>50</bottom>
+            <width>220</width>
+            <height>40</height>
+            <align>center</align>
+            <label>$ADDON[script.parentalguide 32006]</label>
+			<textcolor>ffffffff</textcolor>		<!-- white -->
+            <onright>303</onright>
+            <onleft>301</onleft>
+            <onup>203</onup>
+            <ondown>203</ondown>
+        </control>
+        <control type="button" id="303">
+            <description>Switch Button</description>
+            <posx>530</posx>
+            <bottom>50</bottom>
+            <width>220</width>
+            <height>40</height>
+            <align>center</align>
+            <label>$ADDON[script.parentalguide 32009]</label>
+			<textcolor>ffffffff</textcolor>		<!-- white -->
+            <onright>304</onright>
+            <onleft>302</onleft>
+            <onup>203</onup>
+            <ondown>203</ondown>
+        </control>
+		<control type="button" id="304">
+            <description>Details Button</description>
+            <posx>780</posx>
+            <bottom>50</bottom>
+            <width>220</width>
+            <height>40</height>
+            <align>center</align>
+            <label>More</label>
+			<textcolor>ffffffff</textcolor>		<!-- white -->
+            <onright>302</onright>
+            <onleft>203</onleft>
+            <onup>203</onup>
+			<ondown></ondown>
+			<include name="Action_Plotbox_OnUp"></include>
+			<onclick>SetFocus(50)</onclick>
+			<onclick>ActivateWindow(1173)</onclick>
+			<onclick>SetFocus(50)</onclick>
+        </control>
+		<control type="list" id="204">
+			<include>Animation_Left_Delay</include>
+			<top>720</top>
+			<left>100</left>
+			<width>530</width>
+			<height>240</height>
+			<visible>true</visible>
+			<autoscroll>false</autoscroll>
+			<orientation>vertical</orientation>
+			<content>
+				<item>
+			        <visible>!IsEmpty(Window(home).Property(ParentalGuide.1.Section))</visible>
+			        <label>$INFO[Window(home).Property(ParentalGuide.1.Section)]</label>
+			        <thumb>$INFO[Window(home).Property(ParentalGuide.1.Rating)]</thumb>
+					<onclick>-</onclick>
+			    </item>
+			    <item>
+			        <visible>!IsEmpty(Window(home).Property(ParentalGuide.2.Section))</visible>
+			        <label>$INFO[Window(home).Property(ParentalGuide.2.Section)]</label>
+			        <thumb>$INFO[Window(home).Property(ParentalGuide.2.Rating)]</thumb>
+					<onclick>-</onclick>
+			    </item>
+			    <item>
+			        <visible>!IsEmpty(Window(home).Property(ParentalGuide.3.Section))</visible>
+			        <label>$INFO[Window(home).Property(ParentalGuide.3.Section)]</label>
+			        <thumb>$INFO[Window(home).Property(ParentalGuide.3.Rating)]</thumb>
+					<onclick>-</onclick>
+			    </item>
+			    <item>
+			        <visible>!IsEmpty(Window(home).Property(ParentalGuide.4.Section))</visible>
+			        <label>$INFO[Window(home).Property(ParentalGuide.4.Section)]</label>
+			        <thumb>$INFO[Window(home).Property(ParentalGuide.4.Rating)]</thumb>
+					<onclick>-</onclick>
+			    </item>
+			    <item>
+			        <visible>!IsEmpty(Window(home).Property(ParentalGuide.5.Section))</visible>
+			        <label>$INFO[Window(home).Property(ParentalGuide.5.Section)]</label>
+			        <thumb>$INFO[Window(home).Property(ParentalGuide.5.Rating)]</thumb>
+					<onclick>-</onclick>
+			    </item>
+			    <item>
+			        <visible>!IsEmpty(Window(home).Property(ParentalGuide.6.Section))</visible>
+			        <label>$INFO[Window(home).Property(ParentalGuide.6.Section)]</label>
+			        <thumb>$INFO[Window(home).Property(ParentalGuide.6.Rating)]</thumb>
+					<onclick>-</onclick>
+			    </item>
+			    <item>
+			        <visible>!IsEmpty(Window(home).Property(ParentalGuide.7.Section))</visible>
+			        <label>$INFO[Window(home).Property(ParentalGuide.7.Section)]</label>
+			        <thumb>$INFO[Window(home).Property(ParentalGuide.7.Rating)]</thumb>
+					<onclick>-</onclick>
+			    </item>
+			    <item>
+			        <visible>!IsEmpty(Window(home).Property(ParentalGuide.8.Section))</visible>
+			        <label>$INFO[Window(home).Property(ParentalGuide.8.Section)]</label>
+			        <thumb>$INFO[Window(home).Property(ParentalGuide.8.Rating)]</thumb>
+					<onclick>-</onclick>
+			    </item>
+			</content>
+			<itemlayout height="60" width="780">
+                <control type="label">
+						<description>Description</description>
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>220</width>
+                        <height>40</height>
+                        <aligny>center</aligny>
+                        <align>left</align>
+						<fontsize>6</fontsize>
+						<wrapmultiline>true</wrapmultiline>
+                        <info>ListItem.Label</info>
+						<textcolor>ffffffff</textcolor>		<!-- white -->
+                </control>
+                <control type="image">
+                        <posx>230</posx>
+                        <posy>0</posy>
+                        <width>300</width>
+                        <height>40</height>
+                        <aligny>center</aligny>
+                        <align>left</align>
+                        <aspectratio>keep</aspectratio>
+                        <info>ListItem.Icon</info>
+                </control>
+            </itemlayout>
+			<focusedlayout height="60" width="780">
+                <control type="label">
+						<description>Description</description>
+                        <posx>0</posx>
+                        <posy>0</posy>
+                        <width>200</width>
+                        <height>40</height>
+                        <aligny>center</aligny>
+                        <align>left</align>
+						<wrapmultiline>true</wrapmultiline>
+                        <info>ListItem.Label</info>
+						<textcolor>ffffffff</textcolor>		
+                </control>
+                <control type="image">
+                        <posx>230</posx>
+                        <posy>0</posy>
+                        <width>300</width>
+                        <height>40</height>
+                        <aligny>center</aligny>
+                        <align>left</align>
+                        <aspectratio>keep</aspectratio>
+                        <info>ListItem.Icon</info>
+                </control>
+			</focusedlayout>
+		</control>
+	</controls>
+</window>

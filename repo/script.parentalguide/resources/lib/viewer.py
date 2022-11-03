@@ -247,6 +247,10 @@ class SummaryViewer(ParentalGuideViewer):
                                         
                     DescProperty = "ParentalGuide.Desc.%s" % y
                     xbmcgui.Window(10000).setProperty(DescProperty, str(Description))
+                    
+                    DescSumProperty = "ParentalGuide.Desc.Summary"
+                    xbmcgui.Window(10000).setProperty(DescSumProperty, str(details[0]['description']))
+                    
                     #self.setProperty(DescProperty, details[i]['description'])
                     
                     SectionVotesProperty = "ParentalGuide.Votes.%s" % y
