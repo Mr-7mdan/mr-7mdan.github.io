@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+	<category label="32001">
+<!-- 		<setting id="defaultSource" type="enum" label="32007" lvalues="32008|32009|32024|32025" default="0" />
+		<setting id="defaultViewer" type="enum" label="32014" lvalues="32012|32013" default="0" /> -->
+		<setting id="showOnContextMenu" type="bool" label="32023" default="true"/>
+    	<setting label="32002" type="lsep"/>
+		<setting id="logEnabled" type="bool" label="32003" default="false"/>
+		<setting label="32015" type="lsep"/>
+		<setting label="32036" type="action" action="RunScript($CWD/Arctic.Horizon.2.Update.py)"/>
+		<setting label="32016" type="action" action="RunScript($CWD/Arctic.Horizon.2.Restore.py)"/>
+		<setting id="delcache" type="action" label="32039" help="">
+					<level>0</level>
+					<data>RunScript($CWD/resources/lib/delcache.py)</data>
+					<constraints>
+						<allowempty>true</allowempty>
+					</constraints>
+					<control type="button" format="action"/>
+				</setting>
+	</category>
+	<category label="32026">
+		<setting id="IMDBProvider" type="bool" label="32008" default="true" />
+		<setting id="kidsInMindProvider" type="bool" label="32009" default="true" />
+		<setting id="movieGuideOrgProvider" type="bool" label="32025" default="true" />
+		<setting id="DoveFoundationProvider" type="bool" label="32024" default="true" />
+	</category>
+	<category label="320301">
+		<setting id="CSMProvider" type="bool" label="32028" default="true" />
+		<setting id="RaisingChildrenProvider" type="bool" label="32029" default="true" />
+	</category>
+</settings>
