@@ -125,4 +125,57 @@ Some grammatical corrections (Special thanks to AlexNaga).
 Added Dutch language (Special thanks to Tinuz97).
 Clean up project files.</news>
   </extension>
+</addon><addon id="service.subtitles.subsceneplus" name="Subscene Subtitles" version="1.2.9" provider-name="Cih2001">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0" />
+    <import addon="script.module.requests" version="2.22.0+matrix.1" />
+    <import addon="script.module.html5lib" version="1.0.1+matrix.2" />
+    <import addon="vfs.libarchive" version="2.0.0" /> 
+  </requires>
+  <extension point="xbmc.subtitle.module" library="service.py" />
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en_GB">Subscene.com Subtitles</summary>
+    <description lang="en_GB"> A convenient addon to download subtitles from subscene.com. If you find it useful, please consider giving it a star in github. This is being actively maintained. In case of any problem, feel free to open an issue on github.
+    </description>
+    <platform>all</platform>
+    <license>GPL-2.0-or-later</license>
+    <news>Version 1.2.*
+- New: Subscene domain name can be selected from the settings.
+Version 1.1.*
+- New: Subscene plus now works with TV shows.
+- New: When Movie/TV-show cannot be determined accurately, It allows you to select the correct one from a list.
+- New: Subtitles from archives with multiple items can be selected from a list.
+- Minor bugfixes
+	</news>
+    <source>https://github.com/Cih2001/KodiSubsceneAddon</source>
+    <assets>
+        <icon>logo.png</icon>
+    </assets>
+  </extension>
+</addon><addon id="skin.arctic.horizon.2" name="Arctic Horizon 2" provider-name="jurialmunkey" version="0.8.22">
+    <requires>
+        <import addon="xbmc.gui" version="5.15.0" />
+        <import addon="script.skinshortcuts" version="0.4.0" />
+        <import addon="script.skinvariables" version="1.0.0" />
+        <import addon="script.texturemaker" version="0.2.8" />
+        <import addon="plugin.video.themoviedb.helper" version="5.1.11~nexus" />
+        <import addon="resource.images.weathericons.white" version="0.0.1" />
+        <import addon="resource.images.studios.coloured" version="0.0.1" />
+        <import addon="resource.font.robotocjksc" version="0.0.1" />
+    </requires>
+    <extension debugging="false" defaultthemename="Textures.xbt" effectslowdown="1" point="xbmc.gui.skin">
+        <res aspect="16:9" default="true" folder="1080i" height="1080" width="1920" />
+    </extension>
+    <extension point="xbmc.addon.metadata">
+        <summary lang="en">Minimal. Classic. Gradients. Widgets.</summary>
+        <description lang="en">Arctic Horizon 2</description>
+        <platform>all</platform>
+        <license>Creative Commons Attribution Non-Commercial Share-Alike 4.0</license>
+        <forum />
+        <source />
+        <assets>
+            <icon>icon.png</icon>
+            <fanart>fanart.jpg</fanart>
+        </assets>
+    </extension>
 </addon></addons>

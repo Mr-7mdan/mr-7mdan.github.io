@@ -185,53 +185,63 @@ def CSMScraper(videoName,ID,Session):
 
     if '200' in str(response):
         soup = BeautifulSoup(response.text, "html.parser")
-        Cats = soup.find("review-view-content-grid").find("div",{"class":"row"}).findAll("span",{"class":"rating__label"})
-        age = soup.find("div", {"class": "rating rating--inline rating--xlg"}).find("span", {"class":"rating__age"}).text.strip()
-        title = soup.find("div",{"class":"review-view-summary"}).div.h1.string
-        jsonData = soup.find('script',{"type":"application/ld+json"}).string
-        print(jsonData)
-        jsonload = json.loads(jsonData)
-        imdburl= jsonload["@graph"][0]["itemReviewed"]["sameAs"]
-        age2 = "age"+jsonload["@graph"][0]["typicalAgeRange"]
-        isFamilyFriendly = "age"+jsonload["@graph"][0]["isFamilyFriendly"]
-        datePublished = "age"+jsonload["@graph"][0]["datePublished"]
-        sPattern3 = "http.*imdb.*title.(.*?)\/"
-        imdbid = str(re.compile(sPattern3).findall(str(imdburl))).replace("[","").replace("]","").replace("'","")
-        Details = []
-        namePattern = re.compile(r'data-text="(.*\n*?)')
-        CatData = []
-        for cat in Cats:
+        
+        if soup is not None:
             try:
-                descparenttag = cat.parent.parent
-                desc = re.findall(namePattern,  str(descparenttag))[0].strip().replace("&lt;","").replace("p&gt;","").replace("&lt;","").replace("/p&gt","").replace("/","").replace("&quot;","'")
-                cparent = cat.parent
-                subs = cparent.findAll("span",{"class":"rating__score"})
-                for sub in subs:
+                Cats = soup.find("review-view-content-grid").find("div",{"class":"row"}).findAll("span",{"class":"rating__label"})
+                age = soup.find("div", {"class": "rating rating--inline rating--xlg"}).find("span", {"class":"rating__age"}).text.strip()
+                title = soup.find("div",{"class":"review-view-summary"}).div.h1.string
+                jsonData = soup.find('script',{"type":"application/ld+json"}).string
+                print(jsonData)
+                jsonload = json.loads(jsonData)
+                imdburl= jsonload["@graph"][0]["itemReviewed"]["sameAs"]
+                age2 = "age"+jsonload["@graph"][0]["typicalAgeRange"]
+                isFamilyFriendly = "age"+jsonload["@graph"][0]["isFamilyFriendly"]
+                datePublished = "age"+jsonload["@graph"][0]["datePublished"]
+                sPattern3 = "http.*imdb.*title.(.*?)\/"
+                imdbid = str(re.compile(sPattern3).findall(str(imdburl))).replace("[","").replace("]","").replace("'","")
+                Details = []
+                namePattern = re.compile(r'data-text="(.*\n*?)')
+                CatData = []
+                for cat in Cats:
                     try:
-                        score = len(sub.findAll("i", {"class" : "icon-circle-solid active"}))
-                        #print(score)
-                        CatData = {
-                        "name" : NamesMap[cat.text],
-                        "score": str(score),
-                        "description": CleanStr(desc),
-                        "cat": CatsIDs[score],
-                        "votes": None
-                    }
+                        descparenttag = cat.parent.parent
+                        desc = re.findall(namePattern,  str(descparenttag))[0].strip().replace("&lt;","").replace("p&gt;","").replace("&lt;","").replace("/p&gt","").replace("/","").replace("&quot;","'")
+                        cparent = cat.parent
+                        subs = cparent.findAll("span",{"class":"rating__score"})
+                        for sub in subs:
+                            try:
+                                score = len(sub.findAll("i", {"class" : "icon-circle-solid active"}))
+                                #print(score)
+                                CatData = {
+                                "name" : NamesMap[cat.text],
+                                "score": str(score),
+                                "description": CleanStr(desc),
+                                "cat": CatsIDs[score],
+                                "votes": None
+                            }
+                            except:
+                                score = None
+                        Details.append(CatData)
                     except:
-                        score = None
-                Details.append(CatData)
+                        pass
+                Review = {
+                    "id": imdbid,
+                    "title": videoName,
+                    "provider": "CSM",
+                    "recommended-age": age,
+                    "review-items": Details,
+                    "review-link": url,
+                    "isFamilyFriendly": isFamilyFriendly,
+                    "review-date": datePublished
+                    }
             except:
-                pass
-        Review = {
-            "id": imdbid,
-            "title": videoName,
-            "provider": "CSM",
-            "recommended-age": age,
-            "review-items": Details,
-            "review-link": url,
-            "isFamilyFriendly": isFamilyFriendly,
-            "review-date": datePublished
-            }
+                log("Parental Guide [CSM] : Problem connecting to provider")
+                Review = None
+        else:
+            log("Parental Guide [CSM] : Problem connecting to provider")
+            Review = None
+
     else:
         log("Parental Guide [CSM] : Problem connecting to provider")
         Review = None
@@ -473,8 +483,11 @@ def KidsInMindScraper(videoName,ID,Session):
                 ratingstr = soup.title.string#.split("|")[0].split("-")[1].strip().split(".")[0] + "/10"
                 sPattern =  "(\d)\.(\d)\.(\d)"
                 aMatches = re.compile(sPattern).findall(ratingstr)
-                NudeRating = round(int(aMatches[0][0])/2)
                 
+                try:
+                    NudeRating = round(int(aMatches[0][0])/2)
+                except:
+                    NudeRating = 0
                   
                 #print(title)
                 blocks = soup.findAll("div",{"class":"et_pb_text_inner"})
