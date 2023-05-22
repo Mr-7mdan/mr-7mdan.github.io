@@ -111,7 +111,7 @@ def getData(videoName, ID, Session, wid, Provider, order):
             db.set(Xshow_info, 1*24*60)
             AddFurnitureProperties(Xshow_info, Provider, wid)
         else:
-            logger.info('Finished loading new data for [%s][%s] \n' % (videoName, Provider)+ str(show_info))
+            logger.info('Finished loading new data for [%s][%s] \n' % (videoName, Provider))
             # try:
                 #cache.cache_details(show_info)
             AddXMLProperties(show_info,wid)
@@ -132,7 +132,7 @@ def getData(videoName, ID, Session, wid, Provider, order):
         logger.info("Loading from cache : Cache found for " +videoName + "[" + Provider +"]\n")
         AddXMLProperties(show_info,wid)
         AddFurnitureProperties(show_info, Provider, wid)
-        logger.info("Data from cache for "+videoName + "[" + Provider +"] \n" + str(show_info))
+        logger.info("Data from cache for "+videoName + "[" + Provider +"] \n")
     return show_info
 
 #########################
@@ -651,7 +651,7 @@ def AddFurnitureProperties(review, provider, WindowID):
     WID.setProperty('PGFurnitureIcon',"special://home/addons/script.parentalguide/resources/skins/Default/media/icons/icon.png")
     
     logger.info("Setting Property for %s" % provider)
-    logger.info("Trying Property for %s" % review)
+    #logger.info("Trying Property for %s" % review)
     if review in [None,""," "]:
         WID.setProperty(Suffix+'-NRate', " NA")
         WID.setProperty(Suffix+'-NVotes', " NA")
