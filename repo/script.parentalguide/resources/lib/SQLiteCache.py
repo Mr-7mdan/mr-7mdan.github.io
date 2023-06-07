@@ -46,7 +46,7 @@ class SqliteCache:
     _del_sql = 'DELETE FROM entries WHERE key = ?'
     _set_sql = 'REPLACE INTO entries (key, val, exp) VALUES (?, ?, ?)'
     _add_sql = 'INSERT INTO entries (key, val, exp) VALUES (?, ?, ?)'
-    _clear_sql = 'DELETE FROM entries'
+    _clear_sql = 'DELETE * FROM entries'
 
     # other properties
     connection = None
@@ -249,7 +249,8 @@ class SqliteCache:
 
         with self._get_conn() as conn:
             conn.execute(self._clear_sql, )
-
+            logx.info('Cache cleared sucessfully')
+        
     def __del__(self):
 
         """ Cleans up the object by destroying the sqlite connection """

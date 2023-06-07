@@ -253,6 +253,20 @@
         </include>
         <include content="OSD_Button">
             <param name="vertical">true</param>
+            <param name="id" value="5007"/>
+            <param name="groupid" value="5107"/>
+            <param name="sliceid" value="5207"/>
+            <param name="label" value="ParentalGuide"/>
+            <param name="icon" value="special://home/addons/script.parentalguide/icon-m.png"/>
+            <visible>true</visible>
+            <onclick condition="String.IsEmpty(ListItem.TvShowTitle) + !String.IsEmpty(ListItem.Title)+ !String.IsEmpty(ListItem.IMDBNumber)">RunScript(special://home/addons/script.parentalguide/default.py,)</onclick>
+            <include content="OSD_Button_HintLabel">
+                <param name="label">ParentalGuide</param>
+            </include>
+        </include>
+        
+        <include content="OSD_Button">
+            <param name="vertical">true</param>
             <param name="id" value="5005" />
             <param name="groupid" value="5105" />
             <param name="sliceid" value="5205" />

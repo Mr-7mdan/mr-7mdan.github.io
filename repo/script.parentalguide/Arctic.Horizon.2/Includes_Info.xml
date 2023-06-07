@@ -691,6 +691,19 @@
                         <param name="visible" value="!String.IsEmpty($PARAM[container]ListItem.PictureResolution) + !String.IsEmpty($PARAM[container]ListItem.Size)" />
                         <param name="textcolor" value="$PARAM[colordiffuse]_90" />
                     </include>
+                    <!--Recommened Age-->
+                    <include content="Info_Line_Label" condition="!$PARAM[player]">
+                        <param name="controltype" value="$PARAM[controltype]"/>
+                        <param name="label" value="$INFO[Window(home).Property(CSM-Age)]"/>
+                        <param name="visible" value="true"/>
+                        <param name="textcolor" value="$PARAM[colordiffuse]_90"/>
+                    </include>
+                    <include content="Info_Line_Label" condition="!$PARAM[player]">
+                        <param name="controltype" value="$PARAM[controltype]"/>
+                        <param name="label" value="$INFO[Window(home).Property(RaisingChildren-Age)]"/>
+                        <param name="visible" value="true"/>
+                        <param name="textcolor" value="$PARAM[colordiffuse]_90"/>
+                    </include>
                 </control>
                 <nested />
             </control>
@@ -1034,6 +1047,7 @@
             <control type="grouplist">
                 <hitrect x="0" y="0" w="0" h="0" />
                 <nested />
+                <top>5</top>
                 <height>32</height>
                 <orientation>horizontal</orientation>
                 <align>$PARAM[align]</align>
@@ -1209,7 +1223,125 @@
                     <visible>!String.IsEmpty(Container(99950).ListItem.Status) | !String.IsEmpty(Container(99950).ListItem.Property(Status))</visible>
                     <visible>$PARAM[releasestatus]</visible>
                 </include>
-
+            </control>
+            <control type="grouplist">
+                <hitrect x="0" y="0" w="0" h="0"/>
+                <nested/>
+                <top>50</top>
+                <height>32</height>
+                <orientation>horizontal</orientation>
+                <align>$PARAM[align]</align>
+                <aligny>center</aligny>
+                <itemgap>10</itemgap>
+                <usecontrolcoords>true</usecontrolcoords>
+<!--                 <onnext>RunScript(script.parentalguide,action=get_parental_guide,imdb_id=$INFO[ListItem.IMDBNumber],videoName=$INFO[ListItem.Title])</onnext>
+                <onprevious>RunScript(script.parentalguide,action=get_parental_guide,imdb_id=$INFO[ListItem.IMDBNumber],videoName=$INFO[ListItem.Title])</onprevious> -->
+                
+                <!-- Provider Icon -->
+                <include content="Info_Ratings_Item">
+                    <param name="include_condition">!Skin.HasSetting(Ratings.DisableIMDb)</param>
+                    <param name="colordiffuse">$PARAM[colordiffuse]</param>
+                    <param name="icon">$INFO[Window(home).Property(IMDB-Icon)]</param>
+                    <param name="icon_top">0</param>
+                    <param name="icon_width">32</param>
+                    <param name="is_updating">False</param>
+                    <param name="is_autohide">Skin.HasSetting(Ratings.AutoHide)</param>
+                    <visible>true</visible>
+                </include>
+                <!-- Provider Data -->
+                <include content="Info_Ratings_Item">
+                    <param name="include_condition">!Skin.HasSetting(Ratings.DisableIMDb)</param>
+                    <param name="colordiffuse">$PARAM[colordiffuse]</param>
+                    <param name="icon">$INFO[Window(home).Property(IMDB-NIcon)]</param>
+                    <param name="icon_top">2</param>
+                    <param name="icon_height">28</param>
+                    <param name="icon_width">14</param>
+                    <param name="label">$INFO[Window(home).Property(IMDB-NVotes)]   </param>
+                    <!-- <param name="label">plugin://script.parentalguide/?action=get_parental_guide&amp;imdb_id=$INFO[ListItem.IMDBNumber]&amp;videoName=$INFO[ListItem.Title]</param> -->
+                    <param name="label_fallback">           </param>
+                    <param name="is_varlabel">true</param>
+                    <param name="is_updating">false</param>
+                    <param name="is_autohide">Skin.HasSetting(Ratings.AutoHide)</param>
+                    <visible>true</visible>
+                </include>
+                <!-- Provider Icon -->
+                <include content="Info_Ratings_Item">
+                    <param name="include_condition">!Skin.HasSetting(Ratings.DisableIMDb)</param>
+                    <param name="colordiffuse">$PARAM[colordiffuse]</param>
+                    <param name="icon">$INFO[Window(home).Property(KidsInMind-Icon)]</param>
+                    <param name="icon_top">0</param>
+                    <param name="icon_width">32</param>
+                    <param name="is_updating">False</param>
+                    <param name="is_autohide">Skin.HasSetting(Ratings.AutoHide)</param>
+                    <visible>true</visible>
+                </include>
+                <!-- Provider Data -->
+                <include content="Info_Ratings_Item">
+                    <param name="include_condition">!Skin.HasSetting(Ratings.DisableIMDb)</param>
+                    <param name="colordiffuse">$PARAM[colordiffuse]</param>
+                    <param name="icon">$INFO[Window(home).Property(KidsInMind-NIcon)]</param>
+                    <param name="icon_top">2</param>
+                    <param name="icon_height">28</param>
+                    <param name="icon_width">14</param>
+                    <param name="label">$INFO[Window(home).Property(KidsInMind-NRate)]   </param>
+                    <param name="label_fallback">           </param>
+                    <param name="is_varlabel">True</param>
+                    <param name="is_updating">False</param>
+                    <param name="is_autohide">Skin.HasSetting(Ratings.AutoHide)</param>
+                    <visible>true</visible>
+                </include>
+                <!-- Provider Icon -->
+                <include content="Info_Ratings_Item">
+                    <param name="include_condition">!Skin.HasSetting(Ratings.DisableIMDb)</param>
+                    <param name="colordiffuse">$PARAM[colordiffuse]</param>
+                    <param name="icon">$INFO[Window(home).Property(MovieGuide-Icon)]</param>
+                    <param name="icon_top">0</param>
+                    <param name="icon_width">32</param>
+                    <param name="is_updating">False</param>
+                    <param name="is_autohide">Skin.HasSetting(Ratings.AutoHide)</param>
+                    <visible>true</visible>
+                </include>
+                <!-- Provider Data -->
+                <include content="Info_Ratings_Item">
+                    <param name="include_condition">!Skin.HasSetting(Ratings.DisableIMDb)</param>
+                    <param name="colordiffuse">$PARAM[colordiffuse]</param>
+                    <param name="icon">$INFO[Window(home).Property(MovieGuide-NIcon)]</param>
+                    <param name="icon_top">2</param>
+                    <param name="icon_height">28</param>
+                    <param name="icon_width">14</param>
+                    <param name="label">$INFO[Window(home).Property(MovieGuide-NRate)]   </param>
+                    <param name="label_fallback">           </param>
+                    <param name="is_varlabel">True</param>
+                    <param name="is_updating">False</param>
+                    <param name="is_autohide">Skin.HasSetting(Ratings.AutoHide)</param>
+                    <visible>true</visible>
+                </include>
+                <!-- Provider Icon -->
+                <include content="Info_Ratings_Item">
+                    <param name="include_condition">!Skin.HasSetting(Ratings.DisableIMDb)</param>
+                    <param name="colordiffuse">$PARAM[colordiffuse]</param>
+                    <param name="icon">$INFO[Window(home).Property(DoveFoundation-Icon)]</param>
+                    <param name="icon_top">0</param>
+                    <param name="icon_width">32</param>
+                    <param name="is_updating">False</param>
+                    <param name="is_autohide">Skin.HasSetting(Ratings.AutoHide)</param>
+                    <visible>true</visible>
+                </include>
+                <!-- Provider Data -->
+                <include content="Info_Ratings_Item">
+                    <param name="include_condition">!Skin.HasSetting(Ratings.DisableIMDb)</param>
+                    <param name="colordiffuse">$PARAM[colordiffuse]</param>
+                    <param name="icon">$INFO[Window(home).Property(DoveFoundation-NIcon)]</param>
+                    <param name="icon_top">2</param>
+                    <param name="icon_height">28</param>
+                    <param name="icon_width">14</param>
+                    <param name="label">$INFO[Window(home).Property(DoveFoundation-NRate)]   </param>
+                    <param name="label_fallback">           </param>
+                    <param name="is_varlabel">True</param>
+                    <param name="is_updating">False</param>
+                    <param name="is_autohide">Skin.HasSetting(Ratings.AutoHide)</param>
+                    <visible>true</visible>
+                </include>
 
             </control>
         </definition>
@@ -1816,7 +1948,7 @@
         <param name="plotwidth" default="info_plot_w" />
         <param name="colordiffuse" default="main_fg" />
         <param name="ratings" default="true" />
-        <param name="ratingsheight" default="80" />
+        <param name="ratingsheight" default="90" />
         <param name="details" default="true" />
         <param name="title" default="true" />
         <param name="infoline" default="true" />
@@ -1856,6 +1988,8 @@
                         <height>$PARAM[ratingsheight]</height>
                         <visible>$PARAM[details]</visible>
                         <include content="Info_Ratings" condition="!Skin.HasSetting(Ratings.HideAll)">
+                            <param name="parentalrating">$INFO[Window(home).Property(Nvotes)]</param>
+                            <param name="parentalratingicon">$INFO[Window(home).Property(Nicon)]</param>
                             <param name="container">$PARAM[container]</param>
                             <param name="colordiffuse" value="$PARAM[colordiffuse]" />
                             <param name="userrating" value="$PARAM[container]ListItem.UserRating" />

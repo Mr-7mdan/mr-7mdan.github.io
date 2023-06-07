@@ -111,7 +111,7 @@ def getData(videoName, ID, Session, wid, Provider, order):
             db.set(Xshow_info, 1*24*60)
             AddFurnitureProperties(Xshow_info, Provider, wid)
         else:
-            logger.info('Finished loading new data for [%s][%s] \n' % (videoName, Provider))
+            logger.info('Finished loading new data for [%s][%s] \n' % (videoName, Provider)+ str(show_info))
             # try:
                 #cache.cache_details(show_info)
             AddXMLProperties(show_info,wid)
@@ -125,11 +125,11 @@ def getData(videoName, ID, Session, wid, Provider, order):
                 exp = 30*7*24*60*60
                 
             db.set(show_info, exp)
-            #logger.info("Added New Data for "+videoName + "[" + Provider +"] to cache sucessfully" )
+            logger.info("Added New Data for "+videoName + "[" + Provider +"] to cache sucessfully" )
             # except:
                 # pass
     else:
-        logger.info("Loading from cache : Cache found for " +videoName + "[" + Provider +"]\n")
+        logger.info("Loading from cache : Cache found for " +videoName + "[" + Provider +"]\n"+ str(show_info))
         AddXMLProperties(show_info,wid)
         AddFurnitureProperties(show_info, Provider, wid)
         logger.info("Data from cache for "+videoName + "[" + Provider +"] \n")

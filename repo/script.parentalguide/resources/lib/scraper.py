@@ -409,8 +409,8 @@ class KidsInMindScraper(Scrapper):
 # imdb class
 #################################
 class IMDBScraper(Scrapper):
-    # def parentsguide(IMDBID):
-        # Desc = imdb_parentsguide(IMDBID)
+    def parentsguide(IMDBID, videoName):
+        details = imdb_parentsguide(IMDBID)
         # CatCount = len(Desc[0])
         # i = 0
         # details = []
@@ -425,37 +425,11 @@ class IMDBScraper(Scrapper):
             # listingstr += '\n' + str(row.strip().replace('-',''))
           # details.append({
                 # "name": item['title'].replace(",",""),
-                # "Score": "",
+                # "score": "",
                 # "description": listingstr,
-                # "Cat": item['ranking'],
-                # "Votes" : item['votes']
+                # "cat": item['ranking'],
+                # "votes" : item['votes']
                 # })
-            
-        # # fullDetails = {}
-        # # fullDetails["title"] = ''
-        # # fullDetails["details"] = details
-        # return details
-    def parentsguide(IMDBID, videoName):
-        Desc = imdb_parentsguide(IMDBID)
-        CatCount = len(Desc[0])
-        i = 0
-        details = []
-        listingstr = ''
-        
-        for i in range(0,CatCount):
-          item = Desc[0][i]
-          
-          listingitem = item['listings']
-          #xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % (item['title'],str(item['votes']), ADDON.getAddonInfo('icon')))
-          for row in listingitem:
-            listingstr += '\n' + str(row.strip().replace('-',''))
-          details.append({
-                "name": item['title'].replace(",",""),
-                "score": "",
-                "description": listingstr,
-                "cat": item['ranking'],
-                "votes" : item['votes']
-                })
         
         Review = {
             "id": IMDBID,
@@ -463,12 +437,9 @@ class IMDBScraper(Scrapper):
             "provider": "imdb",
             "recommended-age": None,
             "review-items": details,
-            "review-link": "",
+            "review-link": f'https://www.imdb.com/title/{IMDBID}/parentalguide',
         }
         
-        # fullDetails = {}
-        # fullDetails["title"] = ''
-        # fullDetails["details"] = details
         return Review
 
 #################################
