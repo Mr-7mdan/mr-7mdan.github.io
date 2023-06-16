@@ -23,15 +23,20 @@ def get_cat(section):
     # 22 of 43 found this mild
     # 32 of 46 found this moderate
     # 241 of 320 found this severe
-    cat = vote_container.find('span').text
-    vote = vote_container.find('a').text
-    pattern = '([\d,]+)\sof\s([\d,]+)'
-    m = re.match(pattern, vote)
-    vote = int(m[1].replace(',', ''))
-    outof = int(m[2].replace(',', ''))
-    percent = round((vote/outof) * 100)
-    return cat, vote, outof, percent
-
+    if vote_container not in ["",None]:
+        try:
+            cat = vote_container.find('span').text
+            vote = vote_container.find('a').text
+            pattern = '([\d,]+)\sof\s([\d,]+)'
+            m = re.match(pattern, vote)
+            vote = int(m[1].replace(',', ''))
+            outof = int(m[2].replace(',', ''))
+            percent = round((vote/outof) * 100)
+            return cat, vote, outof, percent
+        except:
+            return '','','',''
+    else:
+        return '','','',''
 
 def imdb_parentsguide(tid):
 
