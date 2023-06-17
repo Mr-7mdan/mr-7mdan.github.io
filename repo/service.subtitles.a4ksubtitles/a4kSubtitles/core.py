@@ -17,12 +17,6 @@ from base64 import b64encode
 from xml.etree import ElementTree
 from io import BytesIO
 
-import xbmc
-import xbmcaddon
-import xbmcgui
-import traceback
-#ADDON = xbmcaddon.Addon(id='script.parentalguide')
-
 from .lib import (
     cache,
     kodi,
@@ -66,8 +60,6 @@ def main(handle, paramstring):  # pragma: no cover
 
     elif params['action'] == 'download':
         params['action_args'] = json.loads(params['action_args'])
-        #log(params['action_args'])
-        #xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ("Action Args", params['action_args'] , ADDON.getAddonInfo('icon')))
         download(core, params)
 
     kodi.xbmcplugin.endOfDirectory(handle)
