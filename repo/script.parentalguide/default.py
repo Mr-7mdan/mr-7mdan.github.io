@@ -66,7 +66,7 @@ def runForVideo(videoName, IMDBID, isTvShow=False):
                         xMainVotes = [int(s) for s in re.findall(r'\b\d+\b', details['review-items'][i]['votes'])]
                         xbmcgui.Window(10000).setProperty(IMDBID + '-NVotes', (str(xMainVotes[0]) + "/" + str(xMainVotes[1])))
                         xbmcgui.Window(10000).setProperty(IMDBID + '-NIcon', "tags/" + str(details['review-items'][i]['cat']) + ".png")
-            selectedViewer = Settings.getDefaultViewer()                
+            #selectedViewer = Settings.getDefaultViewer()                
             viewer = SummaryViewer("summary.xml", CWD, title=videoName, details=details)
             
             viewer.doModal()
