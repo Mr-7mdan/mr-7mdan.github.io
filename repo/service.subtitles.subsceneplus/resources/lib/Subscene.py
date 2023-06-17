@@ -1,4 +1,5 @@
-import requests
+#import requests
+import cloudscraper2
 import html5lib
 import re
 from html5lib import treebuilders, treewalkers
@@ -15,6 +16,8 @@ class SubsceneSubtitleService:
             self.domain_name = domain_name_ 
         else:
             self.domain_name = "https://www.subscene.com"
+
+        self.cf_requests = cloudscraper2.create_scraper()
 
     def search_title_match(self, stream):
         results = {
@@ -91,7 +94,7 @@ class SubsceneSubtitleService:
         return results
 
     def EnumSubtitles(self, url):
-        r = requests.get(url)
+        r = self.cf_requests.get(url)
         p = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder("dom"))
         dom_tree = p.parse(r.text)
         walker = treewalkers.getTreeWalker("dom")
@@ -183,7 +186,7 @@ class SubsceneSubtitleService:
 
     def SearchMovie(self, title, year):
         try:
-            r = requests.post(self.domain_name + "/subtitles/searchbytitle", data={"query": title, "l": ""})
+            r = self.cf_requests.post(self.domain_name + "/subtitles/searchbytitle", data={"query": title, "l": ""})
             text = r.text
         except:
             text = ""
@@ -201,7 +204,7 @@ class SubsceneSubtitleService:
 
 
     def DownloadSubtitle(self, link):
-        r = requests.get(self.domain_name + link)
+        r = self.cf_requests.get(self.domain_name + link)
         p = html5lib.HTMLParser(tree=treebuilders.getTreeBuilder("dom"))
         dom_tree = p.parse(r.text)
         walker = treewalkers.getTreeWalker("dom")
@@ -231,7 +234,7 @@ class SubsceneSubtitleService:
         if href == "":
             return None
         
-        r = requests.get(self.domain_name + href)
+        r = self.cf_requests.get(self.domain_name + href)
         d = r.headers['content-disposition']
         fname = re.findall("filename=(.+)", d)
         if len(fname) > 0:

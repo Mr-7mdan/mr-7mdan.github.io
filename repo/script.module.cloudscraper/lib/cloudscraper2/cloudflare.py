@@ -70,9 +70,8 @@ class Cloudflare():
             return (
                 resp.headers.get('Server', '').startswith('cloudflare')
                 and resp.status_code in [429, 503]
-                and re.search(r'/cdn-cgi/images/trace/jsch/', resp.text, re.M | re.S)
                 and re.search(
-                    r'''<form .*?="challenge-form" action="/\S+__cf_chl_f_tk=''',
+                    r'<form .*?="challenge-form" action="/.*?__cf_chl_jschl_tk__=\S+"',
                     resp.text,
                     re.M | re.S
                 )
@@ -86,15 +85,18 @@ class Cloudflare():
     # check if the response contains new Cloudflare challenge
     # ------------------------------------------------------------------------------- #
 
-    def is_New_IUAM_Challenge(self, resp):
+    @staticmethod
+    def is_New_IUAM_Challenge(resp):
         try:
             return (
-                self.is_IUAM_Challenge(resp)
+                resp.headers.get('Server', '').startswith('cloudflare')
+                and resp.status_code in [429, 503]
                 and re.search(
-                    r'''cpo.src\s*=\s*['"]/cdn-cgi/challenge-platform/\S+orchestrate/jsch/v1''',
+                    r'cpo.src\s*=\s*"/cdn-cgi/challenge-platform/\S+orchestrate/jsch/v1',
                     resp.text,
                     re.M | re.S
                 )
+                and re.search(r'window._cf_chl_enter\s*[\(=]', resp.text, re.M | re.S)
             )
         except AttributeError:
             pass
@@ -110,10 +112,11 @@ class Cloudflare():
             return (
                 self.is_Captcha_Challenge(resp)
                 and re.search(
-                    r'''cpo.src\s*=\s*['"]/cdn-cgi/challenge-platform/\S+orchestrate/(captcha|managed)/v1''',
+                    r'cpo.src\s*=\s*"/cdn-cgi/challenge-platform/\S+orchestrate/(captcha|managed)/v1',
                     resp.text,
                     re.M | re.S
                 )
+                and re.search(r'\s*id="trk_captcha_js"', resp.text, re.M | re.S)
             )
         except AttributeError:
             pass
@@ -130,11 +133,10 @@ class Cloudflare():
             return (
                 resp.headers.get('Server', '').startswith('cloudflare')
                 and resp.status_code == 403
-                and re.search(r'/cdn-cgi/images/trace/(captcha|managed)/', resp.text, re.M | re.S)
                 and re.search(
-                    r'''<form .*?="challenge-form" action="/\S+__cf_chl_f_tk=''',
+                    r'action="/\S+__cf_chl_captcha_tk__=\S+',
                     resp.text,
-                    re.M | re.S
+                    re.M | re.DOTALL
                 )
             )
         except AttributeError:
@@ -202,7 +204,7 @@ class Cloudflare():
             formPayload = re.search(
                 r'<form (?P<form>.*?="challenge-form" '
                 r'action="(?P<challengeUUID>.*?'
-                r'__cf_chl_f_tk=\S+)"(.*?)</form>)',
+                r'__cf_chl_jschl_tk__=\S+)"(.*?)</form>)',
                 body,
                 re.M | re.DOTALL
             ).groupdict()
@@ -234,11 +236,15 @@ class Cloudflare():
         except Exception as e:
             self.cloudscraper.simpleException(
                 CloudflareIUAMError,
-                f"Unable to parse Cloudflare anti-bots page: {getattr(e, 'message', e)}"
+                "Unable to parse Cloudflare anti-bots page: {}".format(getattr(e, 'message', e))
             )
 
         return {
-            'url': f"{hostParsed.scheme}://{hostParsed.netloc}{self.unescape(formPayload['challengeUUID'])}",
+            'url': '{}://{}{}'.format(
+                hostParsed.scheme,
+                hostParsed.netloc,
+                self.unescape(formPayload['challengeUUID'])
+            ),
             'data': payload
         }
 
@@ -319,7 +325,11 @@ class Cloudflare():
         hostParsed = urlparse(url)
 
         return {
-            'url': f"{hostParsed.scheme}://{hostParsed.netloc}{self.unescape(formPayload['challengeUUID'])}",
+            'url': '{}://{}{}'.format(
+                hostParsed.scheme,
+                hostParsed.netloc,
+                self.unescape(formPayload['challengeUUID'])
+            ),
             'data': dataPayload
         }
 
@@ -433,7 +443,7 @@ class Cloudflare():
                 cloudflare_kwargs,
                 'headers',
                 {
-                    'Origin': f'{urlParsed.scheme}://{urlParsed.netloc}',
+                    'Origin': '{}://{}'.format(urlParsed.scheme, urlParsed.netloc),
                     'Referer': resp.url
                 }
             )

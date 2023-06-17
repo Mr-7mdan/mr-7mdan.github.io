@@ -17,7 +17,7 @@
             <fanart>fanart.jpg</fanart>
         </assets>
     </extension>
-</addon><addon id="script.module.cloudscraper" name="CloudScraper2" version="1.2.66" provider-name="venomous">
+</addon><addon id="script.module.cloudscraper" name="CloudScraper2" version="1.2.60" provider-name="venomous">
   <requires>
     
     <import addon="script.module.requests" />
@@ -471,7 +471,8 @@ Supports: OpenSubtitles, BSPlayer, Podnadpisi.NET, Subscene, Addic7ed
     <import addon="xbmc.python" version="3.0.0" />
     <import addon="script.module.requests" version="2.22.0+matrix.1" />
     <import addon="script.module.html5lib" version="1.0.1+matrix.2" />
-    <import addon="vfs.libarchive" version="2.0.0" /> 
+    <import addon="vfs.libarchive" version="2.0.0" />
+    <import addon="script.module.cloudscraper" version="1.2.60" /> 
   </requires>
   <extension point="xbmc.subtitle.module" library="service.py" />
   <extension point="xbmc.addon.metadata">

@@ -61,7 +61,6 @@ class captchaSolver(Captcha):
             raise CaptchaParameter("anticaptcha: Missing api_key parameter.")
 
         client = AnticaptchaClient(captchaParams.get('api_key'))
-        client.SOFT_ID = 959
 
         if captchaParams.get('proxy') and not captchaParams.get('no_proxy'):
             captchaMap = {
@@ -89,7 +88,7 @@ class captchaSolver(Captcha):
         if not hasattr(client, 'createTaskSmee'):
             raise NotImplementedError(
                 "Please upgrade 'python_anticaptcha' via pip or download it from "
-                "https://github.com/ad-m/python-anticaptcha/"
+                "https://github.com/ad-m/python-anticaptcha/tree/hcaptcha"
             )
 
         job = client.createTaskSmee(task, timeout=180)
@@ -97,7 +96,7 @@ class captchaSolver(Captcha):
         try:
             job.join(maximum_time=180)
         except (AnticaptchaException) as e:
-            raise CaptchaTimeout(f"{getattr(e, 'message', e)}")
+            raise CaptchaTimeout('{}'.format(getattr(e, 'message', e)))
 
         if 'solution' in job._last_result:
             return job.get_solution_response()
