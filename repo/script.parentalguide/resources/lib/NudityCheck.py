@@ -24,6 +24,7 @@ from bs4 import BeautifulSoup
 import time
 import datetime
 
+
 db = SqliteCache()
 
 import json
@@ -236,9 +237,10 @@ def CSMScraper(videoName,ID,Session):
         Review = None
     return Review
 
-def getIMDBID(name):
+def getIMDBID(name,year):
     k = "da6c8b4d"
-    url = "http://www.omdbapi.com/?t=" + name.strip() + "&apikey=" + k +"&plot=full&r=json"
+    url = "http://www.omdbapi.com/?t=" + name.strip() +"&y=" + year + "&apikey=" + k +"&plot=full&r=json"
+    #logger.info(url)
     res = requests.get(url).content
     json_object = json.loads(res)
 
@@ -326,7 +328,7 @@ def MovieGuideScraper(videoName,ID,Session):
         #print(Details)
 
         Review = {
-            "id": getIMDBID(videoName),
+            "id": ID,
             "title": videoName,
             "provider": "MovieGuide",
             "recommended-age": None,
@@ -398,10 +400,10 @@ def DoveFoundationScraper(videoName,ID,Session):
                 print("No results found")
                 Details = None
             
-            if getIMDBID(videoName) is None:
+            if ID is None:
                 xID = title
             else:
-                xID = getIMDBID(videoName)
+                xID = ID
                 
             Review = {
                 "id": xID,
@@ -584,7 +586,7 @@ def RaisingChildrenScraper(videoName,ID,Session):
             Details.append(CatData)
 
         Review = {
-            "id": getIMDBID(videoName),
+            "id": ID,
             "title": videoName,
             "provider": "RaisingChildren",
             "recommended-age": age,
@@ -684,10 +686,12 @@ def AddFurnitureProperties(review, provider, WindowID):
 # Main
 #########################
 if __name__ == '__main__':
-    log("ParentalGuide: Started")
+    logger.info("ParentalGuide: Started")
     starttime = time.time()
     IMDBID = None
     IMDBID = xbmc.getInfoLabel("ListItem.IMDBNumber")
+    year = xbmc.getInfoLabel("ListItem.Year")
+    logger.info("ParentalGuide: Year " + year)
     videoName = None
     isTvShow = getIsTvShow()
     s = requests.Session()
@@ -705,7 +709,7 @@ if __name__ == '__main__':
 
     if IMDBID in [None, ""]:
         logger.info("ParentalGuide: Video ID not found for %s, trying to loaded it from OMDB" % videoName)
-        IMDBID = getIMDBID(videoName)
+        IMDBID = getIMDBID(videoName, year)
         
     if IMDBID not in [None, ""]:
         log("ParentalGuide: Video detected %s" % IMDBID)
@@ -760,7 +764,7 @@ if __name__ == '__main__':
         logger.info("ParentalGuide Finished in {s}s".format(s=time.time()-starttime))
         logger.info("InfoLabel: " + xbmc.getInfoLabel("ListItem.ParentalGuide"))
     else:
-        log("ParentalGuide: Failed to detect selected video")
+        logger.info("ParentalGuide: Failed to detect selected video")
         xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ("ParentalGuide", "Failed to detect a video" , ADDON.getAddonInfo('icon')))
 
     log("ParentalGuide: Ended")

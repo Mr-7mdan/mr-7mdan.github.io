@@ -18,8 +18,9 @@ from resources.lib.viewer import DetailViewer
 from resources.lib.viewer import SummaryViewer
 from resources.lib.settings import log
 from resources.lib import imdb
-from resources.lib.settings import log
 from resources.lib.NudityCheck import getData
+from resources.lib.NudityCheck import getIMDBID
+from resources.lib.utils import logger
 
 if sys.version_info >= (2, 7):
     import json
@@ -47,7 +48,7 @@ def getIsTvShow():
     return False
 
 def runForVideo(videoName, IMDBID, isTvShow=False):
-    log("ParentalGuideCore: Video Name = %s" % videoName)
+    logger.info("ParentalGuideCore: Video Name = %s" % videoName)
     # Get the initial Source to use
     #searchSource = Settings.getDefaultSource()
 
@@ -97,7 +98,7 @@ def runforimdb(IMDBID):
                     #xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ('icon', str(xbmcgui.Window(wid).getProperty(IMDBID + '-Nicon')) , ADDON.getAddonInfo('icon')))  
                     #xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ('votes', str(xbmcgui.Window(wid).getProperty(IMDBID + '-Nvotes')) , ADDON.getAddonInfo('icon'))) 
                     xbmc.executebuiltin('Notification(%s,%s,5000,%s)' % ('Nudity : ' + str(details['review-items'][i]['cat']), str(xbmcgui.Window(wid).getProperty(IMDBID + '-NVotes') + " Votes") , str(xbmcgui.Window(wid).getProperty(IMDBID + '-NIcon')))) 
-                    # dialog = xbmcgui.Dialog()
+                    # dialog = xbmcgui.Dialogger.info()
                     # dialog.notification('Nudity : ' + str(details[i]['Cat']), str(xbmcgui.Window(wid).getProperty(IMDBID + '-Nvotes') + " Votes"), xbmcgui.NOTIFICATION_INFO, 5000)
                     # li = xbmcgui.ListItem()
                     # li.setProperty(IMDBID + '-Nvotes', (str(xMainVotes[0]) + "/" + str(xMainVotes[1])))
@@ -125,22 +126,27 @@ def runforimdb(IMDBID):
 # Main
 #########################
 if __name__ == '__main__':
-    log("ParentalGuide: Started")
-
+    logger.info("ParentalGuide: Started")
+    IMDBID = None
+    IMDBID = xbmc.getInfoLabel("ListItem.IMDBNumber")
+    year = xbmc.getInfoLabel("ListItem.Year")
+    logger.info("ParentalGuide: Year " + year)
     videoName = None
     isTvShow = getIsTvShow()
 
     # First check to see if we have a TV Show of a Movie
     if isTvShow:
         videoName = xbmc.getInfoLabel("ListItem.TVShowTitle")
-        IMDBID = xbmc.getInfoLabel("ListItem.IMDBNumber")
+        logger.info("ParentalGuide: TV Show detected %s" % videoName)
         
     # If we do not have the title yet, get the default title
     if videoName in [None, ""]:
         videoName = xbmc.getInfoLabel("ListItem.Title")
-        IMDBID = xbmc.getInfoLabel("ListItem.IMDBNumber")
-        print("ListItem.Title")
-        print("ListItem.IMDBNumber")
+        logger.info("ParentalGuide: Movie detected %s" % videoName)
+        
+    if IMDBID in [None, ""]:
+        logger.info("ParentalGuide: Video ID not found for %s, trying to loaded it from OMDB" % videoName)
+        IMDBID = getIMDBID(videoName,year)
 
     # If there is no video name available prompt for it
     if videoName in [None, ""]:
@@ -157,17 +163,17 @@ if __name__ == '__main__':
     if IMDBID not in [None, ""]:
         provider = xbmcgui.Window(10000).getProperty("SelectedProvider")
     
-        log("ParentalGuide: Video detected %s" % videoName)
-        
+        #logger.info("ParentalGuide: Video detected %s" % videoName)
+        #xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ("ParentalGuide", "Fetching Guide data for " + videoName + "/" + IMDBID, ADDON.getAddonInfo('icon')))
         runForVideo(videoName, IMDBID, isTvShow)
         #runforimdb(IMDBID)
-        print("ListItem.Title")
-        print("ListItem.IMDBNumber")
+        #print("ListItem.Title")
+        #print("ListItem.IMDBNumber")
     else:
-        log("ParentalGuide: Failed to detect media")
-        xbmcgui.Dialog().ok(ADDON.getLocalizedString(32001), ADDON.getLocalizedString(32011))
+        logger.info("ParentalGuide: Failed to detect media")
+        xbmcgui.Dialogger.info().ok(ADDON.getLocalizedString(32001), ADDON.getLocalizedString(32011))
 
-    log("ParentalGuide: Ended")
+    logger.info("ParentalGuide: Ended")
 
 #########################
 # Main
