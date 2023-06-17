@@ -6,6 +6,8 @@ import struct
 import hashlib
 import re
 import threading
+import requests
+import json
 
 from .kodi import xbmc, xbmcvfs, get_bool_setting
 from . import logger, cache, utils, request
