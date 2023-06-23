@@ -259,7 +259,9 @@
             <param name="label" value="ParentalGuide"/>
             <param name="icon" value="special://home/addons/script.parentalguide/icon-m.png"/>
             <visible>true</visible>
+            <!-- <onclick condition="String.IsEmpty(ListItem.TvShowTitle) + !String.IsEmpty(ListItem.Title)+ !String.IsEmpty(ListItem.IMDBNumber)">RunScript(special://home/addons/script.parentalguide/default.py,)</onclick> -->
             <onclick>RunScript(special://home/addons/script.parentalguide/default.py,)</onclick>
+            <!-- <onclick condition="!String.IsEmpty(ListItem.TvShowTitle) + String.IsEmpty(ListItem.Title)">RunScript(special://home/addons/script.parentalguide/default.py,)</onclick> -->
             <include content="OSD_Button_HintLabel">
                 <param name="label">ParentalGuide</param>
             </include>

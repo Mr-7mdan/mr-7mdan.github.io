@@ -494,7 +494,7 @@ Version 1.1.*
         <icon>logo.png</icon>
     </assets>
   </extension>
-</addon><addon id="skin.arctic.horizon.2-Mod" name="Arctic Horizon 2 Mod" provider-name="jurialmunkey" version="0.8.25">
+</addon><addon id="skin.arctic.horizon.2-Mod" name="Arctic Horizon 2" provider-name="jurialmunkey" version="0.8.251">
     <requires>
         <import addon="xbmc.gui" version="5.15.0" />
         <import addon="script.skinshortcuts" version="0.4.0" />
