@@ -1342,7 +1342,32 @@
                     <param name="is_autohide">Skin.HasSetting(Ratings.AutoHide)</param>
                     <visible>true</visible>
                 </include>
-
+                <!-- Provider Icon -->
+                <include content="Info_Ratings_Item">
+                    <param name="include_condition">!Skin.HasSetting(Ratings.DisableIMDb)</param>
+                    <param name="colordiffuse">$PARAM[colordiffuse]</param>
+                    <param name="icon">$INFO[Window(home).Property(ParentPreviews-Icon)]</param>
+                    <param name="icon_top">0</param>
+                    <param name="icon_width">64</param>
+                    <param name="is_updating">False</param>
+                    <param name="is_autohide">Skin.HasSetting(Ratings.AutoHide)</param>
+                    <visible>true</visible>
+                </include>
+                <!-- Provider Data -->
+                <include content="Info_Ratings_Item">
+                    <param name="include_condition">!Skin.HasSetting(Ratings.DisableIMDb)</param>
+                    <param name="colordiffuse">$PARAM[colordiffuse]</param>
+                    <param name="icon">$INFO[Window(home).Property(ParentPreviews-NIcon)]</param>
+                    <param name="icon_top">2</param>
+                    <param name="icon_height">28</param>
+                    <param name="icon_width">14</param>
+                    <param name="label">$INFO[Window(home).Property(ParentPreviews-NRate)]   </param>
+                    <param name="label_fallback">           </param>
+                    <param name="is_varlabel">True</param>
+                    <param name="is_updating">False</param>
+                    <param name="is_autohide">Skin.HasSetting(Ratings.AutoHide)</param>
+                    <visible>true</visible>
+                </include>
             </control>
         </definition>
     </include>

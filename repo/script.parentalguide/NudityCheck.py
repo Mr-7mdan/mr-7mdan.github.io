@@ -71,6 +71,8 @@ def ProvidersRouter(videoName,ID,Session, Provider):
         result = DoveFoundationScraper(videoName,ID,Session)
     if Provider == 'KidsInMind':
         result = KidsInMindScraper(videoName,ID,Session)
+    if Provider == 'ParentPreviews':
+        result = ParentPreviewsScraper(videoName,ID,Session)
     return result
         
 def getData(videoName, ID, Session, wid, Provider, order):
@@ -607,10 +609,85 @@ def RaisingChildrenScraper(videoName,ID,Session):
         }
     else:
         Review = None
-        log("ParentalGuide [RaisingChildren] : Invalid Response")
+        logger.info("ParentalGuide [RaisingChildren] : Invalid Response")
     return Review
 
+def ParentPreviewsScraper(videoName,ID,Session):
+    strName = videoName.replace(":", "").replace(" ","-")
+    url = 'https://parentpreviews.com/movie-reviews/' + strName
+    r = Session.get(url)
+    Cats = {
+        "A": "None",
+        "B": "Mild",
+        "C": "Moderate",
+        "D": "Severe"
+    }
     
+    Scores = {
+        "A": 0,
+        "B": 1,
+        "C": 3,
+        "D": 4
+    }
+    
+    NamesMap = {
+        "Sexual Content" : "Sex & Nudity",
+        "Violence": "Violence",
+        "Profanity":"Language",
+        "Substance Use":"Smoking, Alchohol & Drugs"
+    }
+
+    Details, CatData, Reviews, cats = [] ,[], [] ,[]
+    Review = {}
+
+    namePattern = re.compile(r'<b>(.*?): ?<\/b>(.*?)[\n]')
+
+    if '200' in str(r):
+        Soup = BeautifulSoup(r.text, "html.parser")
+        res = Soup.find("a", {"href":"#content-details"})
+        blocks = res.findAll("div",{"class":"criteria_row theme_field"})
+        DescSoup = Soup#.find("div",{"class":"post_text_area"})
+        Desc = re.findall(namePattern,  str(DescSoup))
+
+        for item in Desc:
+            Review.update({item[0] : item[1]})
+
+        for block in blocks:
+            score = block.find("span", {"class":"criteria_mark theme_accent_bg"}).text.replace("-","").strip()
+
+            try:
+                if Review[block.span.text.strip()]:
+                    x = Review[block.span.text.strip()]
+                else:
+                    x = ''
+            except:
+                x = ''
+                pass
+
+            CatData = {
+                "name" : NamesMap[block.span.text],
+                "score": Scores[block.find("span", {"class":"criteria_mark theme_accent_bg"}).text.replace("-","").strip()],
+                "description": x.replace("<p>","").replace("<br/>","").replace("</br>","").replace("</p>","").replace("<b>","").replace("</b>","").replace("<p>","").strip(),
+                "cat": Cats[score],
+                "votes": None
+                }
+
+            Details.append(CatData)
+
+        Review = {
+            "id": ID,
+            "title": videoName,
+            "provider": "ParentPreviews",
+            "recommended-age": '',
+            "review-items": Details,
+            "review-link": url,
+        }
+    else:
+        Review = None
+        logger.info("ParentalGuide [ParentPreviews] : Invalid Response")
+    return Review
+
+
 def AddXMLProperties(review, WindowID):    
     i = 0
     
@@ -665,7 +742,7 @@ def AddFurnitureProperties(review, provider, WindowID):
             if provider in ["CSM","RaisingChildren"]:
                 WID.setProperty(Suffix+'-Age', Suffix+ ":"+review['recommended-age'])
                 
-            if provider in ["KidsInMind","IMDB","RaisingChildren","MovieGuide","DoveFoundation"]:
+            if provider in ["KidsInMind","IMDB","RaisingChildren","MovieGuide","DoveFoundation","ParentPreviews"]:
                 for entry in review['review-items']:
                     if entry['name'] in ["Nudity","Sex & Nudity"]:
                         WID.setProperty(Suffix+'-toggle', "true")
@@ -752,6 +829,11 @@ if __name__ == '__main__':
             ProvidersList.append("DoveFoundation")
             Threads.append(Thread(target = getData(videoName, IMDBID, s, wid, "DoveFoundation", order)))
             Threads[order].start()
+        if ADDON.getSetting("ParentPreviewsProvider")== "true":
+            order = order +1 
+            ProvidersList.append("ParentPreviews")
+            Threads.append(Thread(target = getData(videoName, IMDBID, s, wid, "ParentPreviews", order)))
+            Threads[order].start()
         if ADDON.getSetting("RaisingChildrenProvider")== "true":
             order = order +1 
             ProvidersList.append("RaisingChildren")
@@ -762,8 +844,7 @@ if __name__ == '__main__':
             ProvidersList.append("CSM")
             Threads.append(Thread(target = getData(videoName, IMDBID, s, wid, "CSM", order)))
             Threads[order].start()
-        
-            
+
             
         for i in range(0,len(Threads)):
             Threads[i].join()

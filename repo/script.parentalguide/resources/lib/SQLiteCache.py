@@ -55,6 +55,7 @@ class SqliteCache:
         ADDON = xbmcaddon.Addon(id='script.parentalguide')
         temp_dir = xbmcvfs.translatePath('special://temp')
         temp_dir = ADDON.getAddonInfo('path')
+        logger.info('temp dir is ' + temp_dir)
         cache_dir = os.path.join(temp_dir, 'cache', ADDON.getAddonInfo('id'))
         if not xbmcvfs.exists(cache_dir):
             xbmcvfs.mkdir(cache_dir)
@@ -261,7 +262,7 @@ class SqliteCache:
 
 # allow this module to be used to clear the cache
 if __name__ == '__main__':
-
+    logger.info('ParentalGuide Cache Initiated')
     # check args
     if len(sys.argv) != 3 or sys.argv[1] != 'clear':
         print('[!] Error: You have to specify the clear with `python %s clear <path to cache.sqlite>`' % sys.argv[0])
