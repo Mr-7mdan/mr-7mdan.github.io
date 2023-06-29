@@ -473,7 +473,8 @@ def KidsInMindScraper(videoName,ID,Session):
         sResults = res.findAll("a")
 
         for sRes in sResults:
-            sURLs.append(sRes["href"])
+            if 'http' in sRes["href"]:
+                sURLs.append(sRes["href"])
             
         NoRes = re.compile("Nothing matches your search term").findall(str(res))
 
