@@ -478,7 +478,7 @@ def KidsInMindScraper(videoName,ID,Session):
         NoRes = re.compile("Nothing matches your search term").findall(str(res))
 
         if len(NoRes) ==0:
-            for k in range(0,len(sURLs)-1):
+            for k in range(0,len(sURLs)):
                 ## Sraping 1st result
                 resURL = sURLs[k]
                 response = Session.get(resURL)
@@ -546,7 +546,7 @@ def KidsInMindScraper(videoName,ID,Session):
                                                 "votes": None
                                             }
                                         Details.append(CatData)
-                            i = i +1
+                            #i = i +1
                     #print(Details)
 
                     Review = {
@@ -566,6 +566,7 @@ def KidsInMindScraper(videoName,ID,Session):
             Review = None
     else:
         Review = None
+        
     return Review
   
 def RaisingChildrenScraper(videoName,ID,Session):
