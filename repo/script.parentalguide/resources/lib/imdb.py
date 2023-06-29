@@ -129,10 +129,10 @@ def imdb_parentsguide(tid):
             scenes = get_scenes(section)
             frightening['spoilers'] = scenes
     advisory = list()
-    advisory.append(nudity)
-    advisory.append(violence)
-    advisory.append(profanity)
-    advisory.append(alcohol)
-    advisory.append(frightening)
+    if nudity['cat'] not in [None,""]: advisory.append(nudity)
+    if violence['cat'] not in [None,""]: advisory.append(violence)
+    if profanity['cat'] not in [None,""]: advisory.append(profanity)
+    if alcohol['cat'] not in [None,""]: advisory.append(alcohol)
+    if frightening['cat'] not in [None,""]: advisory.append(frightening)
 
     return advisory

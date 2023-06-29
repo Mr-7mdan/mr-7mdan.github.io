@@ -56,6 +56,7 @@ def CleanStr(txt):
 
 def IMDB_Scraper(videoName, IMDBID, session):
     dataScraper = IMDBScraper.parentsguide(IMDBID, videoName)  
+    
     return dataScraper
     
 def ProvidersRouter(videoName,ID,Session, Provider):
@@ -94,7 +95,7 @@ def getData(videoName, ID, Session, wid, Provider, order):
     except:
         logger.info("Failed to fetch from cache or cache not found")
         show_info = None
-        
+                
     if show_info is None: ##if not in cache
         logger.info('Loading from scratch, no cache found for [%s][%s]' % (videoName, Provider))
         show_info = ProvidersRouter(videoName,ID,Session, Provider)   
@@ -128,8 +129,6 @@ def getData(videoName, ID, Session, wid, Provider, order):
                 
             db.set(show_info, exp)
             logger.info("Added New Data for "+videoName + "[" + Provider +"] to cache sucessfully" )
-            # except:
-                # pass
     else:
         logger.info("Loading from cache : Cache found for " +videoName + "[" + Provider +"]\n"+ str(show_info))
         AddXMLProperties(show_info,wid)
@@ -373,7 +372,9 @@ def DoveFoundationScraper(videoName,ID,Session):
         0: "None",
         1: "Mild",
         2: "Moderate",
-        3: "Severe"
+        3: "Moderate",
+        4: "Severe",
+        5: "Severe"
     }
     Details, CatData = [], []
 
@@ -389,24 +390,31 @@ def DoveFoundationScraper(videoName,ID,Session):
                 response = Session.get(resURL)
                 soup = BeautifulSoup(response.text, "html.parser")
                 title = soup.title.text.replace("- Dove.org","").strip()
+                
+                checktitle = title.replace(":","").replace(" ","-")
+                checkvideoName = videoName.replace(":","").replace(" ","-")
 
-                table = soup.find("div", {"class":"matrix-categories"})
-                items = table.findAll("span",{"class":"item-text"})
-                sections = table.findAll("span",{"class":"categories-item"})
-                descs = soup.find("div",{"class": "main-content details-wrap"})
-                for i in range(0,len(items)):
-                    try:
-                        IDs = sections[i]["class"][1].replace("categories-item--","").strip()
-                        CatData = {
-                            "name" : items[i].text.strip(),
-                            "score": IDs,
-                            "description": getDoveDesc(descs, items[i].text.strip()),
-                            "cat": Cats[int(IDs)],
-                            "votes": None
-                        }
-                    except:
-                        pass
-                    Details.append(CatData)
+                if checktitle == checkvideoName:
+                    table = soup.find("div", {"class":"matrix-categories"})
+                    items = table.findAll("span",{"class":"item-text"})
+                    sections = table.findAll("span",{"class":"categories-item"})
+                    descs = soup.find("div",{"class": "main-content details-wrap"})
+                    for i in range(0,len(items)):
+                        try:
+                            IDs = sections[i]["class"][1].replace("categories-item--","").strip()
+                            CatData = {
+                                "name" : items[i].text.strip(),
+                                "score": IDs,
+                                "description": getDoveDesc(descs, items[i].text.strip()),
+                                "cat": Cats[int(IDs)],
+                                "votes": None
+                            }
+                        except:
+                            pass
+                        Details.append(CatData)
+                else:
+                    print("No results found")
+                    Details = None
             else:
                 print("No results found")
                 Details = None
@@ -418,7 +426,7 @@ def DoveFoundationScraper(videoName,ID,Session):
                 
             Review = {
                 "id": xID,
-                "title": videoName,
+                "title": title,
                 "provider": "DoveFoundation",
                 "recommended-age": None,
                 "review-items": Details,
@@ -653,7 +661,7 @@ def ParentPreviewsScraper(videoName,ID,Session):
             Review.update({item[0] : item[1]})
 
         for block in blocks:
-            score = block.find("span", {"class":"criteria_mark theme_accent_bg"}).text.replace("-","").strip()
+            score = block.find("span", {"class":"criteria_mark theme_accent_bg"}).text.replace("-","").replace("+","").strip()
 
             try:
                 if Review[block.span.text.strip()]:
@@ -666,7 +674,7 @@ def ParentPreviewsScraper(videoName,ID,Session):
 
             CatData = {
                 "name" : NamesMap[block.span.text],
-                "score": Scores[block.find("span", {"class":"criteria_mark theme_accent_bg"}).text.replace("-","").strip()],
+                "score": Scores[block.find("span", {"class":"criteria_mark theme_accent_bg"}).text.replace("-","").replace("+","").strip()],
                 "description": x.replace("<p>","").replace("<br/>","").replace("</br>","").replace("</p>","").replace("<b>","").replace("</b>","").replace("<p>","").strip(),
                 "cat": Cats[score],
                 "votes": None
@@ -750,8 +758,11 @@ def AddFurnitureProperties(review, provider, WindowID):
                         WID.setProperty(provider+'-NIcon', "special://home/addons/script.parentalguide/resources/skins/Default/media/tags/"+ entry['cat'] +".png")
                         #"special://home/addons/script.parentalguide/resources/skins/Default/media/providers/" + provider + ".png")
                         if provider == "IMDB":
-                            xMainVotes = [int(s) for s in re.findall(r'\b\d+\b', entry['votes'])]
-                            WID.setProperty(Suffix+'-NVotes', " " + (str(entry['cat']) + " (" + str(xMainVotes[0]) + "/" + str(xMainVotes[1]) + ")"))
+                            try:
+                                xMainVotes = [int(s) for s in re.findall(r'\b\d+\b', entry['votes'])]
+                                WID.setProperty(Suffix+'-NVotes', " " + (str(entry['cat']) + " (" + str(xMainVotes[0]) + "/" + str(xMainVotes[1]) + ")"))
+                            except:
+                                pass
                             #logger.info("Property Name = " + Suffix+'-NVotes' + ", Val = " + WID.getProperty(Suffix+'-NVotes'))
                             #Notify(Suffix+'-NVotes',WID.getProperty(Suffix+'-NVotes'))
                     if WID.getProperty(Suffix+'-NRate') in [None,""]:      
