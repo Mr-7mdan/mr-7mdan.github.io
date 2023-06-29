@@ -465,89 +465,103 @@ def KidsInMindScraper(videoName,ID,Session):
     AcceptedNames = ['SEX/NUDITY','VIOLENCE/GORE','LANGUAGE','SUBSTANCE USE','DISCUSSION TOPICS','MESSAGE']
     Details = []
     CatData = []
-
+    sURLs = []
     if '200' in str(r):
         sSoup = BeautifulSoup(r.text, "html.parser")
         res = sSoup.find("div", {"class":"facetwp-template"})
-        resURL = res.find("a")["href"]
+        #resURL = res.find("a")["href"]
+        sResults = res.findAll("a")
 
+        for sRes in sResults:
+            sURLs.append(sRes["href"])
+            
         NoRes = re.compile("Nothing matches your search term").findall(str(res))
 
         if len(NoRes) ==0:
-            ## Sraping 1st rewsult
-            response = Session.get(resURL)
-            print(resURL)
-            soup = BeautifulSoup(response.text, "html.parser")
-            #soup = BeautifulSoup(r.content,"html.parser")
-            
-            sPattern3 = "href.*imdb.*title.(.*?)\/"
-            imdbid = str(re.compile(sPattern3).findall(str(soup)))
-            
-            if ID in imdbid:
-                try:    
-                    title = soup.find("div",{"class":"title"}).h1.text.split("|")[0].strip()
-                except:
-                    title = videoName
+            for k in range(0,len(sURLs)-1):
+                ## Sraping 1st result
+                resURL = sURLs[k]
+                response = Session.get(resURL)
+                logger.info("KidsInMind trying .." + resURL)
+                soup = BeautifulSoup(response.text, "html.parser")
                 
+                sPattern3 = "href.*imdb.*title.(.*?)\/"
+                imdbid = str(re.compile(sPattern3).findall(str(soup)))
                 
-                ratingstr = soup.title.string#.split("|")[0].split("-")[1].strip().split(".")[0] + "/10"
-                sPattern =  "(\d)\.(\d)\.(\d)"
-                aMatches = re.compile(sPattern).findall(ratingstr)
-                
-                try:
-                    NudeRating = round(int(aMatches[0][0])/2)
-                except:
-                    NudeRating = 0
-                  
-                #print(title)
-                blocks = soup.findAll("div",{"class":"et_pb_text_inner"})
-                #print(blocks)
-                i=1
-                for block in blocks:
-                    if block.p is not None and i <=7:
-                        #print(block.p.text)
-                        items = block.findAll("h2")
-                        #print(str(items))
+                if ID in imdbid:
+                    logger.info("KidsInMind Found a match in the seach results .." + resURL)
+                    try:    
+                        title = soup.find("div",{"class":"title"}).h1.text.split("|")[0].strip()
+                    except:
+                        title = videoName
+                    
+                    
+                    ratingstr = soup.title.string#.split("|")[0].split("-")[1].strip().split(".")[0] + "/10"
+                    sPattern =  "(\d)\.(\d)\.(\d)"
+                    aMatches = re.compile(sPattern).findall(ratingstr)
+                    
+                    try:
+                        NudeRating = round(int(aMatches[0][0])/2)
+                    except:
+                        NudeRating = 0
+                      
+                    #print(title)
+                    blocks = soup.findAll("div",{"class":"et_pb_text_inner"})
+                    #print(blocks)
+                    i=1
+                    for block in blocks:
+                        if block.p is not None and i <=7:
+                            #print("New Block ............")
+                            #print(block.p.text)
+                            items = block.findAll("h2")
+                            if len(items) < 1:
+                                items = block.findAll("span")
+                            #print(str(items))
 
-                        for item in items:
-                            #print("Processing : " + item.text + "from " + str(len(items)))
-                            xitem = item.text.replace(title,"").strip()
-                            itemtxt = ''.join((x for x in xitem if not x.isdigit())).strip()
-                            if itemtxt in AcceptedNames:
-                                #print(xitem)
-                                #print(itemtxt)
+                            for item in items:
+                                #print("Processing : " + item.text + "from " + str(len(items)))
+                                xitem = item.text.replace(title,"").strip()
+                                itemtxt = ''.join((x for x in xitem if not x.isdigit())).strip()
+                                if itemtxt in AcceptedNames:
+                                    #print(xitem)
+                                    #print(itemtxt)
 
-                                for x in xitem:
-                                    if x.isdigit():
-                                        ratetxt= int(''.join(x))
-                                    else:
-                                        ratetxt = 0
-                                #print(ratetxt)
-                                #print(NamesMap[itemtxt])
-                                parent = item.parent
-                                #print(parent.p.text)
-                                if block:
-                                    CatData = {
-                                            "name" : NamesMap[itemtxt],
-                                            "score": int(ratetxt)/2,
-                                            "description": CleanStr(parent.p.text.strip()),
-                                            "cat": Cats[ratetxt],
-                                            "votes": None
-                                        }
-                                    Details.append(CatData)
-                        i = i +1
-                #print(Details)
+                                    for x in xitem:
+                                        if x.isdigit():
+                                            ratetxt= int(''.join(x))
+                                        else:
+                                            ratetxt = 0
+                                    parent = item.parent
+                                    try:
+                                        desc = parent.p.text
+                                    except:
+                                        desc = parent.text
 
-                Review = {
-                    "id": imdbid.replace("['","").replace("']",""),
-                    "title": videoName,
-                    "provider": "KidsInMind",
-                    "recommended-age": None,
-                    "review-items": Details,
-                    "review-link": resURL,
-                }
-            else:
-                Review = None
+                                    if block:
+                                        CatData = {
+                                                "name" : NamesMap[itemtxt],
+                                                "score": int(ratetxt)/2,
+                                                "description": desc,
+                                                "cat": Cats[ratetxt],
+                                                "votes": None
+                                            }
+                                        Details.append(CatData)
+                            i = i +1
+                    #print(Details)
+
+                    Review = {
+                        "id": imdbid.replace("['","").replace("']",""),
+                        "title": videoName,
+                        "provider": "KidsInMind",
+                        "recommended-age": None,
+                        "review-items": Details,
+                        "review-link": resURL,
+                    }
+                    break
+                else:
+                    ## if not the same movie in this search result
+                    Review = None
+                    k = k + 1
         else:
             Review = None
     else:
@@ -653,43 +667,46 @@ def ParentPreviewsScraper(videoName,ID,Session):
     if '200' in str(r):
         Soup = BeautifulSoup(r.text, "html.parser")
         res = Soup.find("a", {"href":"#content-details"})
-        blocks = res.findAll("div",{"class":"criteria_row theme_field"})
-        DescSoup = Soup#.find("div",{"class":"post_text_area"})
-        Desc = re.findall(namePattern,  str(DescSoup))
+        if res is not None:
+            blocks = res.findAll("div",{"class":"criteria_row theme_field"})
+            DescSoup = Soup#.find("div",{"class":"post_text_area"})
+            Desc = re.findall(namePattern,  str(DescSoup))
 
-        for item in Desc:
-            Review.update({item[0] : item[1]})
+            for item in Desc:
+                Review.update({item[0] : item[1]})
 
-        for block in blocks:
-            score = block.find("span", {"class":"criteria_mark theme_accent_bg"}).text.replace("-","").replace("+","").strip()
+            for block in blocks:
+                score = block.find("span", {"class":"criteria_mark theme_accent_bg"}).text.replace("-","").replace("+","").strip()
 
-            try:
-                if Review[block.span.text.strip()]:
-                    x = Review[block.span.text.strip()]
-                else:
+                try:
+                    if Review[block.span.text.strip()]:
+                        x = Review[block.span.text.strip()]
+                    else:
+                        x = ''
+                except:
                     x = ''
-            except:
-                x = ''
-                pass
+                    pass
 
-            CatData = {
-                "name" : NamesMap[block.span.text],
-                "score": Scores[block.find("span", {"class":"criteria_mark theme_accent_bg"}).text.replace("-","").replace("+","").strip()],
-                "description": x.replace("<p>","").replace("<br/>","").replace("</br>","").replace("</p>","").replace("<b>","").replace("</b>","").replace("<p>","").strip(),
-                "cat": Cats[score],
-                "votes": None
-                }
+                CatData = {
+                    "name" : NamesMap[block.span.text],
+                    "score": Scores[block.find("span", {"class":"criteria_mark theme_accent_bg"}).text.replace("-","").replace("+","").strip()],
+                    "description": x.replace("<p>","").replace("<br/>","").replace("</br>","").replace("</p>","").replace("<b>","").replace("</b>","").replace("<p>","").strip(),
+                    "cat": Cats[score],
+                    "votes": None
+                    }
 
-            Details.append(CatData)
+                Details.append(CatData)
 
-        Review = {
-            "id": ID,
-            "title": videoName,
-            "provider": "ParentPreviews",
-            "recommended-age": '',
-            "review-items": Details,
-            "review-link": url,
-        }
+            Review = {
+                "id": ID,
+                "title": videoName,
+                "provider": "ParentPreviews",
+                "recommended-age": '',
+                "review-items": Details,
+                "review-link": url,
+            }
+        else:
+            Review = None
     else:
         Review = None
         logger.info("ParentalGuide [ParentPreviews] : Invalid Response")
