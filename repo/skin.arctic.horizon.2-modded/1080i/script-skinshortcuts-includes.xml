@@ -503,22 +503,6 @@
 			<property name="group">powermenu</property>
 			<property name="isSubmenu">True</property>
 			</item>
-		<item id="7">
-			<property name="id">$NUMBER[7]</property>
-			<property name="mainmenuid">6</property>
-			<label>reload skin</label>
-			<label2>Custom item</label2>
-			<icon>special://skin/extras/icons/shortcut.png</icon>
-			<thumb />
-			<property name="labelID">reloadskin</property>
-			<property name="defaultID" />
-			<onclick>ReloadSkin()</onclick>
-			<property name="path">ReloadSkin()</property>
-			<property name="list">ReloadSkin()</property>
-			<visible>[String.IsEqual(System.ProfileName,Master user)] + String.IsEqual(Container(300).ListItem.Property(submenuVisibility),powermenu)</visible>
-			<property name="group">powermenu</property>
-			<property name="isSubmenu">True</property>
-			</item>
 		<item id="1">
 			<property name="id">$NUMBER[1]</property>
 			<property name="mainmenuid">7</property>
@@ -721,18 +705,18 @@
 		<item id="1">
 			<property name="id">$NUMBER[1]</property>
 			<property name="mainmenuid">1</property>
-			<label>Top Rated</label>
+			<label>Popular</label>
 			<label2>Video Add-On</label2>
 			<icon>special://skin/extras/icons/shortcut.png</icon>
 			<thumb>thumb</thumb>
-			<property name="labelID">toprated</property>
+			<property name="labelID">popular</property>
 			<property name="defaultID" />
-			<property name="translatedPath">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=top_rated&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
+			<property name="translatedPath">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=popular&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
 			<property name="widgetTarget">videos</property>
-			<property name="widgetInfo">Plot</property>
-			<onclick>ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=top_rated&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</onclick>
-			<property name="path">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=top_rated&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
-			<property name="list">plugin://plugin.video.themoviedb.helper/?info=top_rated&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</property>
+			<property name="widgetInfo">Full</property>
+			<onclick>ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=popular&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</onclick>
+			<property name="path">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=popular&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
+			<property name="list">plugin://plugin.video.themoviedb.helper/?info=popular&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</property>
 			<visible>[String.IsEqual(System.ProfileName,Master user)] + String.IsEqual(Container(300).ListItem.Property(submenuVisibility),movies)</visible>
 			<property name="group">movies.1</property>
 			<property name="isSubmenu">True</property>
@@ -740,36 +724,18 @@
 		<item id="2">
 			<property name="id">$NUMBER[2]</property>
 			<property name="mainmenuid">1</property>
-			<label>Your Lists</label>
+			<label>Trending Today</label>
 			<label2>Video Add-On</label2>
 			<icon>special://skin/extras/icons/shortcut.png</icon>
 			<thumb>thumb</thumb>
-			<property name="labelID">yourlists</property>
+			<property name="labelID">trendingtoday</property>
 			<property name="defaultID" />
-			<property name="translatedPath">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=trakt_mylists&amp;tmdb_type=both&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
+			<property name="translatedPath">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=trending_day&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
 			<property name="widgetTarget">videos</property>
-			<property name="widgetAspect">Button</property>
-			<onclick>ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=trakt_mylists&amp;tmdb_type=both&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</onclick>
-			<property name="path">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=trakt_mylists&amp;tmdb_type=both&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
-			<property name="list">plugin://plugin.video.themoviedb.helper/?info=trakt_mylists&amp;tmdb_type=both&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</property>
-			<visible>[String.IsEqual(System.ProfileName,Master user)] + String.IsEqual(Container(300).ListItem.Property(submenuVisibility),movies)</visible>
-			<property name="group">movies.1</property>
-			<property name="isSubmenu">True</property>
-			</item>
-		<item id="3">
-			<property name="id">$NUMBER[3]</property>
-			<property name="mainmenuid">1</property>
-			<label>$LOCALIZE[31371]</label>
-			<label2 />
-			<icon>special://skin/extras/icons/shortcut.png</icon>
-			<thumb />
-			<property name="labelID">31371</property>
-			<property name="defaultID">31371</property>
-			<property name="translatedPath">Stacked</property>
 			<property name="widgetInfo">Full</property>
-			<onclick>Stacked</onclick>
-			<property name="path">Stacked</property>
-			<property name="list">Stacked</property>
+			<onclick>ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=trending_day&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</onclick>
+			<property name="path">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=trending_day&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
+			<property name="list">plugin://plugin.video.themoviedb.helper/?info=trending_day&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</property>
 			<visible>[String.IsEqual(System.ProfileName,Master user)] + String.IsEqual(Container(300).ListItem.Property(submenuVisibility),movies)</visible>
 			<property name="group">movies.1</property>
 			<property name="isSubmenu">True</property>
@@ -984,18 +950,18 @@
 		<item id="1">
 			<property name="id">$NUMBER[1]</property>
 			<property name="mainmenuid">1</property>
-			<label>Top Rated</label>
+			<label>Popular</label>
 			<label2>Video Add-On</label2>
 			<icon>special://skin/extras/icons/shortcut.png</icon>
 			<thumb>thumb</thumb>
-			<property name="labelID">toprated</property>
+			<property name="labelID">popular</property>
 			<property name="defaultID" />
-			<property name="translatedPath">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=top_rated&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
+			<property name="translatedPath">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=popular&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
 			<property name="widgetTarget">videos</property>
-			<property name="widgetInfo">Plot</property>
-			<onclick>ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=top_rated&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</onclick>
-			<property name="path">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=top_rated&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
-			<property name="list">plugin://plugin.video.themoviedb.helper/?info=top_rated&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</property>
+			<property name="widgetInfo">Full</property>
+			<onclick>ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=popular&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</onclick>
+			<property name="path">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=popular&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
+			<property name="list">plugin://plugin.video.themoviedb.helper/?info=popular&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</property>
 			<visible>String.IsEqual(System.ProfileName,Master user)</visible>
 			<property name="group">movies.1</property>
 			<property name="isSubmenu">True</property>
@@ -1003,36 +969,18 @@
 		<item id="2">
 			<property name="id">$NUMBER[2]</property>
 			<property name="mainmenuid">1</property>
-			<label>Your Lists</label>
+			<label>Trending Today</label>
 			<label2>Video Add-On</label2>
 			<icon>special://skin/extras/icons/shortcut.png</icon>
 			<thumb>thumb</thumb>
-			<property name="labelID">yourlists</property>
+			<property name="labelID">trendingtoday</property>
 			<property name="defaultID" />
-			<property name="translatedPath">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=trakt_mylists&amp;tmdb_type=both&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
+			<property name="translatedPath">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=trending_day&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
 			<property name="widgetTarget">videos</property>
-			<property name="widgetAspect">Button</property>
-			<onclick>ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=trakt_mylists&amp;tmdb_type=both&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</onclick>
-			<property name="path">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=trakt_mylists&amp;tmdb_type=both&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
-			<property name="list">plugin://plugin.video.themoviedb.helper/?info=trakt_mylists&amp;tmdb_type=both&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</property>
-			<visible>String.IsEqual(System.ProfileName,Master user)</visible>
-			<property name="group">movies.1</property>
-			<property name="isSubmenu">True</property>
-			</item>
-		<item id="3">
-			<property name="id">$NUMBER[3]</property>
-			<property name="mainmenuid">1</property>
-			<label>$LOCALIZE[31371]</label>
-			<label2 />
-			<icon>special://skin/extras/icons/shortcut.png</icon>
-			<thumb />
-			<property name="labelID">31371</property>
-			<property name="defaultID">31371</property>
-			<property name="translatedPath">Stacked</property>
 			<property name="widgetInfo">Full</property>
-			<onclick>Stacked</onclick>
-			<property name="path">Stacked</property>
-			<property name="list">Stacked</property>
+			<onclick>ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=trending_day&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</onclick>
+			<property name="path">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=trending_day&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
+			<property name="list">plugin://plugin.video.themoviedb.helper/?info=trending_day&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</property>
 			<visible>String.IsEqual(System.ProfileName,Master user)</visible>
 			<property name="group">movies.1</property>
 			<property name="isSubmenu">True</property>
@@ -1042,18 +990,18 @@
 		<item id="1">
 			<property name="id">$NUMBER[1]</property>
 			<property name="mainmenuid">1</property>
-			<label>Top Rated</label>
+			<label>Popular</label>
 			<label2>Video Add-On</label2>
 			<icon>special://skin/extras/icons/shortcut.png</icon>
 			<thumb>thumb</thumb>
-			<property name="labelID">toprated</property>
+			<property name="labelID">popular</property>
 			<property name="defaultID" />
-			<property name="translatedPath">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=top_rated&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
+			<property name="translatedPath">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=popular&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
 			<property name="widgetTarget">videos</property>
-			<property name="widgetInfo">Plot</property>
-			<onclick>ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=top_rated&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</onclick>
-			<property name="path">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=top_rated&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
-			<property name="list">plugin://plugin.video.themoviedb.helper/?info=top_rated&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</property>
+			<property name="widgetInfo">Full</property>
+			<onclick>ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=popular&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</onclick>
+			<property name="path">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=popular&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
+			<property name="list">plugin://plugin.video.themoviedb.helper/?info=popular&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</property>
 			<visible>[String.IsEqual(System.ProfileName,Master user)] + String.IsEqual(Window(10000).Property(submenuVisibility),movies)</visible>
 			<property name="group">movies.1</property>
 			<property name="isSubmenu">True</property>
@@ -1061,36 +1009,18 @@
 		<item id="2">
 			<property name="id">$NUMBER[2]</property>
 			<property name="mainmenuid">1</property>
-			<label>Your Lists</label>
+			<label>Trending Today</label>
 			<label2>Video Add-On</label2>
 			<icon>special://skin/extras/icons/shortcut.png</icon>
 			<thumb>thumb</thumb>
-			<property name="labelID">yourlists</property>
+			<property name="labelID">trendingtoday</property>
 			<property name="defaultID" />
-			<property name="translatedPath">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=trakt_mylists&amp;tmdb_type=both&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
+			<property name="translatedPath">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=trending_day&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
 			<property name="widgetTarget">videos</property>
-			<property name="widgetAspect">Button</property>
-			<onclick>ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=trakt_mylists&amp;tmdb_type=both&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</onclick>
-			<property name="path">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=trakt_mylists&amp;tmdb_type=both&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
-			<property name="list">plugin://plugin.video.themoviedb.helper/?info=trakt_mylists&amp;tmdb_type=both&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</property>
-			<visible>[String.IsEqual(System.ProfileName,Master user)] + String.IsEqual(Window(10000).Property(submenuVisibility),movies)</visible>
-			<property name="group">movies.1</property>
-			<property name="isSubmenu">True</property>
-			</item>
-		<item id="3">
-			<property name="id">$NUMBER[3]</property>
-			<property name="mainmenuid">1</property>
-			<label>$LOCALIZE[31371]</label>
-			<label2 />
-			<icon>special://skin/extras/icons/shortcut.png</icon>
-			<thumb />
-			<property name="labelID">31371</property>
-			<property name="defaultID">31371</property>
-			<property name="translatedPath">Stacked</property>
 			<property name="widgetInfo">Full</property>
-			<onclick>Stacked</onclick>
-			<property name="path">Stacked</property>
-			<property name="list">Stacked</property>
+			<onclick>ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=trending_day&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</onclick>
+			<property name="path">ActivateWindow(Videos,"plugin://plugin.video.themoviedb.helper/?info=trending_day&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]",return)</property>
+			<property name="list">plugin://plugin.video.themoviedb.helper/?info=trending_day&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</property>
 			<visible>[String.IsEqual(System.ProfileName,Master user)] + String.IsEqual(Window(10000).Property(submenuVisibility),movies)</visible>
 			<property name="group">movies.1</property>
 			<property name="isSubmenu">True</property>
@@ -1288,14 +1218,14 @@
 						<param name="id" value="1601" />
 						<param name="spacerid" value="1801" />
 						<param name="buttonid" value="100100" />
-						<param name="label" value="Top Rated" />
+						<param name="label" value="Popular" />
 						<param name="usealtlabel" value="False" />
 						<param name="altlabel">$INFO[Container(1600).ListItem.Label]</param>
 						<param name="usewidgetlabel" value="False" />
 						<param name="include" value="List_Poster_Row" />
 						<param name="visible" value="[[True] + String.IsEqual(Container(300).ListItem.Property(submenuVisibility),movies) + [![False] | [!Integer.IsEqual(Container(1600).NumItems,0) + Container(1600).ListItem.IsFolder]]]" />
 						<param name="infowidget" value="True" />
-						<param name="infowidget_full" value="False" />
+						<param name="infowidget_full" value="True" />
 						<param name="busy_visible" value="Integer.IsEqual(Container(1601).NumItems,0) | [False + Container(1601).IsUpdating]" />
 						<param name="detailed">false</param>
 						<param name="oversized">False</param>
@@ -1306,7 +1236,7 @@
 							<param name="limit" />
 							<param name="autolimit">7</param>
 							<param name="is_autolimit">false</param>
-							<param name="content">plugin://plugin.video.themoviedb.helper/?info=top_rated&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</param>
+							<param name="content">plugin://plugin.video.themoviedb.helper/?info=popular&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</param>
 							</include>
 						<include content="Widget_ContentDynamic" condition="!False + False">
 							<param name="sortby" />
@@ -1323,7 +1253,7 @@
 						<include content="Object_ContentItem" condition="Skin.HasSetting(Home.EnableShowMoreWidget) + false + !false + !False">
 							<param name="label">$LOCALIZE[31253]...</param>
 							<param name="icon">fallback/more-items.png</param>
-							<param name="onclick">ActivateWindow(videos,plugin://plugin.video.themoviedb.helper/?info=top_rated&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)],return)</param>
+							<param name="onclick">ActivateWindow(videos,plugin://plugin.video.themoviedb.helper/?info=popular&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)],return)</param>
 							<param name="visible">Integer.IsEqual(Container(1601).NumItems,) | Integer.IsEqual(Container(1601).NumItems,100000)</param>
 							</include>
 						<include content="Object_ContentItem" condition="False + !False">
@@ -1333,10 +1263,10 @@
 							<param name="include">skinshortcuts-group-movies</param>
 							</include>
 						<onfocus>SetProperty(TMDbHelper.WidgetContainer,1601,Home)</onfocus>
-						<onfocus condition="False + ![False] + Skin.HasSetting(Widgets.ExpandedHeader)">SetProperty(Slide.WidgetTitle,Top Rated,Home)</onfocus>
-						<onfocus condition="False + [False] + Skin.HasSetting(Widgets.ExpandedHeader)">SetProperty(Slide.WidgetTitle,[CAPITALIZE]$INFO[Container(1601).ListItem.Property(widget)][/CAPITALIZE],Home)</onfocus>
+						<onfocus condition="True + ![False] + Skin.HasSetting(Widgets.ExpandedHeader)">SetProperty(Slide.WidgetTitle,Popular,Home)</onfocus>
+						<onfocus condition="True + [False] + Skin.HasSetting(Widgets.ExpandedHeader)">SetProperty(Slide.WidgetTitle,[CAPITALIZE]$INFO[Container(1601).ListItem.Property(widget)][/CAPITALIZE],Home)</onfocus>
 						<onfocus condition="True">SetProperty(Slide.WidgetContainer,1601,Home)</onfocus>
-						<onfocus>SetProperty(Slide.WidgetInfoStyle,Plot,Home)</onfocus>
+						<onfocus>SetProperty(Slide.WidgetInfoStyle,Full,Home)</onfocus>
 						<onfocus>SetProperty(Slide.WidgetAspect,,Home)</onfocus>
 						<onunfocus>ClearProperty(Slide.WidgetAspect,Home)</onunfocus>
 						<onunfocus>ClearProperty(Slide.WidgetInfoStyle,Home)</onunfocus>
@@ -1350,21 +1280,21 @@
 						<onback condition="Integer.IsEqual(Container(1601).ListItem.CurrentItem,1)">SetFocus(1599)</onback>
 						<onback condition="Integer.IsEqual(Container(1601).ListItem.CurrentItem,1)">SetFocus(300)</onback>
 						</include>
-					<include content="Widget_Submenu">
+					<include content="Widget_Poster">
 						<param name="groupid" value="1702" />
 						<param name="id" value="1602" />
 						<param name="spacerid" value="1802" />
 						<param name="buttonid" value="100200" />
-						<param name="label" value="Your Lists" />
+						<param name="label" value="Trending Today" />
 						<param name="usealtlabel" value="False" />
 						<param name="altlabel">$INFO[Container(1601).ListItem.Label]</param>
 						<param name="usewidgetlabel" value="False" />
-						<param name="include" value="List_Button_Row" />
+						<param name="include" value="List_Poster_Row" />
 						<param name="visible" value="[[True] + String.IsEqual(Container(300).ListItem.Property(submenuVisibility),movies) + [![False] | [!Integer.IsEqual(Container(1601).NumItems,0) + Container(1601).ListItem.IsFolder]]]" />
-						<param name="infowidget" value="False" />
-						<param name="infowidget_full" value="False" />
+						<param name="infowidget" value="True" />
+						<param name="infowidget_full" value="True" />
 						<param name="busy_visible" value="Integer.IsEqual(Container(1602).NumItems,0) | [False + Container(1602).IsUpdating]" />
-						<param name="detailed">true</param>
+						<param name="detailed">false</param>
 						<param name="oversized">False</param>
 						<include content="Widget_ContentDynamic" condition="!False + !False">
 							<param name="sortby" />
@@ -1373,7 +1303,7 @@
 							<param name="limit" />
 							<param name="autolimit">7</param>
 							<param name="is_autolimit">false</param>
-							<param name="content">plugin://plugin.video.themoviedb.helper/?info=trakt_mylists&amp;tmdb_type=both&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</param>
+							<param name="content">plugin://plugin.video.themoviedb.helper/?info=trending_day&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</param>
 							</include>
 						<include content="Widget_ContentDynamic" condition="!False + False">
 							<param name="sortby" />
@@ -1390,7 +1320,7 @@
 						<include content="Object_ContentItem" condition="Skin.HasSetting(Home.EnableShowMoreWidget) + false + !false + !False">
 							<param name="label">$LOCALIZE[31253]...</param>
 							<param name="icon">fallback/more-items.png</param>
-							<param name="onclick">ActivateWindow(videos,plugin://plugin.video.themoviedb.helper/?info=trakt_mylists&amp;tmdb_type=both&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)],return)</param>
+							<param name="onclick">ActivateWindow(videos,plugin://plugin.video.themoviedb.helper/?info=trending_day&amp;tmdb_type=movie&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)],return)</param>
 							<param name="visible">Integer.IsEqual(Container(1602).NumItems,) | Integer.IsEqual(Container(1602).NumItems,100000)</param>
 							</include>
 						<include content="Object_ContentItem" condition="False + !False">
@@ -1400,11 +1330,11 @@
 							<param name="include">skinshortcuts-group-movies</param>
 							</include>
 						<onfocus>SetProperty(TMDbHelper.WidgetContainer,1602,Home)</onfocus>
-						<onfocus condition="False + ![False] + Skin.HasSetting(Widgets.ExpandedHeader)">SetProperty(Slide.WidgetTitle,Your Lists,Home)</onfocus>
-						<onfocus condition="False + [False] + Skin.HasSetting(Widgets.ExpandedHeader)">SetProperty(Slide.WidgetTitle,[CAPITALIZE]$INFO[Container(1602).ListItem.Property(widget)][/CAPITALIZE],Home)</onfocus>
-						<onfocus condition="False">SetProperty(Slide.WidgetContainer,1602,Home)</onfocus>
-						<onfocus>SetProperty(Slide.WidgetInfoStyle,Button,Home)</onfocus>
-						<onfocus>SetProperty(Slide.WidgetAspect,Button,Home)</onfocus>
+						<onfocus condition="True + ![False] + Skin.HasSetting(Widgets.ExpandedHeader)">SetProperty(Slide.WidgetTitle,Trending Today,Home)</onfocus>
+						<onfocus condition="True + [False] + Skin.HasSetting(Widgets.ExpandedHeader)">SetProperty(Slide.WidgetTitle,[CAPITALIZE]$INFO[Container(1602).ListItem.Property(widget)][/CAPITALIZE],Home)</onfocus>
+						<onfocus condition="True">SetProperty(Slide.WidgetContainer,1602,Home)</onfocus>
+						<onfocus>SetProperty(Slide.WidgetInfoStyle,Full,Home)</onfocus>
+						<onfocus>SetProperty(Slide.WidgetAspect,,Home)</onfocus>
 						<onunfocus>ClearProperty(Slide.WidgetAspect,Home)</onunfocus>
 						<onunfocus>ClearProperty(Slide.WidgetInfoStyle,Home)</onunfocus>
 						<onunfocus>ClearProperty(Slide.WidgetContainer,Home)</onunfocus>
@@ -1416,73 +1346,6 @@
 						<onback condition="Integer.IsEqual(Container(1602).ListItem.CurrentItem,1)">SetFocus(301)</onback>
 						<onback condition="Integer.IsEqual(Container(1602).ListItem.CurrentItem,1)">SetFocus(1599)</onback>
 						<onback condition="Integer.IsEqual(Container(1602).ListItem.CurrentItem,1)">SetFocus(300)</onback>
-						</include>
-					<include content="Widget_Poster">
-						<param name="groupid" value="1703" />
-						<param name="id" value="1603" />
-						<param name="spacerid" value="1803" />
-						<param name="buttonid" value="100300" />
-						<param name="label" value="$LOCALIZE[31371]" />
-						<param name="usealtlabel" value="True" />
-						<param name="altlabel">$INFO[Container(1602).ListItem.Label]</param>
-						<param name="usewidgetlabel" value="False" />
-						<param name="include" value="List_Poster_Row" />
-						<param name="visible" value="[[True] + String.IsEqual(Container(300).ListItem.Property(submenuVisibility),movies) + [![True] | [!Integer.IsEqual(Container(1602).NumItems,0) + Container(1602).ListItem.IsFolder]]]" />
-						<param name="infowidget" value="True" />
-						<param name="infowidget_full" value="True" />
-						<param name="busy_visible" value="Integer.IsEqual(Container(1603).NumItems,0) | [True + Container(1603).IsUpdating]" />
-						<param name="detailed">false</param>
-						<param name="oversized">False</param>
-						<include content="Widget_ContentDynamic" condition="!False + !True">
-							<param name="sortby" />
-							<param name="sortorder" />
-							<param name="target">videos</param>
-							<param name="limit" />
-							<param name="autolimit">7</param>
-							<param name="is_autolimit">false</param>
-							<param name="content">Stacked</param>
-							</include>
-						<include content="Widget_ContentDynamic" condition="!False + True">
-							<param name="sortby" />
-							<param name="sortorder" />
-							<param name="target">videos</param>
-							<param name="limit" />
-							<param name="autolimit">7</param>
-							<param name="is_autolimit">false</param>
-							<param name="content">$INFO[Container(1602).ListItem.FolderPath]</param>
-							</include>
-						<include content="Defs_AutoScroll" condition="False + !False">
-							<param name="condition" value="!Control.HasFocus(1603) + !System.ScreenSaverActive + String.IsEmpty(Window(Home).Property(Widgets.BlockAutoscroll))" />
-							</include>
-						<include content="Object_ContentItem" condition="Skin.HasSetting(Home.EnableShowMoreWidget) + false + !false + !False">
-							<param name="label">$LOCALIZE[31253]...</param>
-							<param name="icon">fallback/more-items.png</param>
-							<param name="onclick">ActivateWindow(videos,Stacked,return)</param>
-							<param name="visible">Integer.IsEqual(Container(1603).NumItems,) | Integer.IsEqual(Container(1603).NumItems,100000)</param>
-							</include>
-						<include content="Object_ContentItem" condition="True + !False">
-							<param name="visible">Integer.IsEqual(Container(1602).NumItems,0) | String.IsEmpty(Container(1602).ListItem.FolderPath)</param>
-							</include>
-						<include content="Object_ContentInclude" condition="False">
-							<param name="include">skinshortcuts-group-movies</param>
-							</include>
-						<onfocus>SetProperty(TMDbHelper.WidgetContainer,1603,Home)</onfocus>
-						<onfocus condition="True + ![False] + Skin.HasSetting(Widgets.ExpandedHeader)">SetProperty(Slide.WidgetTitle,$LOCALIZE[31371],Home)</onfocus>
-						<onfocus condition="True + [False] + Skin.HasSetting(Widgets.ExpandedHeader)">SetProperty(Slide.WidgetTitle,[CAPITALIZE]$INFO[Container(1603).ListItem.Property(widget)][/CAPITALIZE],Home)</onfocus>
-						<onfocus condition="True">SetProperty(Slide.WidgetContainer,1603,Home)</onfocus>
-						<onfocus>SetProperty(Slide.WidgetInfoStyle,Full,Home)</onfocus>
-						<onfocus>SetProperty(Slide.WidgetAspect,,Home)</onfocus>
-						<onunfocus>ClearProperty(Slide.WidgetAspect,Home)</onunfocus>
-						<onunfocus>ClearProperty(Slide.WidgetInfoStyle,Home)</onunfocus>
-						<onunfocus>ClearProperty(Slide.WidgetContainer,Home)</onunfocus>
-						<onunfocus>ClearProperty(Slide.WidgetTitle,Home)</onunfocus>
-						<onfocus condition="True">SetProperty(Widgets.BlockAutoscroll,1,Home)</onfocus>
-						<onunfocus>ClearProperty(Widgets.BlockAutoscroll,Home)</onunfocus>
-						<onback condition="!Integer.IsEqual(Container(1603).ListItem.CurrentItem,1)">SetFocus(1603,0,absolute)</onback>
-						<onback condition="Integer.IsEqual(Container(1603).ListItem.CurrentItem,1)">SetFocus(1601)</onback>
-						<onback condition="Integer.IsEqual(Container(1603).ListItem.CurrentItem,1)">SetFocus(301)</onback>
-						<onback condition="Integer.IsEqual(Container(1603).ListItem.CurrentItem,1)">SetFocus(1599)</onback>
-						<onback condition="Integer.IsEqual(Container(1603).ListItem.CurrentItem,1)">SetFocus(300)</onback>
 						</include>
 					<include content="Widget_Submenu" condition="True">
 						<param name="groupid" value="1798" />
@@ -4566,22 +4429,6 @@
 			<property name="group">powermenu</property>
 			<property name="isSubmenu">True</property>
 			</item>
-		<item id="7">
-			<property name="id">$NUMBER[7]</property>
-			<property name="mainmenuid">6</property>
-			<label>reload skin</label>
-			<label2>Custom item</label2>
-			<icon>special://skin/extras/icons/shortcut.png</icon>
-			<thumb />
-			<property name="labelID">reloadskin</property>
-			<property name="defaultID" />
-			<onclick>ReloadSkin()</onclick>
-			<property name="path">ReloadSkin()</property>
-			<property name="list">ReloadSkin()</property>
-			<visible>String.IsEqual(System.ProfileName,Master user)</visible>
-			<property name="group">powermenu</property>
-			<property name="isSubmenu">True</property>
-			</item>
 		</include>
 	<include name="skinshortcuts-group-alt-powermenu">
 		<item id="1">
@@ -4682,22 +4529,6 @@
 			<property name="group">powermenu</property>
 			<property name="isSubmenu">True</property>
 			</item>
-		<item id="7">
-			<property name="id">$NUMBER[7]</property>
-			<property name="mainmenuid">6</property>
-			<label>reload skin</label>
-			<label2>Custom item</label2>
-			<icon>special://skin/extras/icons/shortcut.png</icon>
-			<thumb />
-			<property name="labelID">reloadskin</property>
-			<property name="defaultID" />
-			<onclick>ReloadSkin()</onclick>
-			<property name="path">ReloadSkin()</property>
-			<property name="list">ReloadSkin()</property>
-			<visible>[String.IsEqual(System.ProfileName,Master user)] + String.IsEqual(Window(10000).Property(submenuVisibility),powermenu)</visible>
-			<property name="group">powermenu</property>
-			<property name="isSubmenu">True</property>
-			</item>
 		</include>
 	<include name="skinshortcuts-template-powermenu">
 		<include condition="String.IsEqual(System.ProfileName,Master user)">skinshortcuts-template-powermenu-Master user</include>
@@ -4774,18 +4605,6 @@
 			<onclick>Quit()</onclick>
 			<onclick />
 			<visible>System.ShowExitButton</visible>
-			</include>
-		<include content="Dialog_Menu_Button">
-			<param name="id" value="9007" />
-			<param name="groupid" value="9107" />
-			<param name="control" value="button" />
-			<param name="icon" value="special://skin/extras/icons/shortcut.png" />
-			<param name="bordersize" value="10" />
-			<label>reload skin</label>
-			<onclick condition="Window.IsActive(DialogButtonMenu.xml)">Close</onclick>
-			<onclick>ReloadSkin()</onclick>
-			<onclick />
-			<visible>String.IsEqual(System.ProfileName,Master user)</visible>
 			</include>
 		</include>
 	<include name="skinshortcuts-group-powermenu-1">
