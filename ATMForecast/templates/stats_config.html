@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>KPI Configuration</h2>
+    <a href="{{ url_for('stats') }}" class="btn btn-secondary">Back to Stats</a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        <h3 class="card-title mb-0">Add New KPI</h3>
+    </div>
+    <div class="card-body">
+        <form id="kpi-form" method="POST">
+            <div class="form-group">
+                <label for="kpi_name">KPI Name</label>
+                <input type="text" class="form-control" id="kpi_name" name="kpi_name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="table_name">Table</label>
+                <select class="form-control" id="table_name" name="table_name" required>
+                    <option value="">Select a table</option>
+                    {% for table in available_tables %}
+                    <option value="{{ table }}">{{ table }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="calculation_field">Calculation Field</label>
+                <select class="form-control" id="calculation_field" name="calculation_field" required disabled>
+                    <option value="">Select a table first</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="calculation_method">Calculation Method</label>
+                <select class="form-control" id="calculation_method" name="calculation_method" required>
+                    {% for method in calculation_methods %}
+                    <option value="{{ method }}">{{ method }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label>Time Spans</label>
+                {% for pair in time_span_pairs %}
+                <div class="custom-control custom-checkbox">
+                    <input type="checkbox" class="custom-control-input" 
+                           id="time_span_{{ loop.index }}" 
+                           name="time_spans[]" 
+                           value="{{ pair|tojson }}">
+                    <label class="custom-control-label" for="time_span_{{ loop.index }}">
+                        {{ pair[0] }} vs {{ pair[1] }}
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="form-group">
+                <label>Conditions</label>
+                <div id="conditions-container">
+                    <div class="condition-row mb-2">
+                        <div class="row">
+                            <div class="col">
+                                <select class="form-control condition-field" name="conditions[]" disabled>
+                                    <option value="">Select a table first</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <select class="form-control condition-operator" name="conditions[]">
+                                    <option value="=">=</option>
+                                    <option value="!=">!=</option>
+                                    <option value=">">&gt;</option>
+                                    <option value=">=">&gt;=</option>
+                                    <option value="<">&lt;</option>
+                                    <option value="<=">&lt;=</option>
+                                </select>
+                            </div>
+                            <div class="col">
+                                <input type="text" class="form-control condition-value" name="conditions[]" placeholder="Value">
+                            </div>
+                            <div class="col-auto">
+                                <button type="button" class="btn btn-danger remove-condition">&times;</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary mt-2" id="add-condition">Add Condition</button>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Save KPI</button>
+        </form>
+    </div>
+</div>
+
+<h3>Existing KPIs</h3>
+{% if kpis %}
+<div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Table</th>
+                <th>Calculation</th>
+                <th>Time Spans</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for kpi in kpis %}
+            <tr>
+                <td>{{ kpi.name }}</td>
+                <td>{{ kpi.table_name }}</td>
+                <td>{{ kpi.calculation_method }} of {{ kpi.calculation_field }}</td>
+                <td>
+                    {% set spans = kpi.time_spans|from_json %}
+                    {% for span in spans %}
+                        {{ span[0] }} vs {{ span[1] }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                </td>
+                <td>
+                    <form action="{{ url_for('delete_kpi', kpi_id=kpi.id) }}" method="POST" 
+                          onsubmit="return confirm('Are you sure you want to delete this KPI?');">
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p>No KPIs configured yet.</p>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+$(document).ready(function() {
+    // Handle table selection
+    $('#table_name').change(function() {
+        var tableName = $(this).val();
+        if (tableName) {
+            $.getJSON(`/get_table_columns/${tableName}`, function(columns) {
+                var fieldSelect = $('#calculation_field');
+                var conditionFields = $('.condition-field');
+                
+                fieldSelect.empty().append('<option value="">Select a field</option>');
+                conditionFields.empty().append('<option value="">Select a field</option>');
+                
+                columns.forEach(function(column) {
+                    fieldSelect.append(new Option(column, column));
+                    conditionFields.append(new Option(column, column));
+                });
+                
+                fieldSelect.prop('disabled', false);
+                conditionFields.prop('disabled', false);
+            });
+        } else {
+            $('#calculation_field').prop('disabled', true).empty()
+                .append('<option value="">Select a table first</option>');
+            $('.condition-field').prop('disabled', true).empty()
+                .append('<option value="">Select a table first</option>');
+        }
+    });
+    
+    // Handle adding conditions
+    $('#add-condition').click(function() {
+        var newRow = $('.condition-row:first').clone();
+        newRow.find('input, select').val('');
+        $('#conditions-container').append(newRow);
+    });
+    
+    // Handle removing conditions
+    $(document).on('click', '.remove-condition', function() {
+        if ($('.condition-row').length > 1) {
+            $(this).closest('.condition-row').remove();
+        }
+    });
+});
+</script>
+{% endblock %}
