@@ -949,13 +949,37 @@
                     <param name="is_player">$PARAM[is_player]</param>
                 </include>
 
-                <include>Info_ParentalGuide_Objects</include>
+
 
                 <nested />
 
                 <orientation>horizontal</orientation>
                 <top>520</top>
                 <height>40</height>
+                <left>view_pad</left>
+                <itemgap>12</itemgap>
+            </control>
+        </definition>
+    </include>
+
+    <include name="Info_PGRatingsLine">
+        <param name="is_player">false</param>
+        <definition>
+            <control type="grouplist" id="$PARAM[id]">
+
+                <visible>String.IsEmpty(Window(Home).Property(TMDBHelper.IsUpdatingRatings))</visible>
+
+                <animation effect="fade" start="0" end="100" delay="400" time="1" reversible="true">Visible</animation>
+                <animation effect="fade" start="100" end="0" delay="1200" time="1" reversible="true">Hidden</animation>
+
+                <include>Info_ParentalGuide_Objects</include>
+
+                <nested />
+
+                <orientation>horizontal</orientation>
+                <top>580</top>
+                <height>40</height>
+                <bottom>20</bottom>
                 <left>view_pad</left>
                 <itemgap>12</itemgap>
             </control>
@@ -2050,6 +2074,23 @@
                         <include>$PARAM[details_include]</include>
 
                         <include content="Info_RatingsLine" condition="$PARAM[ratings]">
+                            <param name="container">$PARAM[container]</param>
+                            <param name="is_player">$PARAM[is_player]</param>
+                            <top>0</top>
+                            <left>0</left>
+                        </include>
+                    </control>
+
+                    <control type="group">
+                        <left>40</left>
+                        <top>12</top>
+                        <left>0</left>
+                        <height>40</height>
+                        <visible>$PARAM[ratings]</visible>
+                        <visible>$PARAM[details]</visible>
+                        <include>$PARAM[details_include]</include>
+
+                        <include content="Info_PGRatingsLine" condition="$PARAM[ratings]">
                             <param name="container">$PARAM[container]</param>
                             <param name="is_player">$PARAM[is_player]</param>
                             <top>0</top>

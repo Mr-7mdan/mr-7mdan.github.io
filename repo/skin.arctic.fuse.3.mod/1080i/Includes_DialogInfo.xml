@@ -1334,7 +1334,7 @@
 
 
             <control type="group">
-                <top>20</top>
+                <top>60</top>
                 <left>20</left>
                 <height>80</height>
                 <include content="Info_Viewline">
