@@ -46,7 +46,8 @@ def getIsTvShow():
     return False
 
 def setProperty(PropertyName, PropertyVal, WindowID):
-    xbmcgui.Window(WindowID).setProperty(PropertyName, PropertyVal)
+    # Force 10000 (Home) for global properties
+    xbmcgui.Window(10000).setProperty(PropertyName, PropertyVal)
     logger.info(PropertyName + " was set sucessfully")
     
 def Notify(title, msg):
@@ -128,12 +129,17 @@ def callParentalGuideAPI(videoName, ID, Provider, timeout=10):
             response.raise_for_status()
             data = response.json()
             
+            # Handle null values from API - convert None to empty array
+            review_items = data.get("review-items")
+            if review_items is None:
+                review_items = []
+            
             show_info = {
                 "id": data.get("id") or ID,
                 "title": data.get("title") or videoName,
                 "provider": Provider,
                 "recommended-age": data.get("recommended-age"),
-                "review-items": data.get("review-items", []),
+                "review-items": review_items,
                 "review-link": data.get("review-link")
             }
             return show_info
@@ -176,7 +182,7 @@ def AddXMLProperties(review, WindowID):
 
 def AddFurnitureProperties(review, provider, WindowID):
     Suffix = provider
-    WID = xbmcgui.Window(WindowID)
+    WID = xbmcgui.Window(10000) # Force Home window for furniture properties
     
     # Always set the provider icon
     WID.setProperty(f"{Suffix}-Icon", f"special://home/addons/script.parentalguide/resources/skins/Default/media/providers/{Suffix}.png")

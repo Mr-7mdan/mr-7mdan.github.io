@@ -9,6 +9,8 @@ from threading import Thread
 from datetime import datetime, timedelta
 import re
 from resources.lib.settings import log
+import html
+
 
 ADDON = xbmcaddon.Addon(id='script.parentalguide')
 CWD = ADDON.getAddonInfo('path')#.decode("utf-8")
@@ -32,16 +34,18 @@ class ParentalGuideViewer(xbmcgui.WindowXMLDialog):
         self.isChangeViewerFlag = False
         self.switchText = kwargs.get('switchText', '')
         self.title = kwargs.get('title', '').replace("b'","").replace("'","")
-        xbmcgui.WindowXMLDialog.__init__(self)
+        xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)
 
     # Called when setting up the window
     def onInit(self):
         # Update the dialog to show the correct data
+        xbmcgui.Window(10000).setProperty("ParentalGuide.WindowOpen", "true") 
         xbmcgui.Window(10000).clearProperty("SelectedCat") 
         xbmcgui.WindowXMLDialog.onInit(self)
             
     def close(self):
         log("ParentalGuideViewer: Closing window")
+        xbmcgui.Window(10000).clearProperty("ParentalGuide.WindowOpen") 
         xbmcgui.WindowXMLDialog.close(self)
 
     def isSwitch(self):
@@ -61,6 +65,8 @@ class SummaryViewer(ParentalGuideViewer):
     
     def __init__(self, *args, **kwargs):
         self.details = kwargs.get('details', '')
+        self.imdb_id = kwargs.get('imdb_id', '')
+        self.video_name = kwargs.get('video_name', '')
         if self.details not in [None, ""]:
             self._setProperties(self.details['review-items'])
 
@@ -72,74 +78,396 @@ class SummaryViewer(ParentalGuideViewer):
 
     def close(self):
         log("ParentalGuideViewer: Closing window")
+        # Stop monitoring thread
+        if hasattr(self, '_monitor_active'):
+            self._monitor_active = False
         # Clear all the properties that were previously set
+        w = xbmcgui.Window(10000)
         i = 1
         while i < 9:
-            xbmcgui.Window(10000).clearProperty("ParentalGuide.%s.Section" % i)
-            xbmcgui.Window(10000).clearProperty("ParentalGuide.%s.Rating" % i)
-            xbmcgui.Window(10000).clearProperty("ParentalGuide.Desc.%s" % i)
+            w.clearProperty("ParentalGuide.%s.Section" % i)
+            w.clearProperty("ParentalGuide.%s.Rating" % i)
+            w.clearProperty("ParentalGuide.Desc.%s" % i)
             i = i + 1
-        xbmcgui.Window(10000).clearProperty("SelectedCat") 
-        xbmcgui.Window(10000).clearProperty("SelectedProvider")
-        xbmcgui.Window(10000).clearProperty("ParentalGuide.Desc.section") 
-        xbmcgui.Window(10000).clearProperty("ParentalGuide.Desc.Summary") 
+        w.clearProperty("SelectedCat") 
+        w.clearProperty("SelectedProvider")
+        w.clearProperty("ParentalGuide.Desc.section") 
+        w.clearProperty("ParentalGuide.Desc.Summary")
+        w.clearProperty("ParentalGuide.RefreshTextbox")
+        w.clearProperty("ParentalGuide.ProviderChanged")
+        w.clearProperty("CurrentId")
+        w.clearProperty("CurrentItem")
         ParentalGuideViewer.close(self)
         
     def onInit(self):
-        # #Fill in the text for the details
-        # item_list = self.details
-        # self.win = self.getControl(self.window_id)
-        # self.win.addItems(self.item_list)
-        # self.getControl(4500).addItems(item_list)
-        # make_parentsguide(self.details)
+        w = xbmcgui.Window(10000)
+        
+        # Set CurrentId and CurrentItem for provider switching FIRST
+        if self.imdb_id:
+            w.setProperty("CurrentId", self.imdb_id)
+        if self.video_name:
+            w.setProperty("CurrentItem", self.video_name)
+        
+        log(f"SummaryViewer: onInit called, CurrentId={self.imdb_id}, CurrentItem={self.video_name}")
+        
+        # Rebuild lists BEFORE calling parent onInit so controls are populated when focus is set
+        self._rebuildProviderList()
+        self._rebuildCategoryList()
+        self._updateTextbox()
+        
+        # Now call parent onInit which will set WindowOpen property
         ParentalGuideViewer.onInit(self)
-       
+        
+        log(f"SummaryViewer: Lists populated, WindowOpen={w.getProperty('ParentalGuide.WindowOpen')}")
+        
+        # Start monitoring thread
+        self._last_refresh = ""
+        self._last_provider_flag = w.getProperty("ParentalGuide.ProviderChanged") or ""
+        self._monitor_active = True
+        log(f"SummaryViewer: Initial provider flag: '{self._last_provider_flag}'")
+        self._monitor_thread = Thread(target=self._monitorProviderChange)
+        self._monitor_thread.daemon = True
+        self._monitor_thread.start()
+    
+    def _rebuildProviderList(self):
+        """Rebuild the provider list with greyed out styling for providers without data"""
+        try:
+            try:
+                provider_list = self.getControl(4400)
+            except Exception as e:
+                log(f"SummaryViewer: Cannot get provider list control yet: {str(e)}")
+                return
+            
+            w = xbmcgui.Window(10000)
+            
+            # Clear existing items
+            provider_list.reset()
+            
+            # Define all providers in order
+            providers = [
+                ("IMDB", "IMDB"),
+                ("Kids In Mind", "KidsInMind"),
+                ("Movie Guide Org", "MovieGuide"),
+                ("Common Sense Media", "CSM"),
+                ("Raising Children", "RaisingChildren")
+            ]
+            
+            for label, provider_key in providers:
+                icon = w.getProperty(f"{provider_key}-Icon")
+                status = w.getProperty(f"{provider_key}-Status")
+                has_data = (status == "true")
+                
+                listitem = xbmcgui.ListItem(label=label)
+                listitem.setArt({'icon': icon, 'thumb': icon})
+                listitem.setProperty('provider_key', provider_key)
+                listitem.setProperty('has_data', str(has_data))
+                
+                provider_list.addItem(listitem)
+            
+            # Set focus to first item with data, or just first item
+            if provider_list.size() > 0:
+                provider_list.selectItem(0)
+            
+            log(f"SummaryViewer: Provider list rebuilt with {provider_list.size()} items")
+        except Exception as e:
+            log(f"SummaryViewer: Error rebuilding provider list: {str(e)}")
+    
+    def _updateTextbox(self):
+        """Update the textbox with current description"""
+        try:
+            textbox = self.getControl(5)
+            w = xbmcgui.Window(10000)
+            desc = w.getProperty("ParentalGuide.Desc.Summary")
+            if desc:
+                textbox.setText(desc)
+                log(f"SummaryViewer: Textbox updated")
+        except Exception as e:
+            log(f"SummaryViewer: Error updating textbox: {str(e)}")
+    
+    def _monitorProviderChange(self):
+        """Background thread to monitor for provider changes and category selection"""
+        import time
+        w = xbmcgui.Window(10000)
+        last_selected_pos = -1
+        check_count = 0
+        
+        log("SummaryViewer: Monitoring thread started")
+        
+        while self._monitor_active:
+            try:
+                # Check for provider changes
+                provider_flag = w.getProperty("ParentalGuide.ProviderChanged")
+                check_count += 1
+                
+                # Log every 25 checks (every 5 seconds at 200ms intervals) for debugging
+                if check_count % 25 == 0:
+                    log(f"SummaryViewer: Monitoring check #{check_count}, current flag='{provider_flag}', last flag='{self._last_provider_flag}'")
+                
+                if provider_flag and provider_flag != self._last_provider_flag:
+                    self._last_provider_flag = provider_flag
+                    log(f"SummaryViewer: Provider changed detected! New flag: '{provider_flag}', refreshing category list")
+                    try:
+                        self._rebuildCategoryList()
+                        self._updateTextbox()
+                        last_selected_pos = 0  # Reset position tracking
+                        log("SummaryViewer: Category list rebuilt successfully")
+                    except Exception as e:
+                        log(f"SummaryViewer: Error rebuilding category list: {str(e)}")
+                
+                # Check for category selection changes
+                try:
+                    category_list = self.getControl(4500)
+                    current_pos = category_list.getSelectedPosition()
+                    
+                    if current_pos != last_selected_pos and current_pos >= 0:
+                        last_selected_pos = current_pos
+                        selected_item = category_list.getSelectedItem()
+                        if selected_item:
+                            # Get description directly from ListItem property (set when building list)
+                            desc = selected_item.getProperty('description')
+                            if desc:
+                                import html
+                                desc = html.unescape(str(desc))
+                                w.setProperty("ParentalGuide.Desc.Summary", desc)
+                                textbox = self.getControl(5)
+                                textbox.setText(desc)
+                                log(f"SummaryViewer: Category at position {current_pos} selected")
+                except Exception as e:
+                    # Don't log every iteration, only real errors
+                    if "Non-Existent Control" not in str(e):
+                        log(f"SummaryViewer: Error checking category position: {str(e)}")
+                
+                time.sleep(0.2)  # Check every 200ms for responsive UI
+            except Exception as e:
+                log(f"SummaryViewer: Monitoring thread error: {str(e)}")
+                break
+        
+        log("SummaryViewer: Monitoring thread stopped")
+    
+    def onAction(self, action):
+        """Monitor for property changes and update textbox"""
+        # Check if refresh flag changed (set by script.py)
+        w = xbmcgui.Window(10000)
+        refresh_flag = w.getProperty("ParentalGuide.RefreshTextbox")
+        
+        if refresh_flag and refresh_flag != self._last_refresh:
+            self._last_refresh = refresh_flag
+            self._updateTextbox()
+        
+        # Call parent onAction
+        ParentalGuideViewer.onAction(self, action)
+    
+    def _rebuildCategoryList(self):
+        """Rebuild the category list with current data"""
+        try:
+            category_list = self.getControl(4500)
+            w = xbmcgui.Window(10000)
+            
+            # Clear existing items
+            category_list.reset()
+            
+            # Add items based on current properties
+            for i in range(1, 9):
+                section = w.getProperty(f"ParentalGuide.{i}.Section")
+                if section:
+                    cat_name = w.getProperty(f"ParentalGuide.Cat.Name.{i}")
+                    votes = w.getProperty(f"ParentalGuide.MVotes.{i}")
+                    icon = w.getProperty(f"ParentalGuide.Cat.{i}")
+                    desc = w.getProperty(f"ParentalGuide.Desc.{i}")
+                    
+                    listitem = xbmcgui.ListItem(label=f"{section} - {cat_name} ({votes})")
+                    listitem.setArt({'icon': icon, 'thumb': icon})
+                    listitem.setProperty('cat_index', str(i))
+                    listitem.setProperty('description', desc)  # Store description in ListItem
+                    category_list.addItem(listitem)
+            
+            # Set focus to first item
+            if category_list.size() > 0:
+                category_list.selectItem(0)
+                # Update description for first category
+                first_item = category_list.getSelectedItem()
+                if first_item:
+                    desc = first_item.getProperty('description')
+                    if desc:
+                        w.setProperty("ParentalGuide.Desc.Summary", desc)
+                        textbox = self.getControl(5)
+                        textbox.setText(desc)
+            
+            log(f"SummaryViewer: Category list rebuilt with {category_list.size()} items")
+        except Exception as e:
+            log(f"SummaryViewer: Error rebuilding category list: {str(e)}")
+    
+    def _rebuildCategoryListForProvider(self, provider_key):
+        """Rebuild category list using data from a specific provider (already fetched by NudityCheck.py)"""
+        try:
+            category_list = self.getControl(4500)
+            w = xbmcgui.Window(10000)
+            
+            # Clear existing items
+            category_list.reset()
+            
+            # Get the cached data for this provider from the database
+            from NudityCheck import db
+            
+            # Build cache key
+            video_name = self.video_name
+            imdb_id = self.imdb_id
+            if imdb_id:
+                key = f"{imdb_id}_{provider_key.lower()}"
+            else:
+                key = f"{video_name.replace(':', '').replace('-', '_').replace(' ', '_').lower()}_{provider_key.lower()}"
+            
+            # Get data from cache
+            show_info = db.get(key)
+            
+            if show_info and show_info.get('review-items'):
+                log(f"SummaryViewer: Found cached data for {provider_key}, building category list")
+                
+                # Build category list from this provider's data
+                for i, entry in enumerate(show_info['review-items']):
+                    if i >= 8:  # Max 8 categories
+                        break
+                    
+                    section = entry.get('name', '')
+                    cat_name = entry.get('cat', 'N/A')
+                    
+                    # Format votes
+                    votes_str = entry.get('votes', '')
+                    if votes_str:
+                        import re
+                        nums = [int(s) for s in re.findall(r'\b\d+\b', str(votes_str))]
+                        votes = f"{nums[0]}/{nums[1]}" if len(nums) >= 2 else (f"{nums[0]}" if len(nums) == 1 else "N/A")
+                    else:
+                        votes = "N/A"
+                    
+                    icon = f"special://home/addons/script.parentalguide/resources/skins/Default/media/tags/{cat_name}.png"
+                    
+                    listitem = xbmcgui.ListItem(label=f"{section} - {cat_name} ({votes})")
+                    listitem.setArt({'icon': icon, 'thumb': icon})
+                    listitem.setProperty('cat_index', str(i + 1))
+                    listitem.setProperty('description', entry.get('description', 'No description available.'))
+                    category_list.addItem(listitem)
+                
+                # Set focus to first item and update description
+                if category_list.size() > 0:
+                    category_list.selectItem(0)
+                    first_item = category_list.getSelectedItem()
+                    if first_item:
+                        desc = first_item.getProperty('description')
+                        if desc:
+                            import html
+                            desc = html.unescape(str(desc))
+                            w.setProperty("ParentalGuide.Desc.Summary", desc)
+                            textbox = self.getControl(5)
+                            textbox.setText(desc)
+                
+                log(f"SummaryViewer: Category list rebuilt for {provider_key} with {category_list.size()} items")
+            else:
+                log(f"SummaryViewer: No cached data found for {provider_key}")
+                # Show empty message
+                w.setProperty("ParentalGuide.Desc.Summary", f"No parental guide data available from {provider_key}")
+                textbox = self.getControl(5)
+                textbox.setText(f"No parental guide data available from {provider_key}")
+                
+        except Exception as e:
+            log(f"SummaryViewer: Error rebuilding category list for {provider_key}: {str(e)}")
+            import traceback
+            log(traceback.format_exc())
+    
+    def onClick(self, controlID):
+        """Handle click events on controls"""
+        if controlID == 4400:  # Provider list clicked
+            try:
+                provider_list = self.getControl(4400)
+                selected_item = provider_list.getSelectedItem()
+                provider_key = selected_item.getProperty('provider_key')
+                if provider_key:
+                    w = xbmcgui.Window(10000)
+                    
+                    log(f"SummaryViewer: Provider {provider_key} clicked, switching to display its data")
+                    
+                    # Just switch which provider's data we're displaying (data already fetched by NudityCheck.py)
+                    w.setProperty("SelectedProvider", provider_key)
+                    
+                    # Rebuild category list with this provider's data
+                    self._rebuildCategoryListForProvider(provider_key)
+                    
+                    # Update textbox with first category's description
+                    self._updateTextbox()
+                    
+                    log(f"SummaryViewer: Switched to provider {provider_key}")
+            except Exception as e:
+                log(f"SummaryViewer: Error handling provider click: {str(e)}")
+        elif controlID == 4500:  # Category list clicked
+            try:
+                category_list = self.getControl(4500)
+                selected_item = category_list.getSelectedItem()
+                cat_index = selected_item.getProperty('cat_index')
+                if cat_index:
+                    w = xbmcgui.Window(10000)
+                    w.setProperty("SelectedCat", cat_index)
+                    desc = w.getProperty(f"ParentalGuide.Desc.{cat_index}")
+                    if desc:
+                        w.setProperty("ParentalGuide.Desc.Summary", desc)
+                        w.setProperty("ParentalGuide.RefreshTextbox", str(xbmc.getInfoLabel("System.Time")))
+                        log(f"SummaryViewer: Category {cat_index} selected")
+            except Exception as e:
+                log(f"SummaryViewer: Error handling category click: {str(e)}")
     
     def onFocus(self, controlID):
-        #if controlID ==4500:
-        wid = xbmcgui.getCurrentWindowId()
-        win = xbmcgui.Window(wid)
-        cid = win.getFocusId()
-        control = win.getFocus()
-        item = control.getSelectedPosition() #getSelectedItem()
+        """Handle focus events on controls"""
+        if controlID == 4500:  # Category list focused
+            # Update textbox when category focus changes
+            try:
+                category_list = self.getControl(4500)
+                selected_item = category_list.getSelectedItem()
+                if selected_item:
+                    cat_index = selected_item.getProperty('cat_index')
+                    if cat_index:
+                        w = xbmcgui.Window(10000)
+                        w.setProperty("SelectedCat", cat_index)
+                        desc = w.getProperty(f"ParentalGuide.Desc.{cat_index}")
+                        if desc:
+                            w.setProperty("ParentalGuide.Desc.Summary", desc)
+                            # Directly update textbox instead of using flag
+                            textbox = self.getControl(5)
+                            textbox.setText(desc)
+                            log(f"SummaryViewer: Category {cat_index} focused, textbox updated")
+            except Exception as e:
+                log(f"SummaryViewer: Error in onFocus: {str(e)}")
 
     # Set all the values to display on the property screen
     def _setProperties(self, details):
-        for i, entry in enumerate(details, 1):
-            if i > 9:
-                break
+        w = xbmcgui.Window(10000)
+        for i, entry in enumerate(details):
+            y = i + 1
+            w.setProperty(f"ParentalGuide.{y}.Section", str(entry.get('name', '')))
+            w.setProperty(f"ParentalGuide.Cat.Name.{y}", str(entry.get('cat', 'N/A')))
             
-            sectionTag = f"ParentalGuide.{i}.Section"
-            cattag = f'ParentalGuide.Cat.Name.{i}'
-            DescProperty = f"ParentalGuide.Desc.{i}"
-            SectionVotesProperty = f"ParentalGuide.Votes.{i}"
-            MainVotesProperty = f"ParentalGuide.MVotes.{i}"
-            CatRating = f"ParentalGuide.Cat.{i}"
+            Description = entry.get('description', 'No description available.')
+            if Description:
+                Description = html.unescape(str(Description))
             
-            xbmcgui.Window(10000).setProperty(sectionTag, str(entry.get('name', '')))
-            xbmcgui.Window(10000).setProperty(cattag, str(entry.get('cat', 'N/A')))
-            
-            Description = entry.get('description', '')
-            if Description is not None:
-                BoldKeywords = ["bare breasts", "nipples ", "penis ", "Penis ", "dick ", "intercourse ", "making love", "sucking ", "blowjob ", "anal", "Blowjob ", "Anal", "sex scene", "buttock ", "rape ", "raping", "raped ", "sex scenes", "having sex", "nudity ", "nude", "naked", "boob", "breast"]
-                for word in BoldKeywords:
-                    Description = Description.replace(word, f"[B]{word}[/B]")
-            else:
-                Description = "No description available."
-            
-            xbmcgui.Window(10000).setProperty(DescProperty, str(Description))
-            xbmcgui.Window(10000).setProperty(SectionVotesProperty, str(entry.get('votes', '')))
+            w.setProperty(f"ParentalGuide.Desc.{y}", Description)
+            w.setProperty(f"ParentalGuide.Votes.{y}", str(entry.get('votes', '')))
             
             try:
-                MainVotes = [int(s) for s in re.findall(r'\b\d+\b', entry.get('votes', ''))]
-                xbmcgui.Window(10000).setProperty(MainVotesProperty, f"{MainVotes[0]}/{MainVotes[1]}")
+                votes_str = str(entry.get('votes', ''))
+                MainVotes = [int(s) for s in re.findall(r'\b\d+\b', votes_str)]
+                if len(MainVotes) >= 2:
+                    w.setProperty(f"ParentalGuide.MVotes.{y}", f"{MainVotes[0]}/{MainVotes[1]}")
+                elif len(MainVotes) == 1:
+                    w.setProperty(f"ParentalGuide.MVotes.{y}", f"{MainVotes[0]}")
+                else:
+                    w.setProperty(f"ParentalGuide.MVotes.{y}", "N/A")
             except:
-                xbmcgui.Window(10000).setProperty(MainVotesProperty, "N/A")
+                w.setProperty(f"ParentalGuide.MVotes.{y}", "N/A")
             
-            xbmcgui.Window(10000).setProperty(CatRating, f"tags/{str(entry.get('cat', 'NA'))}.png")
+            w.setProperty(f"ParentalGuide.Cat.{y}", f"special://home/addons/script.parentalguide/resources/skins/Default/media/tags/{str(entry.get('cat', 'NA'))}.png")
         
-        xbmcgui.Window(10000).setProperty("ParentalGuide.Desc.Summary", str(details[0].get('description', 'No description available.')))
-        xbmcgui.Window(10000).setProperty("ParentalGuide.title", 'Summary Title')
+        summary_desc = details[0].get('description', 'No description available.')
+        w.setProperty("ParentalGuide.Desc.Summary", html.unescape(str(summary_desc)))
+        w.setProperty("ParentalGuide.title", 'Summary Title')
     
     def _updateProperties(self, item, val): 
                 xbmcgui.Window(10000).setProperty(item, val)

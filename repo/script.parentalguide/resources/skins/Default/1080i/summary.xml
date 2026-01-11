@@ -1,323 +1,289 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
-    <defaultcontrol always="true">61</defaultcontrol>
-    <onload>SetFocus(4400)</onload>
-    <onload>SetProperty(Nvotes2,$INFO[Window(home).Property(NVotes)],Home)</onload>
+    <defaultcontrol always="true">4400</defaultcontrol>
     <controls>
-        <include>Object_Overlay</include>
-        <include content="Dialog_Background">
-            <include>Animation_SlideIn_Dialog</include>
-            <width>1640</width>
-            <include>Dimension_Context</include>
-            <include content="Dialog_Header">
-                <param name="id" value="1" />
-                <label>IMDB Parental Guide</label>
-            </include>
-    
-            <include content="Dialog_Group">
-                           
+        <!-- Background Overlay -->
+        <control type="button">
+            <description>Exit button</description>
+            <left>0</left>
+            <top>0</top>
+            <width>1920</width>
+            <height>1080</height>
+            <texturenofocus colordiffuse="D0000000">common/white.png</texturenofocus>
+            <texturefocus colordiffuse="D0000000">common/white.png</texturefocus>
+            <onclick>Close</onclick>
+        </control>
+
+        <!-- Main Dialog Group -->
+        <control type="group">
+            <left>160</left>
+            <top>90</top>
+            <width>1600</width>
+            <height>900</height>
+            <animation effect="fade" time="200">WindowOpen</animation>
+            <animation effect="fade" time="200">WindowClose</animation>
+            
+            <!-- Dialog Background -->
+            <control type="image">
+                <left>0</left>
+                <top>0</top>
+                <width>1600</width>
+                <height>900</height>
+                <texture colordiffuse="FF1A1A1A" border="20">common/dialog.png</texture>
+            </control>
+            
+            <!-- Dialog Border -->
+            <control type="image">
+                <left>0</left>
+                <top>0</top>
+                <width>1600</width>
+                <height>900</height>
+                <texture colordiffuse="33FFFFFF" border="20">common/dialog-outline.png</texture>
+            </control>
+
+            <!-- Header -->
+            <control type="label">
+                <left>40</left>
+                <top>20</top>
+                <width>1520</width>
+                <height>60</height>
+                <font>font_head_bold</font>
+                <textcolor>white</textcolor>
+                <label>Parental Guide</label>
+                <align>left</align>
+            </control>
+
+            <!-- Horizontal Line -->
+            <control type="image">
+                <left>40</left>
+                <top>90</top>
+                <width>1520</width>
+                <height>1</height>
+                <texture colordiffuse="33FFFFFF">common/white.png</texture>
+            </control>
+
+            <!-- Left Panel: Providers -->
+            <control type="group">
+                <left>40</left>
+                <top>110</top>
+                <width>280</width>
+                <height>750</height>
+                
                 <control type="list" id="4400">
-                    <param name="control" value="textbox" />
-                    <left>20</left>
-                    <width>800</width>
-                    <aligny>top</aligny>
-                    <visible>true</visible>
-                    <autoscroll>false</autoscroll>
-                    <orientation>horizontal</orientation>
-                    <itemgap>10</itemgap>
-                    <onup></onup>
-                    <ondown>4500</ondown>
-                    <onright>5</onright>
-                    <onleft>61</onleft>
-                    <onright>61</onright>
-                    <content>
-                        <item>
-                            <visible>!String.IsEmpty(Window(home).Property(IMDB-Status))</visible>
-                            <label>IMDB</label>
-                            <thumb>$INFO[Window(home).Property(IMDB-Icon)]</thumb>
-                            <onfocus>SetProperty(SelectedProvider,IMDB,Home)</onfocus>
-                            <onclick>SetProperty(SelectedProvider,IMDB,Home)</onclick>
-                            <onclick>SetProperty(SelectedContainer,ProviderCont,Home)</onclick>
-                            <onclick>SetFocus(4510)</onclick>
-                            <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
-                            <onclick>ClearProperty(SelectedContainer,Home)</onclick>
-                        </item>
-                        <item>
-                            <visible>!String.IsEmpty(Window(home).Property(KidsInMind-Status))</visible>
-                            <label>Kids-In-Mind</label>
-                            <thumb>$INFO[Window(home).Property(KidsInMind-Icon)]</thumb>
-                            <onfocus>SetProperty(SelectedProvider,KidsInMind,Home)</onfocus>
-                            <onclick>SetProperty(SelectedProvider,KidsInMind,Home)</onclick>
-                            <onclick>SetProperty(SelectedContainer,ProviderCont,Home)</onclick>
-                            <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
-                            <onclick>ClearProperty(SelectedContainer,Home)</onclick>
-                        </item>
-                        <item>
-                            <visible>!String.IsEmpty(Window(home).Property(MovieGuide-Status))</visible>
-                            <label>Movie Guide Org</label>
-                            <thumb>$INFO[Window(home).Property(MovieGuide-Icon)]</thumb>
-                            <onclick>SetProperty(SelectedProvider,MovieGuide,Home)</onclick>
-                            <onclick>SetProperty(SelectedContainer,ProviderCont,Home)</onclick>
-                            <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
-                            <onclick>ClearProperty(SelectedContainer,Home)</onclick>
-                        </item>
-                        <item>
-                            <visible>!String.IsEmpty(Window(home).Property(DoveFoundation-Status))</visible>
-                            <label>Dove Foundation</label>
-                            <thumb>$INFO[Window(home).Property(DoveFoundation-Icon)]</thumb>
-                            <onclick>SetProperty(SelectedProvider,DoveFoundation,Home)</onclick>
-                            <onclick>SetProperty(SelectedContainer,ProviderCont,Home)</onclick>
-                            <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
-                            <onclick>ClearProperty(SelectedContainer,Home)</onclick>
-                        </item>
-                        <item>
-                            <visible>!String.IsEmpty(Window(home).Property(CSM-Status))</visible>
-                            <label>Common Sense Media</label>
-                            <thumb>$INFO[Window(home).Property(CSM-Icon)]</thumb>
-                            <onclick>SetProperty(SelectedProvider,CSM,Home)</onclick>
-                            <onclick>SetProperty(SelectedContainer,ProviderCont,Home)</onclick>
-                            <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
-                            <onclick>ClearProperty(SelectedContainer,Home)</onclick>
-                        </item>
-                        <item>
-                            <visible>!String.IsEmpty(Window(home).Property(RaisingChildren-Status))</visible>
-                            <label>Raising Children.au</label>
-                            <thumb>$INFO[Window(home).Property(RaisingChildren-Icon)]</thumb>
-                            <onclick>SetProperty(SelectedProvider,RaisingChildren,Home)</onclick>
-                            <onclick>SetProperty(SelectedContainer,ProviderCont,Home)</onclick>
-                            <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
-                            <onclick>ClearProperty(SelectedContainer,Home)</onclick>
-                        </item>
-                    </content>
-                    <itemlayout height="60" width="800">
-                        <control type="label" id="4560">
-                                <description>Description</description>
-                                <left>55</left>
-                                <top>80</top>
-                                <right>0</right>
-                                <height>42</height>
-                                <aligny>center</aligny>
-                                <align>left</align>
-                                <font>font_button</font>
-                                <wrapmultiline>false</wrapmultiline>
-                                <info>ListItem.Label</info>
-                                <font>font_small</font>
-                        </control>
-                        <control type="image">
-                                <left>5</left>
-                                <top>80</top>
-                                <width>42</width>
-                                <height>42</height>
-                                <aligny>center</aligny>
-                                <align>left</align>
-                                <aspectratio>keep</aspectratio>
-                                <info>ListItem.Icon</info>
-                        </control>
-                    </itemlayout>
-                    <focusedlayout height="60" width="800">
-                        <control type="label">
-                                <description>Description</description>
-                                <left>55</left>
-                                <top>80</top>
-                                <right>0</right>
-                                <height>42</height>
-                                <aligny>center</aligny>
-                                <align>left</align>
-                                <wrapmultiline>false</wrapmultiline>
-                                <info>ListItem.Label</info>
-                                <font>font_small_bold</font>
-                                <textcolor>white</textcolor>
-                        </control>
-                        <control type="image">
-                                <left>5</left>
-                                <top>80</top>
-                                <width>42</width>
-                                <height>42</height>
-                                <aligny>center</aligny>
-                                <align>left</align>
-                                <aspectratio>keep</aspectratio>
-                                <info>ListItem.Icon</info>
-                        </control>
-                        <control type="button" id="4510">
-                                <description>Hidden Btn</description>
-                                <left>40</left>
-                                <top>80</top>
-                                <width>800</width>
-                                <height>50</height>
-                                <aligny>Center</aligny>
-                                <align>left</align>
-                                <wrapmultiline>false</wrapmultiline>
-                                <info>ListItem.Label</info>
-                                <label>$INFO[ListItem.Label]</label>
-                                <visible>false</visible>
-                                <color name="overlay_hard">12ffffff</color>
-                        </control>
-                    </focusedlayout>      
-                </control>
-                                           
-                <control type="list" id="4500">
-                    <param name="control" value="textbox" />
-                    <top>40</top>
-                    <left>26</left>
-                    <width>800</width>
-                    <aligny>top</aligny>
-                    <visible>true</visible>
-                    <autoscroll>false</autoscroll>
-                    <orientation>vertical</orientation>
-                    <itemgap>50</itemgap>
+                    <left>0</left>
+                    <top>0</top>
+                    <width>280</width>
+                    <height>750</height>
+                    <onright>4500</onright>
                     <onup>4400</onup>
-                    <onright>5</onright>
-                    <onleft>61</onleft>
-                    <onright>61</onright>
-                    <animation effect="slide" end="context_slide_arrow_no" condition="$EXP[Exp_ContextMenu_HasIcon]">Conditional</animation>
-                    <content>
-                        <item>
-                            <visible>!String.IsEmpty(Window(home).Property(ParentalGuide.1.Section))</visible>
-                            <label>[B]$INFO[Window(home).Property(ParentalGuide.1.Section)][/B] - $INFO[Window(home).Property(ParentalGuide.Cat.Name.1)] ($INFO[Window(home).Property(ParentalGuide.MVotes.1)])</label>
-                            <thumb>$INFO[Window(home).Property(ParentalGuide.Cat.1)]</thumb>
-                            <info>$INFO[Window(home).Property(ParentalGuide.Cat.Name.1)]</info>
-                            <onfocus>SetProperty(SelectedCat,1,Home)</onfocus>
-                            <onclick>SetProperty(SelectedCat,1,Home)</onclick>
-                            <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
-                        </item>
-                        <item>
-                            <visible>!String.IsEmpty(Window(home).Property(ParentalGuide.2.Section))</visible>
-                            <thumb>$INFO[Window(home).Property(ParentalGuide.Cat.2)]</thumb>
-                            <label>[B]$INFO[Window(home).Property(ParentalGuide.2.Section)][/B] - $INFO[Window(home).Property(ParentalGuide.Cat.Name.2)] ($INFO[Window(home).Property(ParentalGuide.MVotes.2)])</label>
-                            <onfocus>SetProperty(SelectedCat,2,Home)</onfocus>
-                            <onclick>SetProperty(SelectedCat,2,Home)</onclick>
-                            <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
-                        </item>
-                        <item>
-                            <visible>!String.IsEmpty(Window(home).Property(ParentalGuide.3.Section))</visible>
-                            <thumb>$INFO[Window(home).Property(ParentalGuide.Cat.3)]</thumb>
-                            <label>[B]$INFO[Window(home).Property(ParentalGuide.3.Section)][/B] - $INFO[Window(home).Property(ParentalGuide.Cat.Name.3)] ($INFO[Window(home).Property(ParentalGuide.MVotes.3)])</label>
-                            <onclick>SetProperty(SelectedCat,3,Home)</onclick>
-                            <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
-                        </item>
-                        <item>
-                            <visible>!String.IsEmpty(Window(home).Property(ParentalGuide.4.Section))</visible>
-                            <thumb>$INFO[Window(home).Property(ParentalGuide.Cat.4)]</thumb>
-                            <label>[B]$INFO[Window(home).Property(ParentalGuide.4.Section)][/B] - $INFO[Window(home).Property(ParentalGuide.Cat.Name.4)] ($INFO[Window(home).Property(ParentalGuide.MVotes.4)])</label>
-                            <onclick>SetProperty(SelectedCat,4,Home)</onclick>
-                            <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
-                        </item>
-                        <item>
-                            <visible>!String.IsEmpty(Window(home).Property(ParentalGuide.5.Section))</visible>
-                            <thumb>$INFO[Window(home).Property(ParentalGuide.Cat.5)]</thumb>
-                            <label>[B]$INFO[Window(home).Property(ParentalGuide.5.Section)][/B] - $INFO[Window(home).Property(ParentalGuide.Cat.Name.5)] ($INFO[Window(home).Property(ParentalGuide.MVotes.5)])</label>
-                            <onclick>SetProperty(SelectedCat,5,Home)</onclick>
-                            <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
-                        </item>
-                        <item>
-                            <visible>!String.IsEmpty(Window(home).Property(ParentalGuide.6.Section))</visible>
-                            <thumb>$INFO[Window(home).Property(ParentalGuide.Cat.6)]</thumb>
-                            <label>[B]$INFO[Window(home).Property(ParentalGuide.6.Section)][/B] - $INFO[Window(home).Property(ParentalGuide.Cat.Name.6)] ($INFO[Window(home).Property(ParentalGuide.MVotes.6)])</label>
-                            <onclick>SetProperty(SelectedCat,6,Home)</onclick>
-                            <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
-                        </item>
-                        <item>
-                            <visible>!String.IsEmpty(Window(home).Property(ParentalGuide.7.Section))</visible>
-                            <thumb>$INFO[Window(home).Property(ParentalGuide.Cat.7)]</thumb>
-                            <label>[B]$INFO[Window(home).Property(ParentalGuide.7.Section)][/B] - $INFO[Window(home).Property(ParentalGuide.Cat.Name.7)] ($INFO[Window(home).Property(ParentalGuide.MVotes.7)])</label>
-                            <onclick>SetProperty(SelectedCat,7,Home)</onclick>
-                            <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
-                        </item>
-                        <item>
-                            <visible>!String.IsEmpty(Window(home).Property(ParentalGuide.8.Section))</visible>
-                            <thumb>$INFO[Window(home).Property(ParentalGuide.Cat.8)]</thumb>
-                            <label>[B]$INFO[Window(home).Property(ParentalGuide.8.Section)][/B] - $INFO[Window(home).Property(ParentalGuide.Cat.Name.8)] ($INFO[Window(home).Property(ParentalGuide.MVotes.8)])</label>
-                            <onclick>SetProperty(SelectedCat,8,Home)</onclick>
-                        </item>
-                    </content>
-                    <itemlayout height="60" width="800">
-                        <control type="label" id="4560">
-                                <description>Description</description>
-                                <left>40</left>
-                                <top>80</top>
-                                <right>0</right>
-                                <height>100</height>
-                                <aligny>center</aligny>
-                                <align>left</align>
-                                <font>font_button</font>
-                                <wrapmultiline>false</wrapmultiline>
-                                <info>ListItem.Label</info>
-                                <font>font_small</font>
+                    <ondown>4400</ondown>
+                    <scrolltime>200</scrolltime>
+                    <itemlayout height="80" width="280">
+                        <!-- Icon with opacity for providers without data -->
+                        <control type="image">
+                            <left>10</left>
+                            <top>15</top>
+                            <width>40</width>
+                            <height>40</height>
+                            <aspectratio>keep</aspectratio>
+                            <texture>$INFO[ListItem.Icon]</texture>
+                            <colordiffuse>FFFFFFFF</colordiffuse>
+                            <visible>String.IsEqual(ListItem.Property(has_data),True)</visible>
                         </control>
                         <control type="image">
-                                <left>5</left>
-                                <top>80</top>
-                                <width>15</width>
-                                <height>100</height>
-                                <aligny>center</aligny>
-                                <align>left</align>
-                                <aspectratio>keep</aspectratio>
-                                <info>ListItem.Icon</info>
+                            <left>10</left>
+                            <top>15</top>
+                            <width>40</width>
+                            <height>40</height>
+                            <aspectratio>keep</aspectratio>
+                            <texture>$INFO[ListItem.Icon]</texture>
+                            <colordiffuse>40FFFFFF</colordiffuse>
+                            <visible>!String.IsEqual(ListItem.Property(has_data),True)</visible>
+                        </control>
+                        <!-- Label with grey for providers without data -->
+                        <control type="label">
+                            <left>60</left>
+                            <top>0</top>
+                            <width>200</width>
+                            <height>80</height>
+                            <font>font_main</font>
+                            <textcolor>grey</textcolor>
+                            <label>$INFO[ListItem.Label]</label>
+                            <aligny>center</aligny>
+                            <visible>String.IsEqual(ListItem.Property(has_data),True)</visible>
+                        </control>
+                        <control type="label">
+                            <left>60</left>
+                            <top>0</top>
+                            <width>200</width>
+                            <height>80</height>
+                            <font>font_main</font>
+                            <textcolor>40FFFFFF</textcolor>
+                            <label>$INFO[ListItem.Label]</label>
+                            <aligny>center</aligny>
+                            <visible>!String.IsEqual(ListItem.Property(has_data),True)</visible>
                         </control>
                     </itemlayout>
-                    <focusedlayout height="60" width="800">
-                        <control type="label">
-                                <description>Description</description>
-                                <left>40</left>
-                                <top>80</top>
-                                <right>0</right>
-                                <height>100</height>
-                                <aligny>center</aligny>
-                                <align>left</align>
-                                <wrapmultiline>false</wrapmultiline>
-                                <info>ListItem.Label</info>
-                                <font>font_small_bold</font>
-                                <textcolor>white</textcolor>
+                    <focusedlayout height="80" width="280">
+                        <control type="image">
+                            <left>0</left>
+                            <top>0</top>
+                            <width>280</width>
+                            <height>80</height>
+                            <texture colordiffuse="33FFFFFF">common/white.png</texture>
                         </control>
                         <control type="image">
-                                <left>5</left>
-                                <top>80</top>
-                                <width>15</width>
-                                <height>100</height>
-                                <aligny>center</aligny>
-                                <align>left</align>
-                                <aspectratio>keep</aspectratio>
-                                <info>ListItem.Icon</info>
+                            <left>10</left>
+                            <top>15</top>
+                            <width>40</width>
+                            <height>40</height>
+                            <aspectratio>keep</aspectratio>
+                            <texture>$INFO[ListItem.Icon]</texture>
                         </control>
-                        <control type="button" id="4510">
-                                <description>Hidden Btn</description>
-                                <left>40</left>
-                                <top>80</top>
-                                <width>800</width>
-                                <height>50</height>
-                                <aligny>Center</aligny>
-                                <align>left</align>
-                                <wrapmultiline>false</wrapmultiline>
-                                <info>ListItem.Label</info>
-                                <label>$INFO[ListItem.Label]</label>
-                                <visible>false</visible>
-                                <color name="overlay_hard">12ffffff</color>
+                        <control type="label">
+                            <left>60</left>
+                            <top>0</top>
+                            <width>200</width>
+                            <height>80</height>
+                            <font>font_main_bold</font>
+                            <textcolor>white</textcolor>
+                            <label>$INFO[ListItem.Label]</label>
+                            <aligny>center</aligny>
                         </control>
-                    </focusedlayout>      
+                    </focusedlayout>
                 </control>
+            </control>
+
+            <!-- Vertical Line -->
+            <control type="image">
+                <left>330</left>
+                <top>110</top>
+                <width>1</width>
+                <height>750</height>
+                <texture colordiffuse="33FFFFFF">common/white.png</texture>
+            </control>
+
+            <!-- Middle Panel: Categories -->
+            <control type="group">
+                <left>350</left>
+                <top>110</top>
+                <width>550</width>
+                <height>750</height>
+                
+                <control type="list" id="4500">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>550</width>
+                    <height>750</height>
+                    <onleft>4400</onleft>
+                    <onright>61</onright>
+                    <onup>4500</onup>
+                    <ondown>4500</ondown>
+                    <itemlayout height="80" width="550">
+                        <control type="image">
+                            <left>10</left>
+                            <top>25</top>
+                            <width>30</width>
+                            <height>30</height>
+                            <aspectratio>keep</aspectratio>
+                            <texture>$INFO[ListItem.Icon]</texture>
+                        </control>
+                        <control type="label">
+                            <left>50</left>
+                            <top>0</top>
+                            <width>480</width>
+                            <height>80</height>
+                            <font>font_main</font>
+                            <textcolor>grey</textcolor>
+                            <label>$INFO[ListItem.Label]</label>
+                            <aligny>center</aligny>
+                        </control>
+                    </itemlayout>
+                    <focusedlayout height="80" width="550">
+                        <control type="image">
+                            <left>0</left>
+                            <top>0</top>
+                            <width>550</width>
+                            <height>80</height>
+                            <texture colordiffuse="33FFFFFF">common/white.png</texture>
+                        </control>
+                        <control type="image">
+                            <left>10</left>
+                            <top>25</top>
+                            <width>30</width>
+                            <height>30</height>
+                            <aspectratio>keep</aspectratio>
+                            <texture>$INFO[ListItem.Icon]</texture>
+                        </control>
+                        <control type="label">
+                            <left>50</left>
+                            <top>0</top>
+                            <width>480</width>
+                            <height>80</height>
+                            <font>font_main_bold</font>
+                            <textcolor>white</textcolor>
+                            <label>$INFO[ListItem.Label]</label>
+                            <aligny>center</aligny>
+                        </control>
+                    </focusedlayout>
+                </control>
+            </control>
+
+            <!-- Vertical Line -->
+            <control type="image">
+                <left>920</left>
+                <top>110</top>
+                <width>1</width>
+                <height>750</height>
+                <texture colordiffuse="33FFFFFF">common/white.png</texture>
+            </control>
+
+            <!-- Right Panel: Description -->
+            <control type="group">
+                <left>940</left>
+                <top>110</top>
+                <width>620</width>
+                <height>750</height>
                 
                 <control type="textbox" id="5">
-                    <top>5</top>
-                    <right>10</right>
-                    <width>800</width>
+                    <left>0</left>
+                    <top>0</top>
+                    <width>610</width>
+                    <height>750</height>
                     <font>font_midi_plot</font>
-                    <pagecontrol>61</pagecontrol>
-                    <onleft>4500</onleft>
-                    <onright>61</onright>
-                    <label>[CR]$INFO[Window(home).Property(ParentalGuide.Desc.Summary)]</label>
+                    <textcolor>dialog_fg_90</textcolor>
                     <align>left</align>
-                    <align>topleft</align>
                     <aligny>top</aligny>
-                    <visible>true</visible>
-                </control> 
-                
-                <include content="Dialog_Scrollbar" id="61">
-                    <right>10</right>
+                    <pagecontrol>61</pagecontrol>
+                </control>
+
+                <control type="scrollbar" id="61">
+                    <left>615</left>
+                    <top>0</top>
+                    <width>8</width>
+                    <height>750</height>
                     <onleft>4500</onleft>
-                    <onright>4500</onright>
-                    <visible>true</visible>
-                </include>
-            </include>
-        </include>
+                    <onright>4400</onright>
+                    <texturesliderbackground colordiffuse="1AFFFFFF">common/white.png</texturesliderbackground>
+                    <texturesliderbar colordiffuse="33FFFFFF">common/white.png</texturesliderbar>
+                    <texturesliderbarfocus colordiffuse="white">common/white.png</texturesliderbarfocus>
+                    <orientation>vertical</orientation>
+                    <showonepage>false</showonepage>
+                </control>
+            </control>
+        </control>
     </controls>
+
+    <variable name="ParentalGuide_Plot_Var">
+        <value condition="String.IsEqual(Window(Home).Property(SelectedCat),1)">$INFO[Window(Home).Property(ParentalGuide.Desc.1)]</value>
+        <value condition="String.IsEqual(Window(Home).Property(SelectedCat),2)">$INFO[Window(Home).Property(ParentalGuide.Desc.2)]</value>
+        <value condition="String.IsEqual(Window(Home).Property(SelectedCat),3)">$INFO[Window(Home).Property(ParentalGuide.Desc.3)]</value>
+        <value condition="String.IsEqual(Window(Home).Property(SelectedCat),4)">$INFO[Window(Home).Property(ParentalGuide.Desc.4)]</value>
+        <value condition="String.IsEqual(Window(Home).Property(SelectedCat),5)">$INFO[Window(Home).Property(ParentalGuide.Desc.5)]</value>
+        <value condition="String.IsEqual(Window(Home).Property(SelectedCat),6)">$INFO[Window(Home).Property(ParentalGuide.Desc.6)]</value>
+        <value condition="String.IsEqual(Window(Home).Property(SelectedCat),7)">$INFO[Window(Home).Property(ParentalGuide.Desc.7)]</value>
+        <value condition="String.IsEqual(Window(Home).Property(SelectedCat),8)">$INFO[Window(Home).Property(ParentalGuide.Desc.8)]</value>
+        <value>$INFO[Window(Home).Property(ParentalGuide.Desc.Summary)]</value>
+    </variable>
+
 </window>

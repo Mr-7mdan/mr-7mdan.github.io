@@ -37,41 +37,64 @@ def getIsTvShow():
 def runForVideo(videoName, IMDBID, isTvShow=False):
     logger.info("ParentalGuideCore: Video Name = %s" % videoName)
     
-    params = {
-        "video_name": videoName,
-        "imdb_id": IMDBID,
-        "provider": "imdb"  # We're using IMDB as the default provider
-    }
+    # Try multiple providers until we find one with data
+    providers = ["imdb", "csm", "movieguide", "kidsinmind"]
+    details = None
+    
+    for provider in providers:
+        try:
+            params = {
+                "video_name": videoName,
+                "imdb_id": IMDBID,
+                "provider": provider
+            }
+            
+            response = requests.get(API_BASE_URL, params=params, timeout=10)
+            response.raise_for_status()
+            provider_details = response.json()
+            
+            if provider_details and 'review-items' in provider_details and provider_details['review-items'] and len(provider_details['review-items']) > 0:
+                details = provider_details
+                logger.info(f"Found data from provider: {provider}")
+                break
+        except Exception as e:
+            logger.error(f"Error fetching from {provider}: {str(e)}")
+            continue
     
     try:
-        response = requests.get(API_BASE_URL, params=params)
-        response.raise_for_status()
-        details = response.json()
-        
-        if details and 'review-items' in details:
+        if details and 'review-items' in details and details['review-items'] and len(details['review-items']) > 0:
             for entry in details['review-items']:
                 if "Sex" in entry['name']:
-                    xMainVotes = [int(s) for s in re.findall(r'\b\d+\b', entry['votes'])]
-                    if len(xMainVotes) >= 2:
-                        votes_str = f"{xMainVotes[0]}/{xMainVotes[1]}"
-                    elif len(xMainVotes) == 1:
-                        votes_str = f"{xMainVotes[0]}"
-                    else:
-                        votes_str = "N/A"
+                    votes_str = "N/A"
+                    if entry.get('votes') and entry['votes']:
+                        xMainVotes = [int(s) for s in re.findall(r'\b\d+\b', entry['votes'])]
+                        if len(xMainVotes) >= 2:
+                            votes_str = f"{xMainVotes[0]}/{xMainVotes[1]}"
+                        elif len(xMainVotes) == 1:
+                            votes_str = f"{xMainVotes[0]}"
                     xbmcgui.Window(10000).setProperty(IMDBID + '-NVotes', votes_str)
                     xbmcgui.Window(10000).setProperty(IMDBID + '-NIcon', f"tags/{entry['cat']}.png")
             
-            viewer = SummaryViewer("summary.xml", CWD, title=videoName, details=details)
-            viewer.doModal()
-            del viewer
+            try:
+                viewer = SummaryViewer("summary.xml", CWD, title=videoName, details=details, imdb_id=IMDBID, video_name=videoName)
+                viewer.doModal()
+                del viewer
+            except Exception as dialog_error:
+                logger.error(f"Error opening dialog: {str(dialog_error)}")
+                import traceback
+                logger.error(traceback.format_exc())
+                xbmc.executebuiltin('Notification(%s,%s,5000,%s)' % ("ParentalGuide", "Error opening dialog", ADDON.getAddonInfo('icon')))
         else:
+            logger.info("No review items found in response")
             xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ("ParentalGuide", "No Parental Review Found", ADDON.getAddonInfo('icon')))
     except requests.RequestException as e:
         logger.error(f"Error fetching data from API: {str(e)}")
         xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ("ParentalGuide", "Error fetching data", ADDON.getAddonInfo('icon')))
     except Exception as e:
         logger.error(f"Unexpected error in runForVideo: {str(e)}")
-        xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ("ParentalGuide", "Unexpected error occurred", ADDON.getAddonInfo('icon')))
+        import traceback
+        logger.error(traceback.format_exc())
+        xbmc.executebuiltin('Notification(%s,%s,5000,%s)' % ("ParentalGuide", "Unexpected error occurred", ADDON.getAddonInfo('icon')))
 
 def runforimdb(IMDBID):
     wid = xbmcgui.getCurrentWindowId()
