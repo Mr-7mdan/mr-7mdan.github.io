@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window>
+    <defaultcontrol always="true">4400</defaultcontrol>
+    <controls>
+        <!-- Background Overlay -->
+        <control type="button">
+            <description>Exit button</description>
+            <left>0</left>
+            <top>0</top>
+            <width>1920</width>
+            <height>1080</height>
+            <texturenofocus colordiffuse="D0000000">common/white.png</texturenofocus>
+            <texturefocus colordiffuse="D0000000">common/white.png</texturefocus>
+            <onclick>Close</onclick>
+        </control>
+
+        <!-- Main Dialog Group -->
+        <control type="group">
+            <left>160</left>
+            <top>90</top>
+            <width>1600</width>
+            <height>900</height>
+            <animation effect="fade" time="200">WindowOpen</animation>
+            <animation effect="fade" time="200">WindowClose</animation>
+            
+            <!-- Dialog Background -->
+            <control type="image">
+                <left>0</left>
+                <top>0</top>
+                <width>1600</width>
+                <height>900</height>
+                <texture colordiffuse="FF1A1A1A" border="20">common/dialog.png</texture>
+            </control>
+            
+            <!-- Dialog Border -->
+            <control type="image">
+                <left>0</left>
+                <top>0</top>
+                <width>1600</width>
+                <height>900</height>
+                <texture colordiffuse="33FFFFFF" border="20">common/dialog-outline.png</texture>
+            </control>
+
+            <!-- Header -->
+            <control type="label">
+                <left>40</left>
+                <top>20</top>
+                <width>1520</width>
+                <height>60</height>
+                <font>font_head_bold</font>
+                <textcolor>white</textcolor>
+                <label>Parental Guide</label>
+                <align>left</align>
+            </control>
+
+            <!-- Horizontal Line -->
+            <control type="image">
+                <left>40</left>
+                <top>90</top>
+                <width>1520</width>
+                <height>1</height>
+                <texture colordiffuse="33FFFFFF">common/white.png</texture>
+            </control>
+
+            <!-- Left Panel: Providers -->
+            <control type="group">
+                <left>40</left>
+                <top>110</top>
+                <width>280</width>
+                <height>750</height>
+                
+                <control type="list" id="4400">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>280</width>
+                    <height>750</height>
+                    <onright>4500</onright>
+                    <onup>4400</onup>
+                    <ondown>4400</ondown>
+                    <scrolltime>200</scrolltime>
+                    <itemlayout height="80" width="280">
+                        <!-- Icon with opacity for providers without data -->
+                        <control type="image">
+                            <left>10</left>
+                            <top>15</top>
+                            <width>40</width>
+                            <height>40</height>
+                            <aspectratio>keep</aspectratio>
+                            <texture>$INFO[ListItem.Icon]</texture>
+                            <colordiffuse>FFFFFFFF</colordiffuse>
+                            <visible>String.IsEqual(ListItem.Property(has_data),True)</visible>
+                        </control>
+                        <control type="image">
+                            <left>10</left>
+                            <top>15</top>
+                            <width>40</width>
+                            <height>40</height>
+                            <aspectratio>keep</aspectratio>
+                            <texture>$INFO[ListItem.Icon]</texture>
+                            <colordiffuse>40FFFFFF</colordiffuse>
+                            <visible>!String.IsEqual(ListItem.Property(has_data),True)</visible>
+                        </control>
+                        <!-- Label with grey for providers without data -->
+                        <control type="label">
+                            <left>60</left>
+                            <top>0</top>
+                            <width>200</width>
+                            <height>80</height>
+                            <font>font_main</font>
+                            <textcolor>grey</textcolor>
+                            <label>$INFO[ListItem.Label]</label>
+                            <aligny>center</aligny>
+                            <visible>String.IsEqual(ListItem.Property(has_data),True)</visible>
+                        </control>
+                        <control type="label">
+                            <left>60</left>
+                            <top>0</top>
+                            <width>200</width>
+                            <height>80</height>
+                            <font>font_main</font>
+                            <textcolor>40FFFFFF</textcolor>
+                            <label>$INFO[ListItem.Label]</label>
+                            <aligny>center</aligny>
+                            <visible>!String.IsEqual(ListItem.Property(has_data),True)</visible>
+                        </control>
+                    </itemlayout>
+                    <focusedlayout height="80" width="280">
+                        <control type="image">
+                            <left>0</left>
+                            <top>0</top>
+                            <width>280</width>
+                            <height>80</height>
+                            <texture colordiffuse="33FFFFFF">common/white.png</texture>
+                        </control>
+                        <control type="image">
+                            <left>10</left>
+                            <top>15</top>
+                            <width>40</width>
+                            <height>40</height>
+                            <aspectratio>keep</aspectratio>
+                            <texture>$INFO[ListItem.Icon]</texture>
+                        </control>
+                        <control type="label">
+                            <left>60</left>
+                            <top>0</top>
+                            <width>200</width>
+                            <height>80</height>
+                            <font>font_main_bold</font>
+                            <textcolor>white</textcolor>
+                            <label>$INFO[ListItem.Label]</label>
+                            <aligny>center</aligny>
+                        </control>
+                    </focusedlayout>
+                </control>
+            </control>
+
+            <!-- Vertical Line -->
+            <control type="image">
+                <left>330</left>
+                <top>110</top>
+                <width>1</width>
+                <height>750</height>
+                <texture colordiffuse="33FFFFFF">common/white.png</texture>
+            </control>
+
+            <!-- Middle Panel: Categories -->
+            <control type="group">
+                <left>350</left>
+                <top>110</top>
+                <width>550</width>
+                <height>750</height>
+                
+                <control type="list" id="4500">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>550</width>
+                    <height>750</height>
+                    <onleft>4400</onleft>
+                    <onright>61</onright>
+                    <onup>4500</onup>
+                    <ondown>4500</ondown>
+                    <itemlayout height="80" width="550">
+                        <control type="image">
+                            <left>10</left>
+                            <top>25</top>
+                            <width>30</width>
+                            <height>30</height>
+                            <aspectratio>keep</aspectratio>
+                            <texture>$INFO[ListItem.Icon]</texture>
+                        </control>
+                        <control type="label">
+                            <left>50</left>
+                            <top>0</top>
+                            <width>480</width>
+                            <height>80</height>
+                            <font>font_main</font>
+                            <textcolor>grey</textcolor>
+                            <label>$INFO[ListItem.Label]</label>
+                            <aligny>center</aligny>
+                        </control>
+                    </itemlayout>
+                    <focusedlayout height="80" width="550">
+                        <control type="image">
+                            <left>0</left>
+                            <top>0</top>
+                            <width>550</width>
+                            <height>80</height>
+                            <texture colordiffuse="33FFFFFF">common/white.png</texture>
+                        </control>
+                        <control type="image">
+                            <left>10</left>
+                            <top>25</top>
+                            <width>30</width>
+                            <height>30</height>
+                            <aspectratio>keep</aspectratio>
+                            <texture>$INFO[ListItem.Icon]</texture>
+                        </control>
+                        <control type="label">
+                            <left>50</left>
+                            <top>0</top>
+                            <width>480</width>
+                            <height>80</height>
+                            <font>font_main_bold</font>
+                            <textcolor>white</textcolor>
+                            <label>$INFO[ListItem.Label]</label>
+                            <aligny>center</aligny>
+                        </control>
+                    </focusedlayout>
+                </control>
+            </control>
+
+            <!-- Vertical Line -->
+            <control type="image">
+                <left>920</left>
+                <top>110</top>
+                <width>1</width>
+                <height>750</height>
+                <texture colordiffuse="33FFFFFF">common/white.png</texture>
+            </control>
+
+            <!-- Right Panel: Description -->
+            <control type="group">
+                <left>940</left>
+                <top>110</top>
+                <width>620</width>
+                <height>750</height>
+                
+                <control type="textbox" id="5">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>610</width>
+                    <height>750</height>
+                    <font>font_midi_plot</font>
+                    <textcolor>dialog_fg_90</textcolor>
+                    <align>left</align>
+                    <aligny>top</aligny>
+                    <pagecontrol>61</pagecontrol>
+                </control>
+
+                <control type="scrollbar" id="61">
+                    <left>615</left>
+                    <top>0</top>
+                    <width>8</width>
+                    <height>750</height>
+                    <onleft>4500</onleft>
+                    <onright>4400</onright>
+                    <texturesliderbackground colordiffuse="1AFFFFFF">common/white.png</texturesliderbackground>
+                    <texturesliderbar colordiffuse="33FFFFFF">common/white.png</texturesliderbar>
+                    <texturesliderbarfocus colordiffuse="white">common/white.png</texturesliderbarfocus>
+                    <orientation>vertical</orientation>
+                    <showonepage>false</showonepage>
+                </control>
+            </control>
+        </control>
+    </controls>
+
+    <variable name="ParentalGuide_Plot_Var">
+        <value condition="String.IsEqual(Window(Home).Property(SelectedCat),1)">$INFO[Window(Home).Property(ParentalGuide.Desc.1)]</value>
+        <value condition="String.IsEqual(Window(Home).Property(SelectedCat),2)">$INFO[Window(Home).Property(ParentalGuide.Desc.2)]</value>
+        <value condition="String.IsEqual(Window(Home).Property(SelectedCat),3)">$INFO[Window(Home).Property(ParentalGuide.Desc.3)]</value>
+        <value condition="String.IsEqual(Window(Home).Property(SelectedCat),4)">$INFO[Window(Home).Property(ParentalGuide.Desc.4)]</value>
+        <value condition="String.IsEqual(Window(Home).Property(SelectedCat),5)">$INFO[Window(Home).Property(ParentalGuide.Desc.5)]</value>
+        <value condition="String.IsEqual(Window(Home).Property(SelectedCat),6)">$INFO[Window(Home).Property(ParentalGuide.Desc.6)]</value>
+        <value condition="String.IsEqual(Window(Home).Property(SelectedCat),7)">$INFO[Window(Home).Property(ParentalGuide.Desc.7)]</value>
+        <value condition="String.IsEqual(Window(Home).Property(SelectedCat),8)">$INFO[Window(Home).Property(ParentalGuide.Desc.8)]</value>
+        <value>$INFO[Window(Home).Property(ParentalGuide.Desc.Summary)]</value>
+    </variable>
+
+</window>
