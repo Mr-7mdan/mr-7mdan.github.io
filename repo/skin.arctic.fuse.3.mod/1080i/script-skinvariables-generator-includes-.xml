@@ -705,9 +705,6 @@
     <!-- Options Tray Items -->
     <include name="skinvariables-powertray-staticitems">
 </include>
-    <!-- Options Onload Tray Check -->
-    <include name="skinvariables-powertray-onload">
-</include>
     <!-- Search Extended -->
     <include name="skinvariables-searchwidgets-combined">
         <include content="Hub_Combined_Widget">
@@ -785,7 +782,7 @@
                 <param name="groupid">702</param>
                 <param name="label">Movies</param>
                 <param name="include">List_Poster_Row</param>
-                <param name="visible">[String.IsEqual(Container(601).ListItem.Property(guid),guid-bba570e9) | String.IsEmpty(Container(601).ListItem.Property(guid))]</param>
+                <param name="visible">[String.IsEqual(Container(601).ListItem.Property(guid),guid-bba570e9) | String.IsEmpty(Container(601).ListItem.Property(guid)) | Skin.HasSetting(Search.DisableCombined)]</param>
                 <param name="altvisible">[!String.IsEmpty(Control.GetLabel(300).index(1)) + [Control.HasFocus(300) | Control.HasFocus(305)] + System.IdleTime(1) + !System.IdleTime(2)]</param>
                 <param name="busy_isupdating">[!String.IsEmpty(Control.GetLabel(300).index(1)) + [Control.HasFocus(300) | Control.HasFocus(305)] + System.IdleTime(1) + !System.IdleTime(2)]</param>
                 <param name="busy_visible">[Integer.IsEqual(Container(502).NumItems,0) | Container(502).IsUpdating]</param>
@@ -809,7 +806,7 @@
                 <param name="groupid">703</param>
                 <param name="label">TV Shows</param>
                 <param name="include">List_Poster_Row</param>
-                <param name="visible">[String.IsEqual(Container(601).ListItem.Property(guid),guid-41e34511) | String.IsEmpty(Container(601).ListItem.Property(guid))]</param>
+                <param name="visible">[String.IsEqual(Container(601).ListItem.Property(guid),guid-41e34511) | String.IsEmpty(Container(601).ListItem.Property(guid)) | Skin.HasSetting(Search.DisableCombined)]</param>
                 <param name="altvisible">[!String.IsEmpty(Control.GetLabel(300).index(1)) + [Control.HasFocus(300) | Control.HasFocus(305)] + System.IdleTime(1) + !System.IdleTime(2)]</param>
                 <param name="busy_isupdating">[!String.IsEmpty(Control.GetLabel(300).index(1)) + [Control.HasFocus(300) | Control.HasFocus(305)] + System.IdleTime(1) + !System.IdleTime(2)]</param>
                 <param name="busy_visible">[Integer.IsEqual(Container(503).NumItems,0) | Container(503).IsUpdating]</param>
@@ -833,7 +830,7 @@
                 <param name="groupid">704</param>
                 <param name="label">Albums</param>
                 <param name="include">List_Square_Row</param>
-                <param name="visible">[String.IsEqual(Container(601).ListItem.Property(guid),guid-60c7b4b4) | String.IsEmpty(Container(601).ListItem.Property(guid))]</param>
+                <param name="visible">[String.IsEqual(Container(601).ListItem.Property(guid),guid-60c7b4b4) | String.IsEmpty(Container(601).ListItem.Property(guid)) | Skin.HasSetting(Search.DisableCombined)]</param>
                 <param name="altvisible">[!String.IsEmpty(Control.GetLabel(300).index(1)) + [Control.HasFocus(300) | Control.HasFocus(305)] + System.IdleTime(1) + !System.IdleTime(2)]</param>
                 <param name="busy_isupdating">[!String.IsEmpty(Control.GetLabel(300).index(1)) + [Control.HasFocus(300) | Control.HasFocus(305)] + System.IdleTime(1) + !System.IdleTime(2)]</param>
                 <param name="busy_visible">[Integer.IsEqual(Container(504).NumItems,0) | Container(504).IsUpdating]</param>
@@ -857,7 +854,7 @@
                 <param name="groupid">705</param>
                 <param name="label">Artists</param>
                 <param name="include">List_Square_Row</param>
-                <param name="visible">[String.IsEqual(Container(601).ListItem.Property(guid),guid-a802e4fb) | String.IsEmpty(Container(601).ListItem.Property(guid))]</param>
+                <param name="visible">[String.IsEqual(Container(601).ListItem.Property(guid),guid-a802e4fb) | String.IsEmpty(Container(601).ListItem.Property(guid)) | Skin.HasSetting(Search.DisableCombined)]</param>
                 <param name="altvisible">[!String.IsEmpty(Control.GetLabel(300).index(1)) + [Control.HasFocus(300) | Control.HasFocus(305)] + System.IdleTime(1) + !System.IdleTime(2)]</param>
                 <param name="busy_isupdating">[!String.IsEmpty(Control.GetLabel(300).index(1)) + [Control.HasFocus(300) | Control.HasFocus(305)] + System.IdleTime(1) + !System.IdleTime(2)]</param>
                 <param name="busy_visible">[Integer.IsEqual(Container(505).NumItems,0) | Container(505).IsUpdating]</param>
@@ -881,7 +878,7 @@
                 <param name="groupid">706</param>
                 <param name="label">Movies (TMDb)</param>
                 <param name="include">List_Poster_Row</param>
-                <param name="visible">[String.IsEqual(Container(601).ListItem.Property(guid),guid-40dbc11e) | String.IsEmpty(Container(601).ListItem.Property(guid))]</param>
+                <param name="visible">[String.IsEqual(Container(601).ListItem.Property(guid),guid-40dbc11e) | String.IsEmpty(Container(601).ListItem.Property(guid)) | Skin.HasSetting(Search.DisableCombined)]</param>
                 <param name="altvisible">[!String.IsEmpty(Control.GetLabel(300).index(1)) + [Control.HasFocus(300) | Control.HasFocus(305)] + System.IdleTime(1) + !System.IdleTime(2)]</param>
                 <param name="busy_isupdating">[!String.IsEmpty(Control.GetLabel(300).index(1)) + [Control.HasFocus(300) | Control.HasFocus(305)] + System.IdleTime(1) + !System.IdleTime(2)]</param>
                 <param name="busy_visible">[Integer.IsEqual(Container(506).NumItems,0) | Container(506).IsUpdating]</param>
@@ -905,7 +902,7 @@
                 <param name="groupid">707</param>
                 <param name="label">TV Shows (TMDb)</param>
                 <param name="include">List_Poster_Row</param>
-                <param name="visible">[String.IsEqual(Container(601).ListItem.Property(guid),guid-a673eb36) | String.IsEmpty(Container(601).ListItem.Property(guid))]</param>
+                <param name="visible">[String.IsEqual(Container(601).ListItem.Property(guid),guid-a673eb36) | String.IsEmpty(Container(601).ListItem.Property(guid)) | Skin.HasSetting(Search.DisableCombined)]</param>
                 <param name="altvisible">[!String.IsEmpty(Control.GetLabel(300).index(1)) + [Control.HasFocus(300) | Control.HasFocus(305)] + System.IdleTime(1) + !System.IdleTime(2)]</param>
                 <param name="busy_isupdating">[!String.IsEmpty(Control.GetLabel(300).index(1)) + [Control.HasFocus(300) | Control.HasFocus(305)] + System.IdleTime(1) + !System.IdleTime(2)]</param>
                 <param name="busy_visible">[Integer.IsEqual(Container(507).NumItems,0) | Container(507).IsUpdating]</param>

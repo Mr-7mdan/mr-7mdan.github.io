@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <includes>
 
+    <variable name="Action_SearchEnabled">
+        <value condition="!Skin.HasSetting(HomeSwitcher.DisableSearch)">true</value>
+    </variable>
+
     <variable name="Action_FirstStart_HomeFocus">
         <value condition="Skin.HasSetting(HomeSwitcher.DisableFirstWidgetFocus)">SetFocus(300)</value>
         <value condition="!String.IsEmpty(Skin.String(HomeSwitcher.Home.Spotlight.Target))">SetFocus(310)</value>
@@ -73,7 +77,6 @@
 
         <!-- Check for options tray -->
         <onload>Skin.SetBool(Options.DisableBottomTray)</onload>
-        <include>skinvariables-powertray-onload</include>
     </include>
 
     <variable name="Action_View_ContainerID">
@@ -133,9 +136,6 @@
 
     <include name="Action_SettingsCategories_Onload">
         <defaultcontrol always="true">$PARAM[defaultcontrol]</defaultcontrol>
-        <onload condition="!String.IsEmpty(Window(Home).Property(SettingsChanger.Switch))">SetFocus($INFO[Window(Home).Property(SettingsChanger.Switch)])</onload>
-        <onload condition="String.IsEmpty(Window(Home).Property(SettingsChanger.Switch))">SetFocus($PARAM[defaultcontrol])</onload>
-        <onload>ClearProperty(SettingsChanger.Switch,Home)</onload>
         <onload>ClearProperty(Background.ShowOverlay,Home)</onload>
         <include>Action_BlurImage_SimpleBackground_Onload</include>
         <menucontrol>30000</menucontrol>
@@ -171,6 +171,8 @@
         <value condition="Window.IsVisible(programs)">programs</value>
         <value condition="Window.IsVisible(tvchannels)">tvchannels</value>
         <value condition="Window.IsVisible(tvguide)">tvguide</value>
+        <value condition="Window.IsVisible(musicplaylist)">musicplaylist</value>
+        <value condition="Window.IsVisible(videoplaylist)">videoplaylist</value>
     </variable>
 
     <include name="Action_BuildShortcuts_OnLoad">
@@ -334,7 +336,7 @@
 
     <variable name="Action_Shortcut_SetWidgetStyle">
         <value condition="String.IsEmpty(Container(22001).ListItem.Property(url))" />
-        <value>RunPlugin($INFO[Container(22001).ListItem.Property(url)]&amp;func=do_edit&amp;&amp;widget_style&amp;&amp;$LOCALIZE[20021]=Poster&amp;$LOCALIZE[31045]=Landscape&amp;$LOCALIZE[31320]=Square&amp;$LOCALIZE[31424]=Board&amp;$LOCALIZE[31431]=Circle&amp;&amp;$LOCALIZE[736]&amp;&amp;True)</value>
+        <value>RunPlugin($INFO[Container(22001).ListItem.Property(url)]&amp;func=do_edit&amp;&amp;widget_style&amp;&amp;$LOCALIZE[20021]=Poster&amp;$LOCALIZE[31045]=Landscape&amp;$LOCALIZE[31320]=Square&amp;$LOCALIZE[31424]=Board&amp;$LOCALIZE[31431]=Circle&amp;$LOCALIZE[31423]=Card&amp;&amp;$LOCALIZE[736]&amp;&amp;True)</value>
     </variable>
 
     <variable name="Action_FullscreenWidget_InfoButton">
