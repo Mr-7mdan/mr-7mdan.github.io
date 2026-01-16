@@ -1702,7 +1702,6 @@
                     <include content="Object_TraktOverlays" condition="$PARAM[indicator] + [Skin.HasSetting(Indicator.TraktWatchlist) | Skin.HasSetting(Indicator.TraktFavourites)]">
                         <param name="listitem">$PARAM[listitem]</param>
                     </include>
-                    <include condition="Skin.HasSetting(Indicator.Ratings)">Object_RatingOverlay</include>
                     <include condition="!$PARAM[selected]" content="Object_Indicator">
                         <param name="affix">$PARAM[affix]</param>
                         <param name="listitem">$PARAM[listitem]</param>
@@ -1745,7 +1744,6 @@
                     <include content="Object_TraktOverlays" condition="$PARAM[indicator] + [Skin.HasSetting(Indicator.TraktWatchlist) | Skin.HasSetting(Indicator.TraktFavourites)]">
                         <param name="listitem">$PARAM[listitem]</param>
                     </include>
-                    <include condition="Skin.HasSetting(Indicator.Ratings)">Object_RatingOverlay</include>
                 </control>
                 <control type="group">
                     <include condition="!$PARAM[selected]" content="Object_Indicator">
@@ -1781,7 +1779,6 @@
                         <aspectratio scalediffuse="false">keep</aspectratio>
                         <texture background="true" diffuse="diffuse/landscape_w1140_h680.png">$INFO[ListItem.Icon]</texture>
                     </control>
-                    <include condition="Skin.HasSetting(Indicator.Ratings)">Object_RatingOverlay</include>
                 </control>
                 <control type="group">
                     <include content="Object_SelectBox" condition="$PARAM[selected]">
@@ -1857,7 +1854,6 @@
                     <include content="Object_TraktOverlays" condition="$PARAM[indicator] + [Skin.HasSetting(Indicator.TraktWatchlist) | Skin.HasSetting(Indicator.TraktFavourites)]">
                         <param name="listitem">$PARAM[listitem]</param>
                     </include>
-                    <include condition="Skin.HasSetting(Indicator.Ratings)">Object_RatingOverlay</include>
                     <include condition="!$PARAM[selected] + $PARAM[indicator]" content="Object_Indicator">
                         <param name="affix">$PARAM[affix]</param>
                         <param name="listitem">$PARAM[listitem]</param>
@@ -2010,7 +2006,6 @@
                     <include content="Object_ProgressLine">
                         <param name="progress">$PARAM[listitem].$PARAM[progress]</param>
                     </include>
-                    <include condition="Skin.HasSetting(Indicator.Ratings)">Object_RatingOverlay</include>
                     <include content="Object_Indicator" condition="!$PARAM[selected] + ![$PARAM[detailed]]">
                         <param name="affix">$PARAM[affix]</param>
                         <param name="listitem">$PARAM[listitem]</param>
@@ -2251,8 +2246,6 @@
                 <include content="Object_TraktOverlays" condition="$PARAM[indicator] + [Skin.HasSetting(Indicator.TraktWatchlist) | Skin.HasSetting(Indicator.TraktFavourites)]">
                     <param name="listitem">$PARAM[listitem]</param>
                 </include>
-
-                <include condition="Skin.HasSetting(Indicator.Ratings)">Object_RatingOverlay</include>
 
                 <include content="Layout_Labels" condition="![$PARAM[detailed]]">
                     <param name="top">10</param>

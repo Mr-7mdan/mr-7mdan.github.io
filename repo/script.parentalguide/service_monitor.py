@@ -99,9 +99,26 @@ class ParentalGuideMonitor(xbmc.Monitor):
         
         return True
     
+    def fetch_provider_data_and_update(self, title, imdb_id, session, wid, provider, order):
+        """
+        Wrapper to fetch data for a single provider and immediately copy to global properties.
+        This allows indicators to appear as soon as each provider completes.
+        """
+        try:
+            # Fetch data for this provider
+            NudityCheck.getData(title, imdb_id, session, wid, provider, order)
+            
+            # Immediately copy this provider's properties to global for display
+            NudityCheck.CopyPropertiesToGlobal(imdb_id, [provider])
+            
+            logger.info(f"ParentalGuideMonitor: Provider {provider} completed and properties updated")
+        except Exception as e:
+            logger.error(f"ParentalGuideMonitor: Error fetching {provider}: {str(e)}")
+    
     def fetch_parental_guide_data(self, item_info):
         """
         Fetch parental guide data for the given item using existing NudityCheck functions.
+        Each provider updates properties immediately upon completion for progressive display.
         """
         try:
             logger.info(f"ParentalGuideMonitor: Fetching data for {item_info['title']}")
@@ -140,13 +157,16 @@ class ParentalGuideMonitor(xbmc.Monitor):
             
             if not providers:
                 logger.info("ParentalGuideMonitor: No providers enabled")
+                # Clear loading indicator
+                xbmcgui.Window(10000).clearProperty("ParentalGuide-Loading")
                 return
             
             # Fetch data from each provider in parallel threads
+            # Each thread will update properties immediately upon completion
             threads = []
             for i, provider in enumerate(providers):
                 thread = Thread(
-                    target=NudityCheck.getData,
+                    target=self.fetch_provider_data_and_update,
                     args=(title, imdb_id, session, wid, provider, i)
                 )
                 thread.start()
@@ -156,11 +176,7 @@ class ParentalGuideMonitor(xbmc.Monitor):
             for thread in threads:
                 thread.join(timeout=10)
             
-            # Copy unique properties to global properties for the current focused item
-            # This prevents race conditions while maintaining skin compatibility
-            NudityCheck.CopyPropertiesToGlobal(imdb_id, providers)
-            
-            # Clear loading indicator
+            # Clear loading indicator after all providers complete
             xbmcgui.Window(10000).clearProperty("ParentalGuide-Loading")
             
             logger.info(f"ParentalGuideMonitor: Finished fetching data for {title}")

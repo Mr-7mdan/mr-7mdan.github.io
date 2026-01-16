@@ -130,7 +130,7 @@
                     <param name="plotwidth">$PARAM[plotwidth]</param>
                     <param name="is_player">$PARAM[is_player]</param>
                     <param name="include_title">true</param>
-                    <param name="include_details">false</param>
+                    <param name="include_details">true</param>
                     <param name="mainlogo_visible">!String.IsEmpty(Window(Home).Property(TMDbHelper.ListITem.Current.CropImage))</param>
                     <param name="mainlogo_texture">$INFO[Window(Home).Property(TMDbHelper.ListITem.Current.CropImage)]</param>
                 </include>
@@ -158,6 +158,7 @@
                     <param name="mainlogo_texture">$PARAM[mainlogo_texture]</param>
                     <param name="is_player">$PARAM[is_player]</param>
                     <param name="include_title">false</param>
+                    <param name="include_details">true</param>
                 </include>
                 <include content="Info_Panel" condition="String.IsEqual(ListItem.Property(tmdb_type),person)">
                     <param name="plotmaxheight">560</param>
