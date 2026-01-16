@@ -2092,4 +2092,33 @@
         <description>Empty include to pass to params</description>
     </include>
 
+    <include name="Object_RatingOverlay">
+        <control type="group">
+            <left>15</left>
+            <top>15</top>
+            <width>50</width>
+            <height>50</height>
+            <visible>Skin.HasSetting(Indicator.Ratings) + !String.IsEmpty(ListItem.Rating)</visible>
+            <control type="image">
+                <bordersize>-15</bordersize>
+                <texture colordiffuse="60FFFFFF">progress/circle/p100.png</texture>
+            </control>
+            <control type="image">
+                <bordersize>-15</bordersize>
+                <texture colordiffuse="FFFFFFFF">$INFO[$VAR[RatingOverlay_Source],progress/circle/p,.png]</texture>
+            </control>
+            <control type="image">
+                <bordersize>2</bordersize>
+                <texture colordiffuse="E0000000">common/circle.png</texture>
+            </control>
+            <control type="label">
+                <label>$VAR[RatingOverlay_Source]</label>
+                <align>center</align>
+                <font>font_hint</font>
+                <textcolor>FFFFFFFF</textcolor>
+                <aligny>center</aligny>
+            </control>
+        </control>
+    </include>
+
 </includes>

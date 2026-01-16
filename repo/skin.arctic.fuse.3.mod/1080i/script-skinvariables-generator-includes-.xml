@@ -5,7 +5,7 @@
         <include content="Hub_Wall_Widget">
             <param name="id">501</param>
             <param name="content">plugin://plugin.video.themoviedb.helper/?info=trakt_userlist&amp;list_slug=imdb-moviemeter-top-100&amp;tmdb_type=movie&amp;user_slug=linaspurinis&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</param>
-            <param name="include">List_Landscape_Row</param>
+            <param name="include">List_Poster_Row</param>
             <param name="target">videos</param>
             <param name="sortby"/>
             <param name="sortorder">ascending</param>
@@ -15,7 +15,7 @@
         <include content="Hub_Wall_Widget">
             <param name="id">502</param>
             <param name="content">plugin://plugin.video.themoviedb.helper/?info=trakt_userlist&amp;list_slug=best-movies-last-decade&amp;tmdb_type=movie&amp;user_slug=jurialmunkey&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</param>
-            <param name="include">List_Landscape_Row</param>
+            <param name="include">List_Poster_Row</param>
             <param name="target">videos</param>
             <param name="sortby"/>
             <param name="sortorder">ascending</param>
@@ -104,7 +104,7 @@
         <include content="Hub_Combined_Widget">
             <param name="id">501</param>
             <param name="content">plugin://plugin.video.themoviedb.helper/?info=trakt_userlist&amp;list_slug=imdb-moviemeter-top-100&amp;tmdb_type=movie&amp;user_slug=linaspurinis&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</param>
-            <param name="include">List_Landscape_Row</param>
+            <param name="include">List_Poster_Row</param>
             <param name="target">videos</param>
             <param name="sortby"/>
             <param name="sortorder">ascending</param>
@@ -114,7 +114,7 @@
         <include content="Hub_Combined_Widget">
             <param name="id">502</param>
             <param name="content">plugin://plugin.video.themoviedb.helper/?info=trakt_userlist&amp;list_slug=best-movies-last-decade&amp;tmdb_type=movie&amp;user_slug=jurialmunkey&amp;widget=true&amp;reload=$INFO[Window(Home).Property(TMDbHelper.Widgets.Reload)]</param>
-            <param name="include">List_Landscape_Row</param>
+            <param name="include">List_Poster_Row</param>
             <param name="target">videos</param>
             <param name="sortby"/>
             <param name="sortorder">ascending</param>
@@ -204,7 +204,7 @@
                 <param name="groupid">701</param>
                 <param name="label">IMDb Top 100 Moviemeter</param>
                 <param name="usewidgetlabel">False</param>
-                <param name="include">List_Landscape_Row</param>
+                <param name="include">List_Poster_Row</param>
                 <param name="grouplistid">602</param>
                 <param name="refocus">SetFocus(302)</param>
                 <param name="detailed">False</param>
@@ -230,7 +230,7 @@
                 <param name="groupid">702</param>
                 <param name="label">Best Movies Last Decade</param>
                 <param name="usewidgetlabel">False</param>
-                <param name="include">List_Landscape_Row</param>
+                <param name="include">List_Poster_Row</param>
                 <param name="grouplistid">602</param>
                 <param name="refocus">SetFocus(302)</param>
                 <param name="detailed">False</param>
@@ -704,6 +704,9 @@
     </include>
     <!-- Options Tray Items -->
     <include name="skinvariables-powertray-staticitems">
+</include>
+    <!-- Options Onload Tray Check -->
+    <include name="skinvariables-powertray-onload">
 </include>
     <!-- Search Extended -->
     <include name="skinvariables-searchwidgets-combined">

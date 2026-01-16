@@ -5,6 +5,9 @@ import xbmcgui
 from resources.lib.settings import Settings
 from resources.lib.settings import log
 
+# Import the background monitor
+import service_monitor
+
 
 ###################################
 # Main of the ParentalGuide Service
@@ -21,3 +24,7 @@ if __name__ == '__main__':
         xbmcgui.Window(10025).clearProperty("ParentalGuideHideContextMenu")
 
     xbmcgui.Window(10025).setProperty("ParentalGuideTestContextMenu", "true")
+    
+    # Start the background monitor for automatic parental guide updates
+    log("ParentalGuide: Starting background monitor")
+    service_monitor.start_monitor()

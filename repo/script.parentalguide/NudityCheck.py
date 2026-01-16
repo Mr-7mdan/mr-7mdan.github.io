@@ -66,6 +66,27 @@ def getData(videoName, ID, Session, wid, Provider, order):
     today = datetime.date.today()
     year = today.year
     
+    # Read cache duration settings from addon settings
+    try:
+        cache_current_year = int(ADDON.getSetting("cacheCurrentYear")) * 24 * 60 * 60
+    except:
+        cache_current_year = 7 * 24 * 60 * 60  # Default 7 days
+    
+    try:
+        cache_recent_items = int(ADDON.getSetting("cacheRecentItems")) * 24 * 60 * 60
+    except:
+        cache_recent_items = 210 * 24 * 60 * 60  # Default 210 days (30 weeks)
+    
+    try:
+        cache_older_items = int(ADDON.getSetting("cacheOlderItems")) * 24 * 60 * 60
+    except:
+        cache_older_items = 0  # Default permanent (0 = no expiry)
+    
+    try:
+        cache_missing_ratings = int(ADDON.getSetting("cacheMissingRatings")) * 24 * 60 * 60
+    except:
+        cache_missing_ratings = 3 * 24 * 60 * 60  # Default 3 days
+    
     try:
         if ID is not None:
             key = ID + "_" + Provider.lower()
@@ -92,26 +113,28 @@ def getData(videoName, ID, Session, wid, Provider, order):
                         "review-link": None
                         }
             logger.info("Trying to save blank data for this movie (" + videoName + ") on [" + Provider + "]")
-            safe_db_set(Xshow_info, 1*24*60)
-            AddFurnitureProperties(Xshow_info, Provider, wid)
+            # Use cache_missing_ratings setting for items without ratings
+            safe_db_set(Xshow_info, cache_missing_ratings)
+            AddFurnitureProperties(Xshow_info, Provider, wid, ID)
         else:
             logger.info('Finished loading new data for [%s][%s] \n' % (videoName, Provider)+ str(show_info))
             AddXMLProperties(show_info,wid)
-            AddFurnitureProperties(show_info, Provider, wid)
+            AddFurnitureProperties(show_info, Provider, wid, ID)
             
+            # Conditional caching based on release year using settings
             if year == RYear:
-                exp = 1*7*24*60*60
+                exp = cache_current_year  # Current year items
             elif year - RYear > 2:
-                exp = 0
+                exp = cache_older_items  # Older items (>2 years)
             else:
-                exp = 30*7*24*60*60
+                exp = cache_recent_items  # Recent items (1-2 years)
                 
             safe_db_set(show_info, exp)
-            logger.info("Added New Data for "+videoName + "[" + Provider +"] to cache sucessfully" )
+            logger.info("Added New Data for "+videoName + "[" + Provider +"] to cache sucessfully with expiry: " + str(exp) + " seconds" )
     else:
         logger.info("Loading from cache : Cache found for " +videoName + "[" + Provider +"]\n"+ str(show_info))
         AddXMLProperties(show_info,wid)
-        AddFurnitureProperties(show_info, Provider, wid)
+        AddFurnitureProperties(show_info, Provider, wid, ID)
         logger.info("Data from cache for "+videoName + "[" + Provider +"] \n")
     return show_info
 
@@ -180,27 +203,52 @@ def AddXMLProperties(review, WindowID):
         #WID.setProperty("PG.URL".format(i), review['review-link'])
         #WID.setProperty("PG.Provider".format(i), review['provider'])
 
-def AddFurnitureProperties(review, provider, WindowID):
+def AddFurnitureProperties(review, provider, WindowID, imdb_id=None):
+    """
+    Set parental guide properties with unique keys per movie ID to prevent race conditions.
+    Provider icons are global, but severity data is unique per movie.
+    
+    Args:
+        review: Review data from API or cache
+        provider: Provider name (IMDB, KidsInMind, etc.)
+        WindowID: Window ID (not used, keeping for compatibility)
+        imdb_id: IMDB ID for unique property keys
+    """
     Suffix = provider
     WID = xbmcgui.Window(10000) # Force Home window for furniture properties
     
-    # Always set the provider icon
+    # Always set the provider icon (global - never changes)
     WID.setProperty(f"{Suffix}-Icon", f"special://home/addons/script.parentalguide/resources/skins/Default/media/providers/{Suffix}.png")
     
-    if review in [None, "", " "] or 'review-items' not in review or not review['review-items']:
-        WID.setProperty(f"{Suffix}-NRate", " NA")
-        WID.setProperty(f"{Suffix}-NVotes", " NA")
-        WID.setProperty(f"{Suffix}-Age", " NA")
-        WID.setProperty(f"{Suffix}-NIcon", "special://home/addons/script.parentalguide/resources/skins/Default/media/tags/Unknown.png")
-        WID.setProperty(f"{Suffix}-Status", 'false')
+    # If no IMDB ID, fall back to global properties (backward compatibility)
+    if not imdb_id or imdb_id == '':
+        property_prefix = Suffix
     else:
-        WID.setProperty(f"{Suffix}-Status", 'true')
+        property_prefix = f"{imdb_id}-{Suffix}"
+    
+    if review in [None, "", " "] or 'review-items' not in review or not review['review-items']:
+        # Don't set NA properties - just clear them so visibility conditions hide the indicators
+        WID.clearProperty(f"{property_prefix}-NRate")
+        WID.clearProperty(f"{property_prefix}-NVotes")
+        WID.clearProperty(f"{property_prefix}-Age")
+        WID.clearProperty(f"{property_prefix}-NIcon")
+        WID.setProperty(f"{property_prefix}-Status", 'false')
+    else:
+        WID.setProperty(f"{property_prefix}-Status", 'true')
         
+        # Set recommended age if available (for CSM and similar providers)
+        if review.get('recommended-age'):
+            WID.setProperty(f"{property_prefix}-Age", review['recommended-age'])
+        else:
+            WID.clearProperty(f"{property_prefix}-Age")
+        
+        found_nudity = False
         for entry in review['review-items']:
             if entry['name'] in ["Sex & Nudity", "Nudity"]:
-                WID.setProperty(f"{Suffix}-toggle", "true")
-                WID.setProperty(f"{Suffix}-NRate", f" {entry['cat']}")
-                WID.setProperty(f"{Suffix}-NIcon", f"special://home/addons/script.parentalguide/resources/skins/Default/media/tags/{entry['cat']}.png")
+                found_nudity = True
+                WID.setProperty(f"{property_prefix}-toggle", "true")
+                WID.setProperty(f"{property_prefix}-NRate", f" {entry['cat']}")
+                WID.setProperty(f"{property_prefix}-NIcon", f"special://home/addons/script.parentalguide/resources/skins/Default/media/tags/{entry['cat']}.png")
                 try:
                     if entry.get('votes'):
                         xMainVotes = [int(s) for s in re.findall(r'\b\d+\b', entry['votes'])]
@@ -212,21 +260,75 @@ def AddFurnitureProperties(review, provider, WindowID):
                             votesProp = f" {entry['cat']} ({entry['votes']})"
                     else:
                         votesProp = f" {entry['cat']} (No votes)"
-                    WID.setProperty(f"{Suffix}-NVotes", votesProp)
+                    WID.setProperty(f"{property_prefix}-NVotes", votesProp)
                 except Exception as e:
                     logger.error(f"Error setting votes for {Suffix}: {str(e)}")
-                    WID.setProperty(f"{Suffix}-NVotes", f" {entry['cat']} (Error parsing votes)")
+                    WID.setProperty(f"{property_prefix}-NVotes", f" {entry['cat']} (Error parsing votes)")
                 
                 break
         
-        if WID.getProperty(f"{Suffix}-NRate") in [None, ""]:
-            WID.setProperty(f"{Suffix}-NVotes", " NA")
-            WID.setProperty(f"{Suffix}-NRate", " NA")
-            WID.setProperty(f"{Suffix}-Age", " NA")
-            WID.setProperty(f"{Suffix}-NIcon", "special://home/addons/script.parentalguide/resources/skins/Default/media/tags/Unknown.png")
+        # If no nudity section found, clear nudity-specific properties but keep Age
+        if not found_nudity:
+            WID.clearProperty(f"{property_prefix}-NRate")
+            WID.clearProperty(f"{property_prefix}-NVotes")
+            WID.clearProperty(f"{property_prefix}-NIcon")
     
-    logger.info(f"AddFurnitureProperties: Finished for provider {Suffix}")
-    logger.info(f"Set properties: NRate={WID.getProperty(f'{Suffix}-NRate')}, NVotes={WID.getProperty(f'{Suffix}-NVotes')}, NIcon={WID.getProperty(f'{Suffix}-NIcon')}")
+    logger.info(f"AddFurnitureProperties: Finished for provider {Suffix} with IMDB ID {imdb_id}")
+    logger.info(f"Set properties: NRate={WID.getProperty(f'{property_prefix}-NRate')}, NVotes={WID.getProperty(f'{property_prefix}-NVotes')}, NIcon={WID.getProperty(f'{property_prefix}-NIcon')}")
+
+def ClearGlobalProperties(providers):
+    """
+    Clear all global parental guide properties for all providers.
+    Called when item changes to prevent stale data from showing.
+    
+    Args:
+        providers: List of provider names to clear properties for
+    """
+    WID = xbmcgui.Window(10000)
+    
+    properties_to_clear = ['NRate', 'NVotes', 'Age', 'NIcon', 'Status', 'toggle']
+    
+    for provider in providers:
+        for prop in properties_to_clear:
+            global_prop_name = f"{provider}-{prop}"
+            WID.clearProperty(global_prop_name)
+    
+    logger.info(f"ClearGlobalProperties: Cleared properties for {len(providers)} providers")
+
+def CopyPropertiesToGlobal(imdb_id, providers):
+    """
+    Copy unique properties for a specific movie to global properties.
+    This allows the skin to read global properties while avoiding race conditions.
+    
+    Args:
+        imdb_id: IMDB ID of the focused movie
+        providers: List of provider names to copy properties for
+    """
+    WID = xbmcgui.Window(10000)
+    
+    for provider in providers:
+        if not imdb_id or imdb_id == '':
+            # No IMDB ID, properties are already global
+            continue
+            
+        property_prefix = f"{imdb_id}-{provider}"
+        
+        # Copy unique properties to global properties
+        # Provider icon is already global, so skip it
+        properties_to_copy = ['NRate', 'NVotes', 'Age', 'NIcon', 'Status', 'toggle']
+        
+        for prop in properties_to_copy:
+            unique_prop_name = f"{property_prefix}-{prop}"
+            global_prop_name = f"{provider}-{prop}"
+            
+            value = WID.getProperty(unique_prop_name)
+            if value:
+                WID.setProperty(global_prop_name, value)
+            else:
+                # Clear global property if unique property is empty
+                WID.clearProperty(global_prop_name)
+        
+        logger.info(f"CopyPropertiesToGlobal: Copied properties for {provider} (IMDB: {imdb_id})")
 
 # Replace the existing db.set() calls with:
 def safe_db_set(show_info, timeout):
@@ -317,7 +419,12 @@ if __name__ == '__main__':
             
         
         #logger.info(Results)
-            
+        
+        # Copy unique properties to global properties for the dialog
+        # This ensures the skin can display the parental guide indicators
+        if IMDBID and ProvidersList:
+            CopyPropertiesToGlobal(IMDBID, ProvidersList)
+            logger.info("ParentalGuide: Copied properties to global for dialog display")
         
         
         # with ThreadPoolExecutor(max_workers=100) as p:

@@ -149,6 +149,8 @@
 
         <include condition="String.IsEqual(Window(Home).Property(CustomDialogSettingsItems),DialogCustom_Settings_Items_Indicators)">DialogCustom_Settings_Items_Indicators</include>
 
+        <include condition="String.IsEqual(Window(Home).Property(CustomDialogSettingsItems),DialogCustom_RatingOverlay_Source_Items)">DialogCustom_RatingOverlay_Source_Items</include>
+
         <include condition="String.IsEqual(Window(Home).Property(CustomDialogSettingsItems),DialogCustom_Autoscroll_Items)">DialogCustom_Autoscroll_Items</include>
         <include condition="String.IsEqual(Window(Home).Property(CustomDialogSettingsItems),DialogCustom_VideoOSD_Items)">DialogCustom_VideoOSD_Items</include>
         <include condition="String.IsEqual(Window(Home).Property(CustomDialogSettingsItems),DialogCustom_VideoInfo_Items)">DialogCustom_VideoInfo_Items</include>
@@ -695,6 +697,169 @@
         </include>
     </include>
 
+    <include name="DialogCustom_RatingOverlay_Source_Items">
+        <include content="Settings_Button">
+            <param name="id">8001</param>
+            <param name="control">radiobutton</param>
+            <param name="dialog">true</param>
+            <onclick>Skin.Reset(RatingOverlaySource.TMDb)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.IMDb)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Trakt)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Metacritic)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.RottenTomatoes)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.RottenTomatoesUser)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.MDBList)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Letterboxd)</onclick>
+            <onclick>Close</onclick>
+            <selected>!Skin.HasSetting(RatingOverlaySource.TMDb) + !Skin.HasSetting(RatingOverlaySource.IMDb) + !Skin.HasSetting(RatingOverlaySource.Trakt) + !Skin.HasSetting(RatingOverlaySource.Metacritic) + !Skin.HasSetting(RatingOverlaySource.RottenTomatoes) + !Skin.HasSetting(RatingOverlaySource.RottenTomatoesUser) + !Skin.HasSetting(RatingOverlaySource.MDBList) + !Skin.HasSetting(RatingOverlaySource.Letterboxd)</selected>
+            <label>Default (ListItem)</label>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="id">8002</param>
+            <param name="control">radiobutton</param>
+            <param name="dialog">true</param>
+            <onclick>Skin.Reset(RatingOverlaySource.TMDb)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.IMDb)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Trakt)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Metacritic)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.RottenTomatoes)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.RottenTomatoesUser)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.MDBList)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Letterboxd)</onclick>
+            <onclick>Skin.SetBool(RatingOverlaySource.TMDb)</onclick>
+            <onclick>Close</onclick>
+            <selected>Skin.HasSetting(RatingOverlaySource.TMDb)</selected>
+            <label>TMDb</label>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="id">8003</param>
+            <param name="control">radiobutton</param>
+            <param name="dialog">true</param>
+            <onclick>Skin.Reset(RatingOverlaySource.TMDb)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.IMDb)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Trakt)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Metacritic)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.RottenTomatoes)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.RottenTomatoesUser)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.MDBList)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Letterboxd)</onclick>
+            <onclick>Skin.SetBool(RatingOverlaySource.IMDb)</onclick>
+            <onclick>Close</onclick>
+            <selected>Skin.HasSetting(RatingOverlaySource.IMDb)</selected>
+            <label>IMDb</label>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="id">8004</param>
+            <param name="control">radiobutton</param>
+            <param name="dialog">true</param>
+            <onclick>Skin.Reset(RatingOverlaySource.TMDb)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.IMDb)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Trakt)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Metacritic)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.RottenTomatoes)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.RottenTomatoesUser)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.MDBList)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Letterboxd)</onclick>
+            <onclick>Skin.SetBool(RatingOverlaySource.Trakt)</onclick>
+            <onclick>Close</onclick>
+            <selected>Skin.HasSetting(RatingOverlaySource.Trakt)</selected>
+            <label>Trakt</label>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="id">8005</param>
+            <param name="control">radiobutton</param>
+            <param name="dialog">true</param>
+            <onclick>Skin.Reset(RatingOverlaySource.TMDb)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.IMDb)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Trakt)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Metacritic)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.RottenTomatoes)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.RottenTomatoesUser)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.MDBList)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Letterboxd)</onclick>
+            <onclick>Skin.SetBool(RatingOverlaySource.Metacritic)</onclick>
+            <onclick>Close</onclick>
+            <selected>Skin.HasSetting(RatingOverlaySource.Metacritic)</selected>
+            <label>Metacritic</label>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="id">8006</param>
+            <param name="control">radiobutton</param>
+            <param name="dialog">true</param>
+            <onclick>Skin.Reset(RatingOverlaySource.TMDb)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.IMDb)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Trakt)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Metacritic)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.RottenTomatoes)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.RottenTomatoesUser)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.MDBList)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Letterboxd)</onclick>
+            <onclick>Skin.SetBool(RatingOverlaySource.RottenTomatoes)</onclick>
+            <onclick>Close</onclick>
+            <selected>Skin.HasSetting(RatingOverlaySource.RottenTomatoes)</selected>
+            <label>Rotten Tomatoes (Critic)</label>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="id">8007</param>
+            <param name="control">radiobutton</param>
+            <param name="dialog">true</param>
+            <onclick>Skin.Reset(RatingOverlaySource.TMDb)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.IMDb)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Trakt)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Metacritic)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.RottenTomatoes)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.RottenTomatoesUser)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.MDBList)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Letterboxd)</onclick>
+            <onclick>Skin.SetBool(RatingOverlaySource.RottenTomatoesUser)</onclick>
+            <onclick>Close</onclick>
+            <selected>Skin.HasSetting(RatingOverlaySource.RottenTomatoesUser)</selected>
+            <label>Rotten Tomatoes (User)</label>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="id">8008</param>
+            <param name="control">radiobutton</param>
+            <param name="dialog">true</param>
+            <onclick>Skin.Reset(RatingOverlaySource.TMDb)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.IMDb)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Trakt)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Metacritic)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.RottenTomatoes)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.RottenTomatoesUser)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.MDBList)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Letterboxd)</onclick>
+            <onclick>Skin.SetBool(RatingOverlaySource.MDBList)</onclick>
+            <onclick>Close</onclick>
+            <selected>Skin.HasSetting(RatingOverlaySource.MDBList)</selected>
+            <label>MDBList</label>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="id">8009</param>
+            <param name="control">radiobutton</param>
+            <param name="dialog">true</param>
+            <onclick>Skin.Reset(RatingOverlaySource.TMDb)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.IMDb)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Trakt)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Metacritic)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.RottenTomatoes)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.RottenTomatoesUser)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.MDBList)</onclick>
+            <onclick>Skin.Reset(RatingOverlaySource.Letterboxd)</onclick>
+            <onclick>Skin.SetBool(RatingOverlaySource.Letterboxd)</onclick>
+            <onclick>Close</onclick>
+            <selected>Skin.HasSetting(RatingOverlaySource.Letterboxd)</selected>
+            <label>Letterboxd</label>
+        </include>
+    </include>
+
     <include name="DialogCustom_Settings_Items_Indicators">
         <include content="Settings_Button">
             <param name="id">8001</param>
@@ -767,6 +932,26 @@
             <onclick>Skin.ToggleSetting(Indicator.DisablePVRGuideCatchUp)</onclick>
             <selected>!Skin.HasSetting(Indicator.DisablePVRGuideCatchUp)</selected>
             <label>$LOCALIZE[31252] ($LOCALIZE[31000])</label>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="id">8009</param>
+            <param name="control">radiobutton</param>
+            <param name="dialog">true</param>
+            <onclick>Skin.ToggleSetting(Indicator.Ratings)</onclick>
+            <selected>Skin.HasSetting(Indicator.Ratings)</selected>
+            <label>Rating Overlay</label>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="id">8010</param>
+            <param name="control">button</param>
+            <param name="dialog">true</param>
+            <label>Rating Source</label>
+            <label2>$VAR[RatingOverlay_Source_Label]</label2>
+            <onclick>SetProperty(ConfigureRatingOverlay,True,Home)</onclick>
+            <onclick>ActivateWindow(1119)</onclick>
+            <visible>Skin.HasSetting(Indicator.Ratings)</visible>
         </include>
 
         <include content="Settings_Label">
@@ -878,6 +1063,8 @@
             <param name="item">Item08</param>
             <param name="content">TVShows</param>
         </include>
+        
+        <include condition="String.IsEqual(Window(Home).Property(ConfigureRatingOverlay),True)">DialogCustom_RatingOverlay_Source_Items</include>
     </include>
 
     <include name="DialogCustom_Ratings_Items_Type">

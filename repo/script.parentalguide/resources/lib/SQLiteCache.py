@@ -174,7 +174,9 @@ class SqliteCache:
         # leave it as a non-expiring value. Other-
         # wise, we add the timeout in seconds to
         # the current time
-        Default_caching_period = 30*24*60*60 ## 30days
+        # Note: timeout is now passed from getData() with conditional caching logic
+        # Default to permanent cache (0) if no timeout specified
+        Default_caching_period = 0  # 0 = permanent cache
         expire = time() + Default_caching_period if not timeout else time() + timeout
 
         # serialize the value with protocol 2
@@ -207,7 +209,9 @@ class SqliteCache:
         # the current time
         logx.info("Trying to save results to cache for [%s] [%s]" % (show_info["title"], show_info["provider"]))
         
-        Default_caching_period = 30*24*60*60 ## 30days
+        # Note: timeout is now passed from getData() with conditional caching logic
+        # Default to permanent cache (0) if no timeout specified
+        Default_caching_period = 0  # 0 = permanent cache
         expire = time() + Default_caching_period if not timeout else time() + timeout
 
         # serialize the value with protocol 2
