@@ -11,10 +11,13 @@
 
     <onload>SetProperty(TMDbHelper.EnableExtendedProperties,True)</onload>
     <onload>SetProperty(BaseID,$INFO[ListItem.Label]$INFO[ListItem.FolderPath])</onload>
+    <onload>RunScript(special://home/addons/script.parentalguide/ClearProperties.py,)</onload>
     <onload>RunScript(special://home/addons/script.parentalguide/NudityCheck.py,)</onload>
-    <!-- <onunload>RunScript(special://home/addons/script.parentalguide/ClearProperties.py,)</onunload> -->
+    <onunload>RunScript(special://home/addons/script.parentalguide/ClearProperties.py,)</onunload>
 
     <controls>
+
+        <include condition="!String.IsEqual(ListItem.Property(tmdb_type),person)">DialogInfo_VideoButtons</include>
 
         <control type="button" id="8000">
             <texturenofocus />
