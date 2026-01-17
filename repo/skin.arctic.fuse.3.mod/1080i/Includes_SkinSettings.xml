@@ -584,29 +584,22 @@
             <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
         </include>
 
-        <include content="Settings_Button" description="CustomDialog Movie  Ratings">
-            <param name="dialog">false</param>
+        <include content="Settings_Label" description="Movie Ratings">
             <param name="window">skinsettings</param>
             <param name="baseid">$PARAM[baseid]</param>
             <param name="id">004</param>
-            <label>$LOCALIZE[342]</label>
-            <label2>$INFO[Skin.String(CustomRating.Movies.Item01)]$INFO[Skin.String(CustomRating.Movies.Item02), • ,]$INFO[Skin.String(CustomRating.Movies.Item03), • ,]$INFO[Skin.String(CustomRating.Movies.Item04), • ,]$INFO[Skin.String(CustomRating.Movies.Item05), • ,]$INFO[Skin.String(CustomRating.Movies.Item06), • ,]$INFO[Skin.String(CustomRating.Movies.Item07), • ,]$INFO[Skin.String(CustomRating.Movies.Item08), • ,]</label2>
-            <onclick>SetProperty(CustomDialogSettingsTitle,[CAPITALIZE]$LOCALIZE[31202]: $LOCALIZE[342][/CAPITALIZE],Home)</onclick>
-            <onclick>SetProperty(CustomDialogSettingsItems,DialogCustom_Ratings_Movies_Items,Home)</onclick>
-            <onclick>ActivateWindow(1118)</onclick>
+            <label>$LOCALIZE[342] $LOCALIZE[31202]</label>
             <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
         </include>
 
-        <include content="Settings_Button" description="CustomDialog TV Ratings">
-            <param name="dialog">false</param>
+        <include content="Settings_Button">
             <param name="window">skinsettings</param>
             <param name="baseid">$PARAM[baseid]</param>
             <param name="id">005</param>
-            <label>$LOCALIZE[20343]</label>
-            <label2>$INFO[Skin.String(CustomRating.TVShows.Item01)]$INFO[Skin.String(CustomRating.TVShows.Item02), • ,]$INFO[Skin.String(CustomRating.TVShows.Item03), • ,]$INFO[Skin.String(CustomRating.TVShows.Item04), • ,]$INFO[Skin.String(CustomRating.TVShows.Item05), • ,]$INFO[Skin.String(CustomRating.TVShows.Item06), • ,]$INFO[Skin.String(CustomRating.TVShows.Item07), • ,]$INFO[Skin.String(CustomRating.TVShows.Item08), • ,]</label2>
-            <onclick>SetProperty(CustomDialogSettingsTitle,[CAPITALIZE]$LOCALIZE[31202]: $LOCALIZE[20343][/CAPITALIZE],Home)</onclick>
-            <onclick>SetProperty(CustomDialogSettingsItems,DialogCustom_Ratings_TVShows_Items,Home)</onclick>
-            <onclick>ActivateWindow(1118)</onclick>
+            <param name="control">radiobutton</param>
+            <label>IMDb</label>
+            <selected>!Skin.HasSetting(CustomRating.Movies.DisableIMDb)</selected>
+            <onclick>Skin.ToggleSetting(CustomRating.Movies.DisableIMDb)</onclick>
             <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
         </include>
 
@@ -614,6 +607,190 @@
             <param name="window">skinsettings</param>
             <param name="baseid">$PARAM[baseid]</param>
             <param name="id">006</param>
+            <param name="control">radiobutton</param>
+            <label>Trakt</label>
+            <selected>!Skin.HasSetting(CustomRating.Movies.DisableTrakt)</selected>
+            <onclick>Skin.ToggleSetting(CustomRating.Movies.DisableTrakt)</onclick>
+            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">007</param>
+            <param name="control">radiobutton</param>
+            <label>Metacritic</label>
+            <selected>!Skin.HasSetting(CustomRating.Movies.DisableMetacritic)</selected>
+            <onclick>Skin.ToggleSetting(CustomRating.Movies.DisableMetacritic)</onclick>
+            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">008</param>
+            <param name="control">radiobutton</param>
+            <label>Rotten Tomatoes (Critic)</label>
+            <selected>!Skin.HasSetting(CustomRating.Movies.DisableRottenTomatoesCritic)</selected>
+            <onclick>Skin.ToggleSetting(CustomRating.Movies.DisableRottenTomatoesCritic)</onclick>
+            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">009</param>
+            <param name="control">radiobutton</param>
+            <label>Rotten Tomatoes (User)</label>
+            <selected>!Skin.HasSetting(CustomRating.Movies.DisableRottenTomatoesUser)</selected>
+            <onclick>Skin.ToggleSetting(CustomRating.Movies.DisableRottenTomatoesUser)</onclick>
+            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">010</param>
+            <param name="control">radiobutton</param>
+            <label>MDBList</label>
+            <selected>!Skin.HasSetting(CustomRating.Movies.DisableMDBList)</selected>
+            <onclick>Skin.ToggleSetting(CustomRating.Movies.DisableMDBList)</onclick>
+            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">011</param>
+            <param name="control">radiobutton</param>
+            <label>Letterboxd</label>
+            <selected>!Skin.HasSetting(CustomRating.Movies.DisableLetterboxd)</selected>
+            <onclick>Skin.ToggleSetting(CustomRating.Movies.DisableLetterboxd)</onclick>
+            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">012</param>
+            <param name="control">radiobutton</param>
+            <label>Awards (Oscars)</label>
+            <selected>!Skin.HasSetting(CustomRating.Movies.DisableAwards)</selected>
+            <onclick>Skin.ToggleSetting(CustomRating.Movies.DisableAwards)</onclick>
+            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">013</param>
+            <param name="control">radiobutton</param>
+            <label>Golden Globe</label>
+            <selected>!Skin.HasSetting(CustomRating.Movies.DisableGoldenGlobe)</selected>
+            <onclick>Skin.ToggleSetting(CustomRating.Movies.DisableGoldenGlobe)</onclick>
+            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+        </include>
+
+        <include content="Settings_Label" description="TV Show Ratings">
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">014</param>
+            <label>$LOCALIZE[20343] $LOCALIZE[31202]</label>
+            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">015</param>
+            <param name="control">radiobutton</param>
+            <label>IMDb</label>
+            <selected>!Skin.HasSetting(CustomRating.TVShows.DisableIMDb)</selected>
+            <onclick>Skin.ToggleSetting(CustomRating.TVShows.DisableIMDb)</onclick>
+            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">016</param>
+            <param name="control">radiobutton</param>
+            <label>Trakt</label>
+            <selected>!Skin.HasSetting(CustomRating.TVShows.DisableTrakt)</selected>
+            <onclick>Skin.ToggleSetting(CustomRating.TVShows.DisableTrakt)</onclick>
+            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">017</param>
+            <param name="control">radiobutton</param>
+            <label>Metacritic</label>
+            <selected>!Skin.HasSetting(CustomRating.TVShows.DisableMetacritic)</selected>
+            <onclick>Skin.ToggleSetting(CustomRating.TVShows.DisableMetacritic)</onclick>
+            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">018</param>
+            <param name="control">radiobutton</param>
+            <label>Rotten Tomatoes (Critic)</label>
+            <selected>!Skin.HasSetting(CustomRating.TVShows.DisableRottenTomatoesCritic)</selected>
+            <onclick>Skin.ToggleSetting(CustomRating.TVShows.DisableRottenTomatoesCritic)</onclick>
+            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">019</param>
+            <param name="control">radiobutton</param>
+            <label>Rotten Tomatoes (User)</label>
+            <selected>!Skin.HasSetting(CustomRating.TVShows.DisableRottenTomatoesUser)</selected>
+            <onclick>Skin.ToggleSetting(CustomRating.TVShows.DisableRottenTomatoesUser)</onclick>
+            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">020</param>
+            <param name="control">radiobutton</param>
+            <label>MDBList</label>
+            <selected>!Skin.HasSetting(CustomRating.TVShows.DisableMDBList)</selected>
+            <onclick>Skin.ToggleSetting(CustomRating.TVShows.DisableMDBList)</onclick>
+            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">021</param>
+            <param name="control">radiobutton</param>
+            <label>Letterboxd</label>
+            <selected>!Skin.HasSetting(CustomRating.TVShows.DisableLetterboxd)</selected>
+            <onclick>Skin.ToggleSetting(CustomRating.TVShows.DisableLetterboxd)</onclick>
+            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">022</param>
+            <param name="control">radiobutton</param>
+            <label>Emmy Awards</label>
+            <selected>!Skin.HasSetting(CustomRating.TVShows.DisableEmmy)</selected>
+            <onclick>Skin.ToggleSetting(CustomRating.TVShows.DisableEmmy)</onclick>
+            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+        </include>
+
+        <include content="Settings_Button">
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">023</param>
             <param name="control">radiobutton</param>
             <label>Use Colored Rating Icons</label>
             <selected>Skin.HasSetting(Furniture.EnableColourRatings)</selected>
