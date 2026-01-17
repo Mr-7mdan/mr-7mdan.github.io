@@ -942,20 +942,6 @@
             <param name="dialog">false</param>
             <param name="window">skinsettings</param>
             <param name="baseid">$PARAM[baseid]</param>
-            <param name="id">011</param>
-            <param name="control">radiobutton</param>
-            <label>script.texturemaker</label>
-            <label2>$INFO[System.AddonVersion(script.texturemaker),v,       ]</label2>
-            <onclick condition="!System.HasAddon(script.texturemaker)">InstallAddon(script.texturemaker)</onclick>
-            <onclick condition="!System.AddonIsEnabled(script.texturemaker) + System.HasAddon(script.texturemaker)">EnableAddon(script.texturemaker)</onclick>
-            <onclick condition="System.AddonIsEnabled(script.texturemaker) + System.HasAddon(script.texturemaker)">Addon.OpenSettings(script.texturemaker)</onclick>
-            <selected>System.AddonIsEnabled(script.texturemaker) + System.HasAddon(script.texturemaker)</selected>
-        </include>
-
-        <include content="Settings_Button">
-            <param name="dialog">false</param>
-            <param name="window">skinsettings</param>
-            <param name="baseid">$PARAM[baseid]</param>
             <param name="id">012</param>
             <param name="control">radiobutton</param>
             <label>script.artistslideshow</label>

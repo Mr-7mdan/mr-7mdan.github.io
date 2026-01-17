@@ -39,7 +39,8 @@
                                     <texture>$INFO[ListItem.Icon]</texture>
                                 </include>
                             </focusedlayout>
-                            <content>plugin://script.texturemaker/</content>
+                            <!-- Texturemaker removed - color picker disabled -->
+                            <content></content>
                         </control>
 
                         <!-- Selection Box -->

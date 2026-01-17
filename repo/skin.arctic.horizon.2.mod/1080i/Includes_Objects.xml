@@ -1052,10 +1052,10 @@
                 <visible>$PARAM[visible]</visible>
                 <include content="Object_Info_Button_Left" condition="!$PARAM[invertcolor]">
                     <param name="visible" value="Control.HasFocus($PARAM[id]) | $PARAM[focused]" />
-                    <param name="texture" value="special://profile/addon_data/script.texturemaker/ArcticHorizon/$PARAM[texturename]main_h_x.png" />
+                    <param name="texture" value="common/$PARAM[texturename]main_x.png" />
                     <param name="icon" value="$PARAM[icon]" />
                     <param name="colordiffuse_icon" value="$VAR[ColorSelected]" />
-                    <param name="colordiffuse_back" value="white" />
+                    <param name="colordiffuse_back" value="$VAR[ColorHighlight]" />
                 </include>
                 <include content="Object_Info_Button_Left" condition="$PARAM[invertcolor]">
                     <param name="visible" value="Control.HasFocus($PARAM[id]) | $PARAM[focused]" />
@@ -1085,7 +1085,7 @@
                     <param name="focusedcolor">panel_bg</param>
                 </include>
                 <texturenofocus colordiffuse="main_fg_12">common/$PARAM[texturename]main_y.png</texturenofocus>
-                <texturefocus>special://profile/addon_data/script.texturemaker/ArcticHorizon/$PARAM[texturename]main_h_y.png</texturefocus>
+                <texturefocus colordiffuse="$VAR[ColorHighlight]">common/$PARAM[texturename]main_y.png</texturefocus>
                 <font>font_mini_bold</font>
                 <label>$PARAM[label]</label>
                 <align>left</align>
@@ -1109,7 +1109,7 @@
                         <param name="colordiffuse">panel_fg_100</param>
                         <param name="texture">common/$PARAM[texturename]main_z.png</param>
                     </include>
-                    <texture>special://profile/addon_data/script.texturemaker/ArcticHorizon/$PARAM[texturename]main_h_z.png</texture>
+                    <texture colordiffuse="$VAR[ColorHighlight]">common/$PARAM[texturename]main_z.png</texture>
                 </control>
             </control>
         </definition>
@@ -1129,7 +1129,7 @@
                 <width>160</width>
                 <height>160</height>
                 <centerleft>50%</centerleft>
-                <texturefocus flipy="true">special://profile/addon_data/script.texturemaker/ArcticHorizon/circlebutton_h.png</texturefocus>
+                <texturefocus flipy="true" colordiffuse="$VAR[ColorHighlight]">special://skin/extras/textures/circlebutton.png</texturefocus>
                 <texturenofocus colordiffuse="main_fg_12">common/circlebutton.png</texturenofocus>
                 <nested />
             </control>
@@ -1458,7 +1458,7 @@
                                     <texture colordiffuse="$PARAM[color_nf]_100">$INFO[ListItem.Icon]</texture>
                                 </control>
                                 <control type="image">
-                                    <texture flipy="true">special://profile/addon_data/script.texturemaker/ArcticHorizon/circle_v.png</texture>
+                                    <texture flipy="true" colordiffuse="$VAR[ColorHighlight]">special://skin/extras/textures/circle.png</texture>
                                     <aspectratio>keep</aspectratio>
                                     <width>10</width>
                                     <height>10</height>
@@ -1493,7 +1493,7 @@
                             <width>80</width>
                             <visible>[Control.HasFocus($PARAM[id]) | $PARAM[altfocus]]</visible>
                             <control type="image">
-                                <texture flipy="true">special://profile/addon_data/script.texturemaker/ArcticHorizon/circlebutton_v.png</texture>
+                                <texture flipy="true" colordiffuse="$VAR[ColorHighlight]">special://skin/extras/textures/circlebutton.png</texture>
                                 <aspectratio>keep</aspectratio>
                                 <bordersize>-50</bordersize>
                             </control>

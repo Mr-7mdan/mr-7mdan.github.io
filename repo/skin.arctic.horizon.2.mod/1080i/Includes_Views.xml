@@ -88,7 +88,6 @@
                     <onup>50</onup>
                     <orientation>horizontal</orientation>
                     <texturesliderbackground />
-                    <texturesliderbar border="4">special://profile/addon_data/script.texturemaker/ArcticHorizon/scrollh_h.png</texturesliderbar>
                     <include>Texture_Scrollbar_H</include>
                     <ondown>50</ondown>
                     <onback>50</onback>

@@ -1,138 +1,138 @@
 <!-- Texture Maker -->
 <include name="Texture_Highlight">
-    <texture diffuse="$PARAM[diffuse]">special://profile/addon_data/script.texturemaker/{skindir}/main_h.png</texture>
+    <texture diffuse="$PARAM[diffuse]">special://skin/extras/textures/main.png</texture>
 </include>
 <include name="Texture_Highlight_Focus">
-    <texturefocus>special://profile/addon_data/script.texturemaker/{skindir}/main_h.png</texturefocus>
-    <alttexturefocus>special://profile/addon_data/script.texturemaker/{skindir}/main_h.png</alttexturefocus>
+    <texturefocus>special://skin/extras/textures/main.png</texturefocus>
+    <alttexturefocus>special://skin/extras/textures/main.png</alttexturefocus>
 </include>
 <include name="Texture_Highlight_Button_FakeFocus_V">
-    <texturefocus border="40">special://profile/addon_data/script.texturemaker/{skindir}/menu_v.png</texturefocus>
-    <texturenofocus border="40">special://profile/addon_data/script.texturemaker/{skindir}/menu_v.png</texturenofocus>
+    <texturefocus border="40">special://skin/extras/textures/menu.png</texturefocus>
+    <texturenofocus border="40">special://skin/extras/textures/menu.png</texturenofocus>
 </include>
 <include name="Texture_Highlight_Button_FakeFocus_H">
-    <texturefocus border="40">special://profile/addon_data/script.texturemaker/{skindir}/menu_h.png</texturefocus>
-    <texturenofocus border="40">special://profile/addon_data/script.texturemaker/{skindir}/menu_h.png</texturenofocus>
+    <texturefocus border="40">special://skin/extras/textures/menu.png</texturefocus>
+    <texturenofocus border="40">special://skin/extras/textures/menu.png</texturenofocus>
 </include>
 <include name="Texture_Highlight_ToggleButton_FakeFocus_H">
     <texturenofocus />
-    <texturefocus border="40">special://profile/addon_data/script.texturemaker/{skindir}/menu_h.png</texturefocus>
-    <alttexturefocus border="40">special://profile/addon_data/script.texturemaker/{skindir}/menu_h.png</alttexturefocus>
-    <alttexturenofocus border="40">special://profile/addon_data/script.texturemaker/{skindir}/menu_h.png</alttexturenofocus>
+    <texturefocus border="40">special://skin/extras/textures/menu.png</texturefocus>
+    <alttexturefocus border="40">special://skin/extras/textures/menu.png</alttexturefocus>
+    <alttexturenofocus border="40">special://skin/extras/textures/menu.png</alttexturenofocus>
 </include>
 <include name="Texture_Highlight_ToggleButton_FakeFocus_V">
     <texturenofocus />
-    <texturefocus border="40">special://profile/addon_data/script.texturemaker/{skindir}/menu_v.png</texturefocus>
-    <alttexturefocus border="40">special://profile/addon_data/script.texturemaker/{skindir}/menu_v.png</alttexturefocus>
-    <alttexturenofocus border="40">special://profile/addon_data/script.texturemaker/{skindir}/menu_v.png</alttexturenofocus>
+    <texturefocus border="40">special://skin/extras/textures/menu.png</texturefocus>
+    <alttexturefocus border="40">special://skin/extras/textures/menu.png</alttexturefocus>
+    <alttexturenofocus border="40">special://skin/extras/textures/menu.png</alttexturenofocus>
 </include>
 <include name="Texture_Highlight_ToggleButton_Settings">
-    <texturefocus colordiffuse="$VAR[ColorSettingsToggleButton_Script]" border="40">special://profile/addon_data/script.texturemaker/{skindir}/menu_h.png</texturefocus>
-    <alttexturefocus colordiffuse="$VAR[ColorSettingsToggleButton_Script]" border="40">special://profile/addon_data/script.texturemaker/{skindir}/menu_h.png</alttexturefocus>
+    <texturefocus colordiffuse="$VAR[ColorSettingsToggleButton_Script]" border="40">special://skin/extras/textures/menu.png</texturefocus>
+    <alttexturefocus colordiffuse="$VAR[ColorSettingsToggleButton_Script]" border="40">special://skin/extras/textures/menu.png</alttexturefocus>
 </include>
 <include name="Texture_Highlight_Underline_H">
-    <texturefocus border="4">special://profile/addon_data/script.texturemaker/{skindir}/underline_h.png</texturefocus>
-    <alttexturefocus border="4">special://profile/addon_data/script.texturemaker/{skindir}/underline_h.png</alttexturefocus>
-    <alttexturenofocus border="4">special://profile/addon_data/script.texturemaker/{skindir}/underline_h.png</alttexturenofocus>
+    <texturefocus border="4">special://skin/extras/textures/underline.png</texturefocus>
+    <alttexturefocus border="4">special://skin/extras/textures/underline.png</alttexturefocus>
+    <alttexturenofocus border="4">special://skin/extras/textures/underline.png</alttexturenofocus>
     <texturenofocus />
 </include>
 <include name="Texture_Highlight_Scrollbar_H">
-    <texture border="4">special://profile/addon_data/script.texturemaker/{skindir}/scrollh_h.png</texture>
+    <texture border="4">special://skin/extras/textures/scrollh.png</texture>
 </include>
 <include name="Texture_Highlight_Scrollbar_V">
-    <texture border="4">special://profile/addon_data/script.texturemaker/{skindir}/scrollh_v.png</texture>
+    <texture border="4">special://skin/extras/textures/scrollh.png</texture>
 </include>
 <include name="Texture_Scrollbar_H">
-    <texturesliderbarfocus border="4">special://profile/addon_data/script.texturemaker/{skindir}/scrollh_h.png</texturesliderbarfocus>
+    <texturesliderbarfocus border="4">special://skin/extras/textures/scrollh.png</texturesliderbarfocus>
 </include>
 <include name="Texture_Scrollbar_SliderBar_H">
-    <texturesliderbar border="4">special://profile/addon_data/script.texturemaker/{skindir}/scrollh_h.png</texturesliderbar>
+    <texturesliderbar border="4">special://skin/extras/textures/scrollh.png</texturesliderbar>
 </include>
 <include name="Texture_Scrollbar_V">
-    <texturesliderbarfocus border="4">special://profile/addon_data/script.texturemaker/{skindir}/scrollv_v.png</texturesliderbarfocus>
+    <texturesliderbarfocus border="4">special://skin/extras/textures/scrollv.png</texturesliderbarfocus>
 </include>
 <include name="Texture_Scrollbar_SliderBar_V">
-    <texturesliderbar border="4">special://profile/addon_data/script.texturemaker/{skindir}/scrollv_v.png</texturesliderbar>
+    <texturesliderbar border="4">special://skin/extras/textures/scrollv.png</texturesliderbar>
 </include>
 <include name="Texture_MainMenu_Highlight_ToggleButton_FakeFocus">
     <texturenofocus />
-    <texturefocus border="80">special://profile/addon_data/script.texturemaker/{skindir}/menumain_v.png</texturefocus>
-    <alttexturefocus border="80">special://profile/addon_data/script.texturemaker/{skindir}/menumain_v.png</alttexturefocus>
-    <alttexturenofocus border="80">special://profile/addon_data/script.texturemaker/{skindir}/menumain_v.png</alttexturenofocus>
+    <texturefocus border="80">special://skin/extras/textures/menumain.png</texturefocus>
+    <alttexturefocus border="80">special://skin/extras/textures/menumain.png</alttexturefocus>
+    <alttexturenofocus border="80">special://skin/extras/textures/menumain.png</alttexturenofocus>
 </include>
 <include name="Texture_MainMenu_Highlight_V">
-    <texture border="80">special://profile/addon_data/script.texturemaker/{skindir}/menumain_v.png</texture>
+    <texture border="80">special://skin/extras/textures/menumain.png</texture>
 </include>
 <include name="Texture_MainMenu_Highlight_H">
-    <texture border="80">special://profile/addon_data/script.texturemaker/{skindir}/menumain_h.png</texture>
+    <texture border="80">special://skin/extras/textures/menumain.png</texture>
 </include>
 <include name="Texture_Box_Highlight_H">
-    <texture border="20">special://profile/addon_data/script.texturemaker/{skindir}/box_h.png</texture>
+    <texture border="20">special://skin/extras/textures/box.png</texture>
 </include>
 <include name="Texture_Box_Highlight_V">
-    <texture border="20">special://profile/addon_data/script.texturemaker/{skindir}/box_v.png</texture>
+    <texture border="20">special://skin/extras/textures/box.png</texture>
 </include>
 <include name="Texture_Box_Highlight_Focus_H">
-    <texturefocus border="20">special://profile/addon_data/script.texturemaker/{skindir}/box_h.png</texturefocus>
+    <texturefocus border="20">special://skin/extras/textures/box.png</texturefocus>
 </include>
 <include name="Texture_Menu_Highlight_H">
     <param name="border">40</param>
     <definition>
-        <texture border="$PARAM[border]">special://profile/addon_data/script.texturemaker/{skindir}/menu_h.png</texture>
+        <texture border="$PARAM[border]">special://skin/extras/textures/menu.png</texture>
     </definition>
 </include>
 <include name="Texture_Menu_Highlight_V">
     <param name="border">40</param>
     <definition>
-        <texture border="$PARAM[border]">special://profile/addon_data/script.texturemaker/{skindir}/menu_v.png</texture>
+        <texture border="$PARAM[border]">special://skin/extras/textures/menu.png</texture>
     </definition>
 </include>
 <include name="Texture_Circle_Highlight_H">
-    <texture>special://profile/addon_data/script.texturemaker/{skindir}/circle_h.png</texture>
+    <texture>special://skin/extras/textures/circle.png</texture>
 </include>
 <include name="Texture_Circle_Highlight_V">
-    <texture>special://profile/addon_data/script.texturemaker/{skindir}/circle_v.png</texture>
+    <texture>special://skin/extras/textures/circle.png</texture>
 </include>
 <include name="Texture_Circle_Highlight_Focus_V">
-    <texturefocus>special://profile/addon_data/script.texturemaker/{skindir}/circle_v.png</texturefocus>
+    <texturefocus>special://skin/extras/textures/circle.png</texturefocus>
 </include>
 <include name="Texture_Circle_Highlight_NoFocus_V">
-    <texturenofocus>special://profile/addon_data/script.texturemaker/{skindir}/circle_v.png</texturenofocus>
+    <texturenofocus>special://skin/extras/textures/circle.png</texturenofocus>
 </include>
 <include name="Texture_CircleButtonDialog_Highlight_V">
-    <texture>special://profile/addon_data/script.texturemaker/{skindir}/circlebuttondialog_v.png</texture>
+    <texture>special://skin/extras/textures/circlebuttondialog.png</texture>
 </include>
 <include name="Texture_CircleButtonDialog_Highlight_Focus_V">
-    <texturefocus border="80">special://profile/addon_data/script.texturemaker/{skindir}/circlebuttondialog_v.png</texturefocus>
+    <texturefocus border="80">special://skin/extras/textures/circlebuttondialog.png</texturefocus>
 </include>
 <include name="Texture_SelectBox_Thin">
-    <texture border="20">special://profile/addon_data/script.texturemaker/{skindir}/selectbox_thin_v.png</texture>
+    <texture border="20">special://skin/extras/textures/selectbox_thin.png</texture>
 </include>
 <include name="Texture_KeyboardButton">
-    <texturefocus>special://profile/addon_data/script.texturemaker/{skindir}/circle_v.png</texturefocus>
+    <texturefocus>special://skin/extras/textures/circle.png</texturefocus>
 </include>
 
 <include name="Texture_Button_X">
-    <texture border="60,0,0,0">special://profile/addon_data/script.texturemaker/{skindir}/menu_h_x.png</texture>
-    <texturefocus border="60,0,0,0">special://profile/addon_data/script.texturemaker/{skindir}/menu_h_x.png</texturefocus>
+    <texture border="60,0,0,0">special://skin/extras/textures/menu_h_x.png</texture>
+    <texturefocus border="60,0,0,0">special://skin/extras/textures/menu_h_x.png</texturefocus>
 </include>
 <include name="Texture_Button_Y">
-    <texture>special://profile/addon_data/script.texturemaker/{skindir}/menu_h_y.png</texture>
-    <texturefocus>special://profile/addon_data/script.texturemaker/{skindir}/menu_h_y.png</texturefocus>
+    <texture>special://skin/extras/textures/menu_h_y.png</texture>
+    <texturefocus>special://skin/extras/textures/menu_h_y.png</texturefocus>
 </include>
 <include name="Texture_Button_Z">
-    <texture border="0,0,40,0">special://profile/addon_data/script.texturemaker/{skindir}/menu_h_z.png</texture>
-    <texturefocus border="0,0,40,0">special://profile/addon_data/script.texturemaker/{skindir}/menu_h_z.png</texturefocus>
+    <texture border="0,0,40,0">special://skin/extras/textures/menu_h_z.png</texture>
+    <texturefocus border="0,0,40,0">special://skin/extras/textures/menu_h_z.png</texturefocus>
 </include>
 
 <include name="Texture_Button">
     <texturenofocus colordiffuse="$VAR[Color_DialogBorder]" border="40">common/menu.png</texturenofocus>
-    <texturefocus border="40">special://profile/addon_data/script.texturemaker/{skindir}/menu_h.png</texturefocus>
+    <texturefocus border="40">special://skin/extras/textures/menu.png</texturefocus>
 </include>
 
 <include name="Texture_ToggleButton">
     <alttexturenofocus colordiffuse="main_bg_12" border="40">common/menu.png</alttexturenofocus>
-    <alttexturefocus border="40">special://profile/addon_data/script.texturemaker/{skindir}/menu_h.png</alttexturefocus>
+    <alttexturefocus border="40">special://skin/extras/textures/menu.png</alttexturefocus>
 </include>
 
 <include name="Defs_BusySpinner_Image">

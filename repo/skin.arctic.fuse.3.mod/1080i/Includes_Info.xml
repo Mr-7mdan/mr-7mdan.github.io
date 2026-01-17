@@ -841,6 +841,22 @@
         </definition>
     </include>
 
+    <include name="Info_Meta_Object_TMDb">
+        <param name="is_player">false</param>
+        <definition>
+            <include content="Info_Meta_Object" condition="![$PARAM[is_player]]">
+                <param name="icon">flags/$VAR[Info_RatingsLine_Object_Style]/ratings/tmdb.png</param>
+                <param name="label">$INFO[Window(Home).Property(TMDbHelper.ListItem.TMDb_Rating)]</param>
+                <param name="visible">[$PARAM[visible]] + !String.IsEmpty(Window(Home).Property(TMDbHelper.ListItem.TMDb_Rating))</param>
+            </include>
+            <include content="Info_Meta_Object" condition="$PARAM[is_player]">
+                <param name="icon">flags/$VAR[Info_RatingsLine_Object_Style]/ratings/tmdb.png</param>
+                <param name="label">$INFO[Window(Home).Property(TMDbHelper.Player.TMDb_Rating)]</param>
+                <param name="visible">[$PARAM[visible]] + !String.IsEmpty(Window(Home).Property(TMDbHelper.Player.TMDb_Rating))</param>
+            </include>
+        </definition>
+    </include>
+
     <include name="Info_Meta_Object_Awards">
         <param name="is_player">false</param>
         <definition>
@@ -906,61 +922,67 @@
     </include>
 
     <include name="Info_Meta_Items">
-        <include content="Info_Meta_Object_IMDb" condition="!Skin.HasSetting(CustomRating.$PARAM[content].DisableIMDb)">
+        <include content="Info_Meta_Object_Trakt" condition="Skin.String(CustomRating.$PARAM[content].$PARAM[item],Trakt)">
             <param name="visible">$PARAM[visible]</param>
             <param name="container">$PARAM[container]</param>
             <param name="is_player">$PARAM[is_player]</param>
             <param name="colordiffuse">$PARAM[colordiffuse]</param>
         </include>
-        <include content="Info_Meta_Object_Trakt" condition="!Skin.HasSetting(CustomRating.$PARAM[content].DisableTrakt)">
+        <include content="Info_Meta_Object_TMDb" condition="Skin.String(CustomRating.$PARAM[content].$PARAM[item],TMDb)">
             <param name="visible">$PARAM[visible]</param>
             <param name="container">$PARAM[container]</param>
             <param name="is_player">$PARAM[is_player]</param>
             <param name="colordiffuse">$PARAM[colordiffuse]</param>
         </include>
-        <include content="Info_Meta_Object_Metacritic" condition="!Skin.HasSetting(CustomRating.$PARAM[content].DisableMetacritic)">
+        <include content="Info_Meta_Object_IMDb" condition="Skin.String(CustomRating.$PARAM[content].$PARAM[item],IMDb)">
             <param name="visible">$PARAM[visible]</param>
             <param name="container">$PARAM[container]</param>
             <param name="is_player">$PARAM[is_player]</param>
             <param name="colordiffuse">$PARAM[colordiffuse]</param>
         </include>
-        <include content="Info_Meta_Object_RottenTomatoesCritic" condition="!Skin.HasSetting(CustomRating.$PARAM[content].DisableRottenTomatoesCritic)">
+        <include content="Info_Meta_Object_Metacritic" condition="Skin.String(CustomRating.$PARAM[content].$PARAM[item],Metacritic)">
             <param name="visible">$PARAM[visible]</param>
             <param name="container">$PARAM[container]</param>
             <param name="is_player">$PARAM[is_player]</param>
             <param name="colordiffuse">$PARAM[colordiffuse]</param>
         </include>
-        <include content="Info_Meta_Object_RottenTomatoesUser" condition="!Skin.HasSetting(CustomRating.$PARAM[content].DisableRottenTomatoesUser)">
+        <include content="Info_Meta_Object_RottenTomatoesCritic" condition="Skin.String(CustomRating.$PARAM[content].$PARAM[item],RottenTomatoesCritic)">
             <param name="visible">$PARAM[visible]</param>
             <param name="container">$PARAM[container]</param>
             <param name="is_player">$PARAM[is_player]</param>
             <param name="colordiffuse">$PARAM[colordiffuse]</param>
         </include>
-        <include content="Info_Meta_Object_MDBList" condition="!Skin.HasSetting(CustomRating.$PARAM[content].DisableMDBList)">
+        <include content="Info_Meta_Object_RottenTomatoesUser" condition="Skin.String(CustomRating.$PARAM[content].$PARAM[item],RottenTomatoesUser)">
             <param name="visible">$PARAM[visible]</param>
             <param name="container">$PARAM[container]</param>
             <param name="is_player">$PARAM[is_player]</param>
             <param name="colordiffuse">$PARAM[colordiffuse]</param>
         </include>
-        <include content="Info_Meta_Object_Letterboxd" condition="!Skin.HasSetting(CustomRating.$PARAM[content].DisableLetterboxd)">
+        <include content="Info_Meta_Object_MDBList" condition="Skin.String(CustomRating.$PARAM[content].$PARAM[item],MDBList)">
             <param name="visible">$PARAM[visible]</param>
             <param name="container">$PARAM[container]</param>
             <param name="is_player">$PARAM[is_player]</param>
             <param name="colordiffuse">$PARAM[colordiffuse]</param>
         </include>
-        <include content="Info_Meta_Object_Awards" condition="!Skin.HasSetting(CustomRating.$PARAM[content].DisableAwards)">
+        <include content="Info_Meta_Object_Letterboxd" condition="Skin.String(CustomRating.$PARAM[content].$PARAM[item],Letterboxd)">
             <param name="visible">$PARAM[visible]</param>
             <param name="container">$PARAM[container]</param>
             <param name="is_player">$PARAM[is_player]</param>
             <param name="colordiffuse">$PARAM[colordiffuse]</param>
         </include>
-        <include content="Info_Meta_Object_GoldenGlobe" condition="!Skin.HasSetting(CustomRating.$PARAM[content].DisableGoldenGlobe)">
+        <include content="Info_Meta_Object_Awards" condition="Skin.String(CustomRating.$PARAM[content].$PARAM[item],Awards)">
             <param name="visible">$PARAM[visible]</param>
             <param name="container">$PARAM[container]</param>
             <param name="is_player">$PARAM[is_player]</param>
             <param name="colordiffuse">$PARAM[colordiffuse]</param>
         </include>
-        <include content="Info_Meta_Object_Emmy" condition="!Skin.HasSetting(CustomRating.$PARAM[content].DisableEmmy)">
+        <include content="Info_Meta_Object_GoldenGlobe" condition="Skin.String(CustomRating.$PARAM[content].$PARAM[item],GoldenGlobe)">
+            <param name="visible">$PARAM[visible]</param>
+            <param name="container">$PARAM[container]</param>
+            <param name="is_player">$PARAM[is_player]</param>
+            <param name="colordiffuse">$PARAM[colordiffuse]</param>
+        </include>
+        <include content="Info_Meta_Object_Emmy" condition="Skin.String(CustomRating.$PARAM[content].$PARAM[item],Emmy)">
             <param name="visible">$PARAM[visible]</param>
             <param name="container">$PARAM[container]</param>
             <param name="is_player">$PARAM[is_player]</param>
@@ -977,6 +999,7 @@
             <include content="Info_Meta_Items" condition="![$PARAM[is_player]]">
                 <param name="visible">[$PARAM[visible_movies] + [String.IsEqual($PARAM[container]ListItem.DBType,movie)]]</param>
                 <param name="content">Movies</param>
+                <param name="item">$PARAM[item]</param>
                 <param name="container">$PARAM[container]</param>
                 <param name="is_player">$PARAM[is_player]</param>
                 <param name="colordiffuse">$PARAM[colordiffuse]</param>
@@ -984,6 +1007,7 @@
             <include content="Info_Meta_Items" condition="![$PARAM[is_player]]">
                 <param name="visible">[$PARAM[visible_tvshows] + [String.IsEqual($PARAM[container]ListItem.DBType,tvshow) | String.IsEqual($PARAM[container]ListItem.DBType,season)]]</param>
                 <param name="content">TVShows</param>
+                <param name="item">$PARAM[item]</param>
                 <param name="container">$PARAM[container]</param>
                 <param name="is_player">$PARAM[is_player]</param>
                 <param name="colordiffuse">$PARAM[colordiffuse]</param>
@@ -992,6 +1016,7 @@
             <include content="Info_Meta_Items" condition="$PARAM[is_player]">
                 <param name="visible">[$PARAM[visible_movies] + [VideoPlayer.Content(movies)]]</param>
                 <param name="content">Movies</param>
+                <param name="item">$PARAM[item]</param>
                 <param name="container">$PARAM[container]</param>
                 <param name="is_player">$PARAM[is_player]</param>
                 <param name="colordiffuse">$PARAM[colordiffuse]</param>
@@ -999,6 +1024,7 @@
             <include content="Info_Meta_Items" condition="$PARAM[is_player]">
                 <param name="visible">[$PARAM[visible_tvshows] + [VideoPlayer.Content(episodes)]]</param>
                 <param name="content">TVShows</param>
+                <param name="item">$PARAM[item]</param>
                 <param name="container">$PARAM[container]</param>
                 <param name="is_player">$PARAM[is_player]</param>
                 <param name="colordiffuse">$PARAM[colordiffuse]</param>
@@ -1441,6 +1467,49 @@
                     <include>Info_Meta_Grouplist_Definition</include>
 
                     <include content="Info_Meta_Item" condition="$EXP[Exp_TMDbHelper_IsData]">
+                        <param name="item">Item01</param>
+                        <param name="colordiffuse">$PARAM[colordiffuse]</param>
+                        <param name="container">$PARAM[container]</param>
+                        <param name="is_player">$PARAM[is_player]</param>
+                    </include>
+                    <include content="Info_Meta_Item" condition="$EXP[Exp_TMDbHelper_IsData]">
+                        <param name="item">Item02</param>
+                        <param name="colordiffuse">$PARAM[colordiffuse]</param>
+                        <param name="container">$PARAM[container]</param>
+                        <param name="is_player">$PARAM[is_player]</param>
+                    </include>
+                    <include content="Info_Meta_Item" condition="$EXP[Exp_TMDbHelper_IsData]">
+                        <param name="item">Item03</param>
+                        <param name="colordiffuse">$PARAM[colordiffuse]</param>
+                        <param name="container">$PARAM[container]</param>
+                        <param name="is_player">$PARAM[is_player]</param>
+                    </include>
+                    <include content="Info_Meta_Item" condition="$EXP[Exp_TMDbHelper_IsData]">
+                        <param name="item">Item04</param>
+                        <param name="colordiffuse">$PARAM[colordiffuse]</param>
+                        <param name="container">$PARAM[container]</param>
+                        <param name="is_player">$PARAM[is_player]</param>
+                    </include>
+                    <include content="Info_Meta_Item" condition="$EXP[Exp_TMDbHelper_IsData]">
+                        <param name="item">Item05</param>
+                        <param name="colordiffuse">$PARAM[colordiffuse]</param>
+                        <param name="container">$PARAM[container]</param>
+                        <param name="is_player">$PARAM[is_player]</param>
+                    </include>
+                    <include content="Info_Meta_Item" condition="$EXP[Exp_TMDbHelper_IsData]">
+                        <param name="item">Item06</param>
+                        <param name="colordiffuse">$PARAM[colordiffuse]</param>
+                        <param name="container">$PARAM[container]</param>
+                        <param name="is_player">$PARAM[is_player]</param>
+                    </include>
+                    <include content="Info_Meta_Item" condition="$EXP[Exp_TMDbHelper_IsData]">
+                        <param name="item">Item07</param>
+                        <param name="colordiffuse">$PARAM[colordiffuse]</param>
+                        <param name="container">$PARAM[container]</param>
+                        <param name="is_player">$PARAM[is_player]</param>
+                    </include>
+                    <include content="Info_Meta_Item" condition="$EXP[Exp_TMDbHelper_IsData]">
+                        <param name="item">Item08</param>
                         <param name="colordiffuse">$PARAM[colordiffuse]</param>
                         <param name="container">$PARAM[container]</param>
                         <param name="is_player">$PARAM[is_player]</param>

@@ -48,7 +48,6 @@
                             <onright>9000</onright>
                             <onback>9000</onback>
                             <onclick>$VAR[Action_Update_Color]</onclick>
-                            <onclick>runscript($VAR[Action_Var_BuildTextures])</onclick>
                             <onclick>SetFocus(9000)</onclick>
                             <itemlayout height="80" width="80">
                                 <include content="Object_Control">
@@ -64,7 +63,8 @@
                                     <texture>$INFO[ListItem.Icon]</texture>
                                 </include>
                             </focusedlayout>
-                            <content>plugin://script.texturemaker/</content>
+                            <!-- Texturemaker removed -->
+                            <content></content>
                         </control>
                         <!-- Selection Box -->
                         <control type="group">
@@ -153,7 +153,6 @@
                         <param name="color">Alpha</param>
                         <param name="ondown">8002</param>
                         <param name="onback">9000</param>
-                        <param name="onback_01">runscript($VAR[Action_Var_BuildTextures])</param>
                     </include>
                     <!-- Red -->
                     <include content="Object_ColorSlider">
@@ -163,7 +162,6 @@
                         <param name="onup">8001</param>
                         <param name="ondown">8003</param>
                         <param name="onback">9000</param>
-                        <param name="onback_01">runscript($VAR[Action_Var_BuildTextures])</param>
                     </include>
                     <!-- Green -->
                     <include content="Object_ColorSlider">
@@ -173,7 +171,6 @@
                         <param name="onup">8002</param>
                         <param name="ondown">8004</param>
                         <param name="onback">9000</param>
-                        <param name="onback_01">runscript($VAR[Action_Var_BuildTextures])</param>
                     </include>
                     <!-- Blue -->
                     <include content="Object_ColorSlider">
@@ -182,9 +179,7 @@
                         <param name="color">Blue</param>
                         <param name="onup">8003</param>
                         <param name="ondown">9000</param>
-                        <param name="ondown_01">runscript($VAR[Action_Var_BuildTextures])</param>
                         <param name="onback">9000</param>
-                        <param name="onback_01">runscript($VAR[Action_Var_BuildTextures])</param>
                     </include>
 
                     <control type="group">
@@ -406,7 +401,7 @@
                     <itemgap>0</itemgap>
                     <onup>8004</onup>
                     <ondown>noop</ondown>
-                    <onback>runscript($VAR[Action_Var_BuildTextures],reload=skinsettings)</onback>
+                    <onback>PreviousMenu</onback>
                     <control type="label" id="9001">
                         <left>40</left>
                         <right>40</right>
@@ -443,7 +438,6 @@
                         <param name="control">button</param>
                         <description>Default Setting Button</description>
                         <label>$LOCALIZE[31032] [LOWERCASE]$LOCALIZE[14078][/LOWERCASE]</label>
-                        <onclick>runscript($VAR[Action_Var_BuildTextures],reload=1111)</onclick>
                         <visible>Skin.HasSetting(DisableMonochromeHighlight)</visible>
                     </include>
                     <include content="Settings_Button">
@@ -465,7 +459,6 @@
                         <selected>!Skin.HasSetting(DisableMonochromeHighlight)</selected>
                         <onclick>Skin.ToggleSetting(DisableMonochromeHighlight)</onclick>
                         <onclick condition="Skin.HasSetting(DisableMonochromeHighlight) + String.IsEqual(Window(Home).Property(ColorPicker_Type),Gradient)">SetProperty(ColorPicker_Type,Highlight,Home)</onclick>
-                        <onclick>runscript($VAR[Action_Var_BuildTextures],reload=1111)</onclick>
                     </include>
                     <include content="Settings_Button">
                         <param name="dialog">true</param>

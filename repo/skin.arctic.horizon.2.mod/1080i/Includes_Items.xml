@@ -253,6 +253,22 @@
         </include>
         <include content="OSD_Button">
             <param name="vertical">true</param>
+            <param name="id" value="5007"/>
+            <param name="groupid" value="5107"/>
+            <param name="sliceid" value="5207"/>
+            <param name="label" value="ParentalGuide"/>
+            <param name="icon" value="special://home/addons/script.parentalguide/icon-m.png"/>
+            <visible>true</visible>
+            <!-- <onclick condition="String.IsEmpty(ListItem.TvShowTitle) + !String.IsEmpty(ListItem.Title)+ !String.IsEmpty(ListItem.IMDBNumber)">RunScript(special://home/addons/script.parentalguide/default.py,)</onclick> -->
+            <onclick>RunScript(special://home/addons/script.parentalguide/default.py,)</onclick>
+            <!-- <onclick condition="!String.IsEmpty(ListItem.TvShowTitle) + String.IsEmpty(ListItem.Title)">RunScript(special://home/addons/script.parentalguide/default.py,)</onclick> -->
+            <include content="OSD_Button_HintLabel">
+                <param name="label">ParentalGuide</param>
+            </include>
+        </include>
+        
+        <include content="OSD_Button">
+            <param name="vertical">true</param>
             <param name="id" value="5005" />
             <param name="groupid" value="5105" />
             <param name="sliceid" value="5205" />
@@ -625,6 +641,26 @@
         <param name="itemgap" default="30" />
         <param name="onup" value="9001" />
         <definition>
+            <!-- <include content="Dialog_Menu_Button">
+                <param name="icon" value="special://skin/extras/icons/playlist.png" />
+                <param name="id" value="8086" />
+                <param name="groupid" value="8186" />
+                <param name="control" value="button" />
+                <onclick condition="!Integer.IsEqual(MusicPlayer.PlaylistLength,0)">ActivateWindow(musicplaylist)</onclick>
+                <onclick condition="!Integer.IsEqual(VideoPlayer.PlaylistLength,0)">ActivateWindow(videoplaylist)</onclick>
+                <label>$LOCALIZE[559]</label>
+                <visible>!Window.IsVisible(MyPlaylist.xml)</visible>
+                <visible>!Integer.IsEqual(MusicPlayer.PlaylistLength,0) | !Integer.IsEqual(VideoPlayer.PlaylistLength,0)</visible>
+            </include> -->
+            <!-- <include content="Dialog_Menu_Button">
+                <param name="icon" value="special://skin/extras/icons/fullscreen.png" />
+                <param name="id" value="8087" />
+                <param name="groupid" value="8187" />
+                <param name="control" value="button" />
+                <label>$LOCALIZE[35232]</label>
+                <onclick>fullscreen</onclick>
+                <visible>!Integer.IsEqual(MusicPlayer.PlaylistLength,0) | !Integer.IsEqual(VideoPlayer.PlaylistLength,0)</visible>
+            </include> -->
             <control type="grouplist" id="8080">
                 <nested />
                 <left>30</left>
@@ -667,6 +703,13 @@
                     <param name="visible" value="Window.IsVisible(MyPlaylist.xml)" />
                     <onclick>PlayerControl(Random)</onclick>
                 </include>
+                <!-- <include content="Items_QuickNav_Button">
+                    <param name="itemgap" value="$PARAM[itemgap]" />
+                    <param name="icon" value="$VAR[Image_OSD_Repeat]" />
+                    <param name="id" value="82" />
+                    <param name="bordersize" value="6" />
+                    <onclick>PlayerControl(Repeat)</onclick>
+                </include> -->
                 <include content="Items_QuickNav_Button">
                     <param name="itemgap" value="$PARAM[itemgap]" />
                     <param name="icon" value="special://skin/extras/icons/playlist.png" />
@@ -906,7 +949,7 @@
             <param name="groupid" value="9214" />
             <param name="control" value="radiobutton" />
             <param name="icon" value="$VAR[Image_Watched]" />
-            <label>$VAR[Label_WatchedCount]</label>
+            <label>$LOCALIZE[20367]</label>
         </include>
         <include content="Dialog_Menu_Button" description="Filter">
             <param name="id" value="19" />
@@ -2457,78 +2500,4 @@
         </include>
     </include>
 
-    <include name="Items_Settings_GameOptions">
-        <include content="Dialog_Settings_Button" description="Game Video Filter button">
-            <param name="id" value="106" />
-            <param name="control" value="button" />
-            <label>$LOCALIZE[35225]</label>
-            <onclick>ActivateWindow(GameVideoFilter)</onclick>
-        </include>
-        <include content="Dialog_Settings_Button" description="Game Stretch Mode button">
-            <param name="id" value="107" />
-            <param name="control" value="button" />
-            <label>$LOCALIZE[35233]</label>
-            <onclick>ActivateWindow(GameStretchMode)</onclick>
-        </include>
-        <include content="Dialog_Settings_Button" description="Game Video Rotation button">
-            <param name="id" value="108" />
-            <param name="control" value="button" />
-            <label>$LOCALIZE[35227]</label>
-            <onclick>ActivateWindow(GameVideoRotation)</onclick>
-        </include>
-        <include content="Dialog_Settings_Button" description="Game Volume button">
-            <param name="id" value="109" />
-            <param name="control" value="button" />
-            <label>$LOCALIZE[13376]</label>
-            <label2>$LOCALIZE[31389]</label2>
-            <onclick>ActivateWindow(GameVolume)</onclick>
-        </include>
-        <include content="Dialog_Settings_Button" description="Game Controllers button">
-            <param name="id" value="110" />
-            <param name="control" value="button" />
-            <label>$LOCALIZE[35234]</label>
-            <onclick>ActivateWindow(GameControllers)</onclick>
-        </include>
-        <include content="Dialog_Settings_Button" description="Game Advanced Settings button">
-            <param name="id" value="111" />
-            <param name="control" value="button" />
-            <label>$LOCALIZE[35226]</label>
-            <onclick>ActivateWindow(GameAdvancedSettings)</onclick>
-        </include>
-    </include>
-
-    <include name="Items_GameOSD_Settings">
-        <include content="Dialog_Settings_Button" description="Pause / Resume button">
-            <param name="id" value="101" />
-            <param name="control" value="button" />
-            <label>$LOCALIZE[35224]</label>
-            <label2>$LOCALIZE[31387]</label2>
-            <onclick>Play</onclick>
-        </include>
-        <include content="Dialog_Settings_Button" description="Save / load">
-            <param name="id" value="102" />
-            <param name="control" value="button" />
-            <label>$LOCALIZE[35249]</label>
-            <onclick>ActivateWindow(InGameSaves)</onclick>
-        </include>
-        <include content="Dialog_Settings_Button" description="Reset button">
-            <param name="id" value="103" />
-            <param name="control" value="button" />
-            <label>$LOCALIZE[13007]</label>
-            <onclick>PlayerControl(Reset)</onclick>
-        </include>
-        <include content="Dialog_Settings_Button" description="Stop button">
-            <param name="id" value="104" />
-            <param name="control" value="button" />
-            <label>$LOCALIZE[35222]</label>
-            <label2>$LOCALIZE[31388]</label2>
-            <onclick>Stop</onclick>
-        </include>
-        <include content="Dialog_Settings_Button" description="Game options">
-            <param name="id" value="105" />
-            <param name="control" value="button" />
-            <label>$LOCALIZE[5]</label>
-            <onclick>ActivateWindow(1151)</onclick>
-        </include>
-    </include>
 </includes>
