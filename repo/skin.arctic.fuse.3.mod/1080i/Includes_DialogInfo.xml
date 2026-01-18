@@ -1129,9 +1129,9 @@
         </include>
     </include>
 
-    <include name="DialogInfo_Onload">
+    <!-- <include name="DialogInfo_Onload">
         <onload>ClearProperty(TMDbHelper.WidgetContainer)</onload>
-    </include>
+    </include> -->
 
     <include name="DialogInfo_Button_GroupBuiltin">
         <visible>Control.IsVisible($PARAM[id])</visible>
