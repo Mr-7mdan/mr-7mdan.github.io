@@ -175,6 +175,16 @@
             <onclick>SetProperty(CustomDialogSettingsItems,DialogCustom_Settings_Items_BackgroundStyle,Home)</onclick>
             <onclick>ActivateWindow(1118)</onclick>
         </include>
+        <include content="Settings_Button" description="Ratings">
+            <param name="dialog">false</param>
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">009</param>
+            <param name="control">button</param>
+            <label>$LOCALIZE[31082]</label>
+            <label2>$VAR[Label_Setting_Ratings]</label2>
+            <onclick>Skin.ToggleSetting(Ratings.EnableColor)</onclick>
+        </include>
     </include>
 
     <!-- Viewtypes -->
@@ -599,7 +609,7 @@
             <param name="baseid">$PARAM[baseid]</param>
             <param name="id">004</param>
             <label>$LOCALIZE[342]</label>
-            <label2>$INFO[Skin.String(CustomRating.Movies.Item01)]$INFO[Skin.String(CustomRating.Movies.Item02), • ,]$INFO[Skin.String(CustomRating.Movies.Item03), • ,]$INFO[Skin.String(CustomRating.Movies.Item04), • ,]$INFO[Skin.String(CustomRating.Movies.Item05), • ,]$INFO[Skin.String(CustomRating.Movies.Item06), • ,]$INFO[Skin.String(CustomRating.Movies.Item07), • ,]$INFO[Skin.String(CustomRating.Movies.Item08), • ,]</label2>
+            <label2>$INFO[Skin.String(CustomRating.Movies.Item01)]$INFO[Skin.String(CustomRating.Movies.Item02), • ,]$INFO[Skin.String(CustomRating.Movies.Item03), • ,]</label2>
             <onclick>SetProperty(CustomDialogSettingsTitle,[CAPITALIZE]$LOCALIZE[31202]: $LOCALIZE[342][/CAPITALIZE],Home)</onclick>
             <onclick>SetProperty(CustomDialogSettingsItems,DialogCustom_Ratings_Movies_Items,Home)</onclick>
             <onclick>ActivateWindow(1118)</onclick>
@@ -612,21 +622,10 @@
             <param name="baseid">$PARAM[baseid]</param>
             <param name="id">005</param>
             <label>$LOCALIZE[20343]</label>
-            <label2>$INFO[Skin.String(CustomRating.TVShows.Item01)]$INFO[Skin.String(CustomRating.TVShows.Item02), • ,]$INFO[Skin.String(CustomRating.TVShows.Item03), • ,]$INFO[Skin.String(CustomRating.TVShows.Item04), • ,]$INFO[Skin.String(CustomRating.TVShows.Item05), • ,]$INFO[Skin.String(CustomRating.TVShows.Item06), • ,]$INFO[Skin.String(CustomRating.TVShows.Item07), • ,]$INFO[Skin.String(CustomRating.TVShows.Item08), • ,]</label2>
+            <label2>$INFO[Skin.String(CustomRating.TVShows.Item01)]$INFO[Skin.String(CustomRating.TVShows.Item02), • ,]$INFO[Skin.String(CustomRating.TVShows.Item03), • ,]</label2>
             <onclick>SetProperty(CustomDialogSettingsTitle,[CAPITALIZE]$LOCALIZE[31202]: $LOCALIZE[20343][/CAPITALIZE],Home)</onclick>
             <onclick>SetProperty(CustomDialogSettingsItems,DialogCustom_Ratings_TVShows_Items,Home)</onclick>
             <onclick>ActivateWindow(1118)</onclick>
-            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
-        </include>
-
-        <include content="Settings_Button" description="Use Colored Rating Icons">
-            <param name="window">skinsettings</param>
-            <param name="baseid">$PARAM[baseid]</param>
-            <param name="id">006</param>
-            <param name="control">radiobutton</param>
-            <label>Use Colored Rating Icons</label>
-            <selected>Skin.HasSetting(Furniture.EnableColourRatings)</selected>
-            <onclick>Skin.ToggleSetting(Furniture.EnableColourRatings)</onclick>
             <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
         </include>
 

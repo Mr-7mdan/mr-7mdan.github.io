@@ -13,9 +13,9 @@
         <param name="defaultcontrol">5010</param>
     </include>
     <menucontrol>4000</menucontrol>
-    <onload>RunScript(special://home/addons/script.parentalguide/ClearProperties.py,)</onload>
+    <!-- <onload>RunScript(special://home/addons/script.parentalguide/ClearProperties.py,)</onload> -->
     <onload>RunScript(special://home/addons/script.parentalguide/NudityCheck.py,)</onload>
-    <onunload>RunScript(special://home/addons/script.parentalguide/ClearProperties.py,)</onunload>
+    <!-- <onunload>RunScript(special://home/addons/script.parentalguide/ClearProperties.py,)</onunload> -->
     <onfocus>AlarmClock(ClearRecLoading,ClearProperty(Recommendations.IsLoading,Home),00:00,silent)</onfocus>
     <onunload>ClearProperty(HasTrailer,Home)</onunload>
     <controls>
