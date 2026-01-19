@@ -1477,7 +1477,7 @@
                 </include>
                 <control type="grouplist" id="9000">
                     <orientation>horizontal</orientation>
-                    <top>20</top>
+                    <top>-2</top>
                     <left>20</left>
                     <height>57</height>
                     <itemgap>40</itemgap>
