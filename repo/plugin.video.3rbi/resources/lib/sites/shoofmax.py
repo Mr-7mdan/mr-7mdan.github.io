@@ -18,12 +18,14 @@ DEFAULT_POSTER = 'https://shoofmax-static.b-cdn.net/v2/img/general/small-cover.j
 
 @site.register(default_mode=True)
 def Main():
+    from resources.lib.category_mapper import get_category_icon
+
     """Main menu"""
     utils.kodilog(f'{site.title}: Main menu')
     
-    site.add_dir('أفلام', f'{site.url}/genre/فيلم', 'getMovies', site.image)
-    site.add_dir('مسلسلات', f'{site.url}/genre/مسلسل', 'getTVShows', site.image)
-    site.add_dir('بحث', '', 'search', site.image)
+    site.add_dir('Movies', f'{site.url}/genre/فيلم', 'getMovies', get_category_icon('Movies'))
+    site.add_dir('TV Shows', f'{site.url}/genre/مسلسل', 'getTVShows', get_category_icon('TV Shows'))
+    site.add_dir('Search', '', 'search', get_category_icon('Search'))
     utils.eod()
 
 

@@ -30,17 +30,19 @@ def _get_dynamic_url():
 
 @site.register(default_mode=True)
 def Main():
-    site.add_dir('Search Movies', site.url, 'searchMovies', site.image)
-    site.add_dir('Search Series', site.url, 'searchSeries', site.image)
-    site.add_dir('مضاف حديثا', site.url + 'recently/', 'getRecent', site.image)
-    site.add_dir('أفلام أجنبية', site.url + 'category/foreign-movies-10/', 'getMovies', site.image)
-    site.add_dir('أفلام عربية', site.url + 'category/arabic-movies-10/', 'getMovies', site.image)
-    site.add_dir('أفلام Netflix', site.url + 'category/netfilx/افلام-netfilx/', 'getMovies', site.image)
-    site.add_dir('مسلسلات أجنبية', site.url + 'category/foreign-series-3/', 'getTVShows', site.image)
-    site.add_dir('مسلسلات عربية', site.url + 'category/arabic-series-8/', 'getTVShows', site.image)
-    site.add_dir('مسلسلات تركية', site.url + 'category/turkish-series-2/', 'getTVShows', site.image)
-    site.add_dir('مسلسلات Netflix', site.url + 'category/netfilx/مسلسلات-netfilx-1/', 'getTVShows', site.image)
-    site.add_dir('مصارعة', site.url + 'category/wwe-shows-1/', 'getTVShows', site.image)
+    from resources.lib.category_mapper import get_category_icon
+    
+    site.add_dir('Search', site.url, 'searchMovies', get_category_icon('Search'))
+    site.add_dir('Search', site.url, 'searchSeries', get_category_icon('Search'))
+    site.add_dir('Recently Added', site.url + 'recently/', 'getRecent', get_category_icon('Recently Added'))
+    site.add_dir('English Movies', site.url + 'category/foreign-movies-10/', 'getMovies', get_category_icon('English Movies'))
+    site.add_dir('Arabic Movies', site.url + 'category/arabic-movies-10/', 'getMovies', get_category_icon('Arabic Movies'))
+    site.add_dir('Netflix Movies', site.url + 'category/netfilx/افلام-netfilx/', 'getMovies', get_category_icon('Netflix Movies'))
+    site.add_dir('English TV Shows', site.url + 'category/foreign-series-3/', 'getTVShows', get_category_icon('English TV Shows'))
+    site.add_dir('Arabic TV Shows', site.url + 'category/arabic-series-8/', 'getTVShows', get_category_icon('Arabic TV Shows'))
+    site.add_dir('Turkish TV Shows', site.url + 'category/turkish-series-2/', 'getTVShows', get_category_icon('Turkish TV Shows'))
+    site.add_dir('Netflix TV Shows', site.url + 'category/netfilx/مسلسلات-netfilx-1/', 'getTVShows', get_category_icon('Netflix TV Shows'))
+    site.add_dir('WWE', site.url + 'category/wwe-shows-1/', 'getTVShows', get_category_icon('WWE'))
     utils.eod()
 
 @site.register()

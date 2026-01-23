@@ -17,10 +17,12 @@ site = SiteBase('esseq', 'Esseq', url=None, image='sites/esseq.png')
 
 @site.register(default_mode=True)
 def Main():
+    from resources.lib.category_mapper import get_category_icon
+
     """Main menu"""
-    site.add_dir('أفلام', site.url + '/category/filmler/', 'getMovies', site.image)
-    site.add_dir('مسلسلات كاملة', site.url + '/category/arsiv/', 'getTVShows', site.image)
-    site.add_dir('بحث', '', 'search', site.image)
+    site.add_dir('Movies', site.url + '/category/filmler/', 'getMovies', get_category_icon('Movies'))
+    site.add_dir('Complete Series', site.url + '/category/arsiv/', 'getTVShows', get_category_icon('Complete Series'))
+    site.add_dir('Search', '', 'search', get_category_icon('Search'))
     
     utils.eod()
 

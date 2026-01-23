@@ -49,6 +49,11 @@
             "label": "ShoofMax",
             "active": true,
             "url": "https://shoofmax.com"
+        },
+        "qrmzi": {
+            "label": "Qrmzi",
+            "active": true,
+            "url": "https://www.qrmzi.tv"
         }
     }
 }

@@ -31,6 +31,7 @@ from resources.lib import favorites
 from resources.lib import pin
 from resources.lib.site_base import SiteBase
 from resources.lib.sites import *  # noqa
+from resources.lib import category_browser  # noqa
 
 socket.setdefaulttimeout(60)
 
@@ -60,6 +61,8 @@ if addon.getSetting('custom_sites') == 'true':
 def INDEX():
     url_dispatcher.add_dir('{}'.format(utils.i18n('sites')), '', 'site_list',
                            basics.addon_image('matrix-icon-pack/All.png'), '', list_avail=False)
+    url_dispatcher.add_dir('Browse by Category', '', 'category_browser.show_categories',
+                           basics.addon_image('matrix-icon-pack/Genres.png'), '', list_avail=False)
     url_dispatcher.add_dir('{}'.format(utils.i18n('fav_videos')), '1', 'favorites.List',
                            basics.addon_image('matrix-icon-pack/Favs.png'), '', list_avail=False)
     url_dispatcher.add_dir('Play a Link', '', 'PlayTestLink',

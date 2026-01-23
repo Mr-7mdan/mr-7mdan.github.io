@@ -10,6 +10,8 @@ site = SiteBase(name='akwam', title='Akwam', url=None, image='sites/AKSV.png')
 
 @site.register(default_mode=True)
 def Main():
+    from resources.lib.category_mapper import get_category_icon
+
     site.add_dir('Movies', '{0}/movies'.format(site.url), 'getMovies', _get_cat_icon('Movies'), fanart=site.image, landscape=site.image)
     site.add_dir('Series', '{0}/series'.format(site.url), 'getTVShows', _get_cat_icon('Series'), fanart=site.image, landscape=site.image)
     site.add_dir('TV Shows', '{0}/shows'.format(site.url), 'getTVShows', _get_cat_icon('TV Shows'), fanart=site.image, landscape=site.image)

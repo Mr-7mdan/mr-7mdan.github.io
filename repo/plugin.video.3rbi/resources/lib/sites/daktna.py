@@ -26,10 +26,12 @@ def _convert_arabic_season_episode(title):
 
 @site.register(default_mode=True)
 def Main():
-    site.add_dir('Search', site.url, 'search', site.image)
-    site.add_dir('مسلسلات رمضان', site.url + '/list/series/', 'getTVShows', site.image)
-    site.add_dir('مسلسلات عربية', site.url + '/list/series/', 'getTVShows', site.image)
-    site.add_dir('مسلسلات تركية', site.url + '/list/series-turkish/', 'getTVShows', site.image)
+    from resources.lib.category_mapper import get_category_icon
+
+    site.add_dir('Search', site.url, 'search', get_category_icon('Search'))
+    site.add_dir('Ramadan TV Shows', site.url + '/list/series/', 'getTVShows', get_category_icon('Ramadan TV Shows'))
+    site.add_dir('Arabic TV Shows', site.url + '/list/series/', 'getTVShows', get_category_icon('Arabic TV Shows'))
+    site.add_dir('Turkish TV Shows', site.url + '/list/series-turkish/', 'getTVShows', get_category_icon('Turkish TV Shows'))
     utils.eod()
 
 @site.register()

@@ -13,15 +13,17 @@ site = SiteBase('asia2tv', 'Asia2TV', url=None, image='sites/asia2tv.png')
 
 @site.register(default_mode=True)
 def Main():
-    site.add_dir('Search Movies', site.url, 'searchMovies', site.image)
-    site.add_dir('Search Series', site.url, 'searchSeries', site.image)
-    site.add_dir('أفلام آسيوية', site.url + 'category/asian-movies/', 'getMovies', site.image)
-    site.add_dir('مسلسلات آسيوية', site.url + 'category/asian-drama/', 'getTVShows', site.image)
-    site.add_dir('مسلسلات كورية', site.url + 'category/asian-drama/korean/', 'getTVShows', site.image)
-    site.add_dir('مسلسلات صينية', site.url + 'category/asian-drama/chinese-taiwanese/', 'getTVShows', site.image)
-    site.add_dir('مسلسلات يابانية', site.url + 'category/asian-drama/japanese/', 'getTVShows', site.image)
-    site.add_dir('مسلسلات تايلاندية', site.url + 'category/asian-drama/thai/', 'getTVShows', site.image)
-    site.add_dir('برامج ترفيهية', site.url + 'category/asian-drama/kshow/', 'getTVShows', site.image)
+    from resources.lib.category_mapper import get_category_icon
+    
+    site.add_dir('Search', site.url, 'searchMovies', get_category_icon('Search'))
+    site.add_dir('Search', site.url, 'searchSeries', get_category_icon('Search'))
+    site.add_dir('Asian Movies', site.url + 'category/asian-movies/', 'getMovies', get_category_icon('Asian Movies'))
+    site.add_dir('Asian TV Shows', site.url + 'category/asian-drama/', 'getTVShows', get_category_icon('Asian TV Shows'))
+    site.add_dir('Korean TV Shows', site.url + 'category/asian-drama/korean/', 'getTVShows', get_category_icon('Korean TV Shows'))
+    site.add_dir('Chinese TV Shows', site.url + 'category/asian-drama/chinese-taiwanese/', 'getTVShows', get_category_icon('Chinese TV Shows'))
+    site.add_dir('Japanese TV Shows', site.url + 'category/asian-drama/japanese/', 'getTVShows', get_category_icon('Japanese TV Shows'))
+    site.add_dir('Thai TV Shows', site.url + 'category/asian-drama/thai/', 'getTVShows', get_category_icon('Thai TV Shows'))
+    site.add_dir('TV Programs', site.url + 'category/asian-drama/kshow/', 'getTVShows', get_category_icon('TV Programs'))
     utils.eod()
 
 @site.register()

@@ -16,26 +16,28 @@ site = SiteBase('egydead', 'EgyDead', url=None, image='sites/egydead.png')
 @site.register(default_mode=True)
 def Main():
     """Main menu"""
+    from resources.lib.category_mapper import get_category_icon
+    
     # Movies categories
-    site.add_dir('أفلام أجنبي', site.url + '/category/english-movies/', 'getMovies', site.image)
-    site.add_dir('أفلام عربي', site.url + '/category/افلام-عربي/', 'getMovies', site.image)
-    site.add_dir('أفلام تركية', site.url + '/category/افلام-تركية/', 'getMovies', site.image)
-    site.add_dir('أفلام أسيوية', site.url + '/category/افلام-اسيوية/', 'getMovies', site.image)
-    site.add_dir('أفلام مدبلجة', site.url + '/category/افلام-اجنبية-مدبلجة/', 'getMovies', site.image)
-    site.add_dir('أفلام كرتون', site.url + '/category/افلام-كرتون/', 'getMovies', site.image)
-    site.add_dir('أفلام هندية', site.url + '/category/افلام-هندية/', 'getMovies', site.image)
-    site.add_dir('أفلام وثائقية', site.url + '/category/افلام-وثائقية/', 'getMovies', site.image)
+    site.add_dir('English Movies', site.url + '/category/english-movies/', 'getMovies', get_category_icon('English Movies'))
+    site.add_dir('Arabic Movies', site.url + '/category/افلام-عربي/', 'getMovies', get_category_icon('Arabic Movies'))
+    site.add_dir('Turkish Movies', site.url + '/category/افلام-تركية/', 'getMovies', get_category_icon('Turkish Movies'))
+    site.add_dir('Asian Movies', site.url + '/category/افلام-اسيوية/', 'getMovies', get_category_icon('Asian Movies'))
+    site.add_dir('Dubbed Movies', site.url + '/category/افلام-اجنبية-مدبلجة/', 'getMovies', get_category_icon('Dubbed Movies'))
+    site.add_dir('Cartoon Movies', site.url + '/category/افلام-كرتون/', 'getMovies', get_category_icon('Cartoon Movies'))
+    site.add_dir('Indian Movies', site.url + '/category/افلام-هندية/', 'getMovies', get_category_icon('Indian Movies'))
+    site.add_dir('Documentary Movies', site.url + '/category/افلام-وثائقية/', 'getMovies', get_category_icon('Documentary Movies'))
     
     # Series categories
-    site.add_dir('مسلسلات أجنبي', site.url + '/series-category/english-series/', 'getTVShows', site.image)
-    site.add_dir('مسلسلات عربي', site.url + '/series-category/arabic-series/', 'getTVShows', site.image)
-    site.add_dir('مسلسلات تركية', site.url + '/series-category/turkish-series/', 'getTVShows', site.image)
-    site.add_dir('مسلسلات أسيوية', site.url + '/series-category/asian-series/', 'getTVShows', site.image)
-    site.add_dir('مسلسلات لاتينية', site.url + '/series-category/latino-series/', 'getTVShows', site.image)
-    site.add_dir('مسلسلات كرتون', site.url + '/series-category/cartoon-series/', 'getTVShows', site.image)
+    site.add_dir('English TV Shows', site.url + '/series-category/english-series/', 'getTVShows', get_category_icon('English TV Shows'))
+    site.add_dir('Arabic TV Shows', site.url + '/series-category/arabic-series/', 'getTVShows', get_category_icon('Arabic TV Shows'))
+    site.add_dir('Turkish TV Shows', site.url + '/series-category/turkish-series/', 'getTVShows', get_category_icon('Turkish TV Shows'))
+    site.add_dir('Asian TV Shows', site.url + '/series-category/asian-series/', 'getTVShows', get_category_icon('Asian TV Shows'))
+    site.add_dir('Latin TV Shows', site.url + '/series-category/latino-series/', 'getTVShows', get_category_icon('Latin TV Shows'))
+    site.add_dir('Cartoon TV Shows', site.url + '/series-category/cartoon-series/', 'getTVShows', get_category_icon('Cartoon TV Shows'))
     
     # Search
-    site.add_dir('بحث', '', 'search', site.image)
+    site.add_dir('Search', '', 'search', get_category_icon('Search'))
     
     utils.eod()
 

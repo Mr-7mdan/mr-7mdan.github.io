@@ -16,28 +16,30 @@ site = SiteBase('cima4u', 'Cima4u', url=None, image='sites/cima4u.png')
 @site.register(default_mode=True)
 def Main():
     """Main menu"""
+    from resources.lib.category_mapper import get_category_icon
+    
     # Movies
-    site.add_dir('أفلام أجنبية', site.url + '/category/افلام-اجنبي/', 'getMovies', site.image)
-    site.add_dir('أفلام عربية', site.url + '/category/افلام-عربى/', 'getMovies', site.image)
-    site.add_dir('أفلام هندية', site.url + '/category/افلام-هندى/', 'getMovies', site.image)
-    site.add_dir('أفلام تركية', site.url + '/category/افلام-تركى/', 'getMovies', site.image)
-    site.add_dir('أفلام كرتون', site.url + '/category/افلام-كرتون/', 'getMovies', site.image)
+    site.add_dir('English Movies', site.url + '/category/افلام-اجنبي/', 'getMovies', get_category_icon('English Movies'))
+    site.add_dir('Arabic Movies', site.url + '/category/افلام-عربى/', 'getMovies', get_category_icon('Arabic Movies'))
+    site.add_dir('Indian Movies', site.url + '/category/افلام-هندى/', 'getMovies', get_category_icon('Indian Movies'))
+    site.add_dir('Turkish Movies', site.url + '/category/افلام-تركى/', 'getMovies', get_category_icon('Turkish Movies'))
+    site.add_dir('Cartoon Movies', site.url + '/category/افلام-كرتون/', 'getMovies', get_category_icon('Cartoon Movies'))
     
     # Series
-    site.add_dir('مسلسلات أجنبية', site.url + '/category/مسلسلات-اجنبي/', 'getSeries', site.image)
-    site.add_dir('مسلسلات عربية', site.url + '/category/مسلسلات-عربية/', 'getSeries', site.image)
-    site.add_dir('مسلسلات تركية', site.url + '/category/مسلسلات-تركية/', 'getSeries', site.image)
-    site.add_dir('مسلسلات آسيوية', site.url + '/category/مسلسلات-اسيوية/', 'getSeries', site.image)
-    site.add_dir('مسلسلات هندية', site.url + '/category/مسلسلات-هندية/', 'getSeries', site.image)
-    site.add_dir('مسلسلات كرتون', site.url + '/category/مسلسلات-كرتون/', 'getSeries', site.image)
-    site.add_dir('مسلسلات رمضان 2025', site.url + '/category/مسلسلات-رمضان-2025/', 'getSeries', site.image)
+    site.add_dir('English TV Shows', site.url + '/category/مسلسلات-اجنبي/', 'getSeries', get_category_icon('English TV Shows'))
+    site.add_dir('Arabic TV Shows', site.url + '/category/مسلسلات-عربية/', 'getSeries', get_category_icon('Arabic TV Shows'))
+    site.add_dir('Turkish TV Shows', site.url + '/category/مسلسلات-تركية/', 'getSeries', get_category_icon('Turkish TV Shows'))
+    site.add_dir('Asian TV Shows', site.url + '/category/مسلسلات-اسيوية/', 'getSeries', get_category_icon('Asian TV Shows'))
+    site.add_dir('Indian TV Shows', site.url + '/category/مسلسلات-هندية/', 'getSeries', get_category_icon('Indian TV Shows'))
+    site.add_dir('Cartoon TV Shows', site.url + '/category/مسلسلات-كرتون/', 'getSeries', get_category_icon('Cartoon TV Shows'))
+    site.add_dir('Ramadan TV Shows', site.url + '/category/مسلسلات-رمضان-2025/', 'getSeries', get_category_icon('Ramadan TV Shows'))
     
     # Other
-    site.add_dir('برامج تلفزيونية', site.url + '/category/برامج-تليفزيونية/', 'getSeries', site.image)
-    site.add_dir('مصارعة حرة', site.url + '/category/مصارعة-حرة/', 'getSeries', site.image)
+    site.add_dir('TV Programs', site.url + '/category/برامج-تليفزيونية/', 'getSeries', get_category_icon('TV Programs'))
+    site.add_dir('WWE', site.url + '/category/مصارعة-حرة/', 'getSeries', get_category_icon('WWE'))
     
     # Search
-    site.add_dir('بحث', '', 'search', site.image)
+    site.add_dir('Search', '', 'search', get_category_icon('Search'))
     
     utils.eod()
 
