@@ -22,8 +22,33 @@
     <category label="30053">
         <setting id="qualityask" type="enum" label="30001" lvalues="30401|30402|30403|30404|30405" default="0" />
         <setting id="dontask" label="30002" type="bool" default="false" />
-        <setting id="universal_resolvers" label="30026" type="bool" default="true" />
         <setting id="open_smr_settings" type="action" label="30027" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=main.smrSettings)" />
+    </category>
+
+    <category label="Resolvers">
+        <setting type="lsep" label="Resolver Priority" />
+        <setting id="resolver_priority" type="enum" label="Resolver Order" lvalues="Custom Resolvers First|ResolveURL First|Custom Only|ResolveURL Only" default="0" />
+        <setting id="enable_resolveurl" type="bool" label="Enable ResolveURL" default="true" />
+        <setting type="lsep" label="Link Display Options" />
+        <setting id="show_resolver_icons" type="bool" label="Show Resolver Icons (✅/❌/🚀)" default="true" />
+        <setting id="filter_unsupported" type="bool" label="Hide Unsupported Hosters" default="false" />
+        <setting id="show_trusted_only" type="bool" label="Show Trusted Hosters Only (🚀)" default="false" />
+        <setting type="lsep" label="Hoster Tracking" />
+        <setting id="track_hoster_success" type="bool" label="Track Hoster Reliability" default="true" />
+        <setting id="trusted_threshold" type="slider" label="Success Rate for 🚀 (%)" default="80" range="50,5,100" option="int" />
+        <setting id="min_attempts_trusted" type="slider" label="Min Attempts for 🚀" default="5" range="3,1,20" option="int" />
+        <setting id="clear_hoster_stats" type="action" label="Clear Hoster Statistics" action="RunPlugin(plugin://plugin.video.aksv/?mode=utils.clear_hoster_stats)" />
+        <setting type="lsep" label="Debrid Services" />
+        <setting id="use_debrid" type="bool" label="Enable Debrid Services" default="false" />
+        <setting id="debrid_service" enable="eq(-1,true)" type="enum" label="Debrid Provider" lvalues="Real-Debrid|AllDebrid|Premiumize|Debrid-Link" default="0" />
+        <setting type="lsep" label="Authentication" />
+        <setting id="authorize_debrid" enable="eq(-3,true)" type="action" label="Authorize Service" action="RunPlugin(plugin://plugin.video.aksv/?mode=utils.authorize_debrid)" />
+        <setting id="debrid_account" enable="eq(-4,true)" type="action" label="Account Info" action="RunPlugin(plugin://plugin.video.aksv/?mode=utils.debrid_account_info)" />
+        <setting id="revoke_debrid" enable="eq(-5,true)" type="action" label="Revoke Authorization" action="RunPlugin(plugin://plugin.video.aksv/?mode=utils.revoke_debrid)" />
+        <setting type="lsep" label="Stored Credentials (Read-Only)" />
+        <setting id="rd_username" type="text" label="Real-Debrid User" default="" enable="false" visible="eq(-9,0)" />
+        <setting id="ad_username" type="text" label="AllDebrid User" default="" enable="false" visible="eq(-10,1)" />
+        <setting id="pm_username" type="text" label="Premiumize User" default="" enable="false" visible="eq(-11,2)" />
     </category>
 
     <category label="30059">
@@ -39,6 +64,18 @@
         <setting id="backup_keywords" type="action" label="30211" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=utils.backup_keywords)" />
         <setting id="restore_keywords" type="action" label="30212" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=utils.restore_keywords)" />
         <setting id="clear_keywords" type="action" label="30213" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=utils.delallKeyword)" />
+    </category>
+    <category label="Site Management">
+        <setting type="lsep" label="Installed Sites" />
+        <setting id="list_sites" type="action" label="List All Sites" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=site_manager.list_sites)" />
+        <setting id="enable_site" type="action" label="Enable Site" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=site_manager.enable_site)" />
+        <setting id="disable_site" type="action" label="Disable Site" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=site_manager.disable_site)" />
+        <setting id="enable_all_sites" type="action" label="Enable All Sites" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=site_manager.enable_all_sites)" />
+        <setting id="disable_all_sites" type="action" label="Disable All Sites" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=site_manager.disable_all_sites)" />
+        <setting type="lsep" label="Updates from GitHub" />
+        <setting id="check_site_updates" type="action" label="Check for Site Updates" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=site_manager.check_updates)" />
+        <setting id="update_all_sites" type="action" label="Update All Sites" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=site_manager.update_all_sites)" />
+        <setting id="github_repo_url" type="text" label="GitHub Repository URL" default="https://raw.githubusercontent.com/Mr-7mdan/mr-7mdan.github.io/master/repo/plugin.video.3rbi" enable="false" />
     </category>
     <category label="30062">
         <setting id="custom_sites" label="30301" type="bool" default="false" />

@@ -1,8 +1,9 @@
-<addon id="plugin.video.3rbi" name="3rbi" provider-name="3rbi" version="0.0.1">
+<addon id="plugin.video.3rbi" name="3rbi" provider-name="3rbi" version="0.0.2">
     <requires>
         <import addon="script.module.six" />
         <import addon="script.module.kodi-six" />
         <import addon="script.module.resolveurl" version="5.0.00" />
+	<import addon="repository.resolveurl" />
         <import addon="script.common.plugin.cache" />
         <import addon="script.module.requests" />
     </requires>

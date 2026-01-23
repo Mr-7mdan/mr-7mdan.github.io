@@ -62,6 +62,8 @@ def INDEX():
                            basics.addon_image('matrix-icon-pack/All.png'), '', list_avail=False)
     url_dispatcher.add_dir('{}'.format(utils.i18n('fav_videos')), '1', 'favorites.List',
                            basics.addon_image('matrix-icon-pack/Favs.png'), '', list_avail=False)
+    url_dispatcher.add_dir('Play a Link', '', 'PlayTestLink',
+                           basics.addon_image('matrix-icon-pack/PlayLink.png'), '', Folder=False, list_avail=False)
     download_path = addon.getSetting('download_path')
     if download_path != '' and xbmcvfs.exists(download_path):
         url_dispatcher.add_dir('{}'.format(utils.i18n('dnld_folder')), download_path, 'OpenDownloadFolder',
@@ -122,6 +124,44 @@ def about_site(name, about, custom):
     with open(TRANSLATEPATH(os.path.join(dir, '{}.txt'.format(about)))) as f:
         announce = f.read()
     utils.textBox(heading, announce)
+
+
+@url_dispatcher.register()
+def PlayTestLink():
+    from resources.lib.hoster_resolver import HosterManager
+    from kodi_six import xbmcgui
+    
+    keyboard = xbmcgui.Dialog()
+    url = keyboard.input('Enter video URL to test:', type=xbmcgui.INPUT_ALPHANUM)
+    
+    if not url:
+        return
+    
+    utils.kodilog('PlayTestLink: Testing URL: {}'.format(url))
+    
+    hoster_manager = HosterManager()
+    result = hoster_manager.resolve(url)
+    
+    if not result:
+        dialog.ok('Play Link', 'Failed to resolve URL', 'No compatible resolver found or resolution failed.')
+        return
+    
+    video_url = result.get('url')
+    headers = result.get('headers', {})
+    
+    if not video_url:
+        dialog.ok('Play Link', 'Failed to resolve URL', 'No video URL returned.')
+        return
+    
+    utils.kodilog('PlayTestLink: Resolved to: {}'.format(video_url[:100]))
+    
+    if headers:
+        header_str = '|' + '&'.join(['{}={}'.format(k, v) for k, v in headers.items()])
+        video_url = video_url + header_str
+    
+    listitem = xbmcgui.ListItem(path=video_url)
+    listitem.setProperty('IsPlayable', 'true')
+    xbmcplugin.setResolvedUrl(basics.addon_handle, True, listitem)
 
 
 def change():

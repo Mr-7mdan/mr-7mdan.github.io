@@ -1,10 +1,12 @@
 from resources.lib.site_base import SiteBase
-from resources.lib import utils, basics
+from resources.lib import utils
+from resources.lib.basics import addon, addon_image, aksvicon
+from resources.lib.hoster_resolver import get_hoster_manager
 import re
 import xbmc
 import os
 
-site = SiteBase(name="AKSV", title="AKSV", url="https://ak.sv", image='sites/AKSV.png')
+site = SiteBase(name='akwam', title='Akwam', url=None, image='sites/AKSV.png')
 
 @site.register(default_mode=True)
 def Main():
@@ -39,13 +41,13 @@ def _get_cat_icon(title):
     
     for key, icon in mapping.items():
         if key in lower_title:
-            return basics.addon_image(os.path.join('matrix-icon-pack', icon))
+            return addon_image(os.path.join('matrix-icon-pack', icon))
             
     # Fallback to general category icon if it's a known icon string
     if title.startswith('addon-'):
-        return basics.addon_image(title)
+        return addon_image(title)
         
-    return basics.addon_image(site.image)
+    return addon_image(site.image)
     
 def _get_high_res_img(url):
     if not url or 'http' not in url:
@@ -249,7 +251,7 @@ def _common_listing(url, next_mode, item_target_mode):
                 item_img = img if img else site.image
                 # Ensure it's a full path if it's a local icon
                 if item_img.startswith('addon-'):
-                    item_img = basics.addon_image(item_img)
+                    item_img = addon_image(item_img)
                 
                 # Determine media type
                 media_type = 'tvshow' if is_series else 'movie'
@@ -264,7 +266,7 @@ def _common_listing(url, next_mode, item_target_mode):
     # Pagination
     next_page = re.search(r'<a[^>]+href="([^"]+)"[^>]*rel="next"', html)
     if next_page:
-        next_icon = basics.addon_image(site.img_next)
+        next_icon = addon_image(site.img_next)
         site.add_dir('Next Page', next_page.group(1), next_mode, next_icon)
 
     utils.eod()
@@ -322,7 +324,7 @@ def getSeasons(url):
             cleaned_seasons.sort(key=lambda x: x[0])
             
             for name, s_url, season_num in cleaned_seasons:
-                icon = basics.addon_image(site.image)
+                icon = addon_image(site.image)
                 site.add_dir(name, s_url, 'getEpisodes', icon, desc=plot, fanart=icon, landscape=icon,
                            season=season_num, show_title=show_title, year=year, media_type='season')
             
@@ -407,7 +409,7 @@ def getEpisodes(url, html=None, plot=None, show_title=None, year=None):
         
         for name, item_url, item_img, episode_num, episode_name in cleaned_entries:
             if not item_img:
-                item_img = basics.addon_image(site.image)
+                item_img = addon_image(site.image)
             
             site.add_dir(name, item_url, 'getLinks', item_img, desc=plot, fanart=item_img, landscape=item_img,
                        episode=episode_num, season=season_num, show_title=show_title, year=year, media_type='episode')
@@ -420,7 +422,7 @@ def getEpisodes(url, html=None, plot=None, show_title=None, year=None):
                 site.add_dir(name, item_url, 'getLinks', '', desc=plot, show_title=show_title, year=year)
         
         if not entries:
-            utils.notify("Error", "No episodes found", basics.aksvicon)
+            utils.notify("Error", "No episodes found", aksvicon)
     
     utils.eod()
 
@@ -488,6 +490,9 @@ def getLinks(url, name):
             utils.eod()
             return
 
+    # Get settings for icon display and filtering
+    hoster_manager = get_hoster_manager()
+    
     found_links = False
     for tab_id, quality in tabs:
         # 2. Find the content block for this tab
@@ -500,10 +505,19 @@ def getLinks(url, name):
             
             if watch_url_match:
                 watch_url = watch_url_match.group(1)
-                size = size_match.group(1) if size_match else "N/A"
                 
-                # Format: "Hoster | Quality | Size | Filename"
-                label = "AKSV | {} | {} | {}".format(quality, size, name)
+                # Format link with icon and check filtering (quality without size)
+                label, should_skip = utils.format_resolver_link(
+                    hoster_manager,
+                    watch_url,
+                    'AKSV',
+                    name,
+                    quality
+                )
+                
+                if should_skip:
+                    utils.kodilog('AKSV: Filtered out: {}'.format(watch_url[:100]))
+                    continue
                 
                 site.add_download_link(label, watch_url, 'PlayVid', site.image, desc=plot, fanart=site.image, landscape=site.image,
                                      year=year, show_title=show_title, season=season_num, episode=episode_num,
@@ -523,48 +537,30 @@ def getLinks(url, name):
 
 @site.register()
 def PlayVid(url, name, download=None):
-    # url here is likely http://go.ak.sv/watch/XXXX
-    utils.kodilog('AKSV: Resolving stream for {}'.format(url))
+    """Play video - resolve AKSV URL using hoster resolver"""
+    utils.kodilog('AKSV: Attempting to resolve: {}'.format(url[:100]))
     
-    html = utils.getHtml(url)
+    hoster_manager = get_hoster_manager()
     
-    # 1. Find redirect to actual watch page
-    # Example: href="https://ak.sv/watch/170172/10704/the-confession"
-    final_link_match = re.search(r'href="(https?://ak\.sv/watch/[^"]+)"', html)
+    # Try to resolve with hoster manager
+    result = hoster_manager.resolve(url, referer=site.url)
     
-    if not final_link_match:
-        # Maybe we are already on the final page?
-        final_html = html
+    if result:
+        video_url = result['url']
+        headers = result.get('headers', {})
+        
+        # Format headers for URL (Kodi accepts headers in URL format)
+        if headers:
+            header_str = '|' + '&'.join(['{}={}'.format(k, v) for k, v in headers.items()])
+            video_url = video_url + header_str
+        
+        utils.kodilog('AKSV: Resolved to: {}'.format(video_url[:100]))
     else:
-        final_url = final_link_match.group(1)
-        final_html = utils.getHtml(final_url)
-
-    # 2. Scrape direct source from video/source tag
-    # <source src="https://..." size="1080" type="video/mp4" />
-    sources = re.findall(r'<source\s+src="([^"]+)"[^>]*size="([^"]+)"', final_html)
-    if not sources:
-        sources = re.findall(r'<source\s+src="([^"]+)"', final_html)
-        sources = [(s, '0') for s in sources]
-
-    if not sources:
-        utils.notification("Error", "No playable stream found", basics.aksvicon)
-        return
-
-    # Sort and pick the best (or first)
-    # Since the go.ak.sv link is already quality-specific, there might only be one source of that quality
-    stream_url = sources[0][0]
-    
-    # PLAYBACK FIX: Encode spaces and add User-Agent
-    # Kodi's internal player expects headers appended with |
-    from six.moves.urllib_parse import quote
-    stream_url = quote(stream_url, safe=':/?&=+')
-    
-    # SSL FIX: Bypass certificate verification (Error 60)
-    # USER_AGENT is required for most servers
-    stream_url += '|User-Agent={0}&verifypeer=false'.format(utils.USER_AGENT)
+        utils.kodilog('AKSV: Resolver failed, trying direct playback')
+        video_url = url
     
     vp = utils.VideoPlayer(name, download)
-    vp.play_from_direct_link(stream_url)
+    vp.play_from_direct_link(video_url)
 
 
 @site.register()

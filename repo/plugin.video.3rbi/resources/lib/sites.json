@@ -1,0 +1,54 @@
+{
+    "sites": {
+        "akwam": {
+            "label": "Akwam",
+            "active": true,
+            "url": "https://ak.sv/"
+        },
+        "arabseed": {
+            "label": "ArabSeed",
+            "active": true,
+            "url": "https://a.asd.homes/"
+        },
+        "asia2tv": {
+            "label": "Asia2TV",
+            "active": true,
+            "url": "https://v.asia2tv.co/"
+        },
+        "cima4u": {
+            "label": "Cima4u",
+            "active": true,
+            "url": "https://cima4u.info"
+        },
+        "daktna": {
+            "label": "Daktna",
+            "active": true,
+            "url": "https://daktna.com/"
+        },
+        "fajershow": {
+            "label": "FajerShow",
+            "active": true,
+            "url": "https://show.alfajertv.com/"
+        },
+        "shoofvod": {
+            "label": "ShoofVOD",
+            "active": true,
+            "url": "https://shoofvod.com/"
+        },
+        "egydead": {
+            "label": "EgyDead",
+            "active": true,
+            "url": "https://w.egydead.live"
+        },
+        "esseq": {
+            "label": "Esseq",
+            "active": true,
+            "url": "https://qeseh.net"
+        },
+        "shoofmax": {
+            "label": "ShoofMax",
+            "active": true,
+            "url": "https://shoofmax.com"
+        }
+    }
+}

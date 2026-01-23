@@ -47,6 +47,7 @@ from six.moves import (html_parser, http_cookiejar, urllib_error, urllib_parse,
 
 cache = StorageServer.StorageServer("aksv", int(addon.getSetting('cache_time')))
 url_dispatcher = URL_Dispatcher('utils')
+monitor = xbmc.Monitor()
 
 USER_AGENT = random_ua.get_ua()
 PY2 = six.PY2
@@ -98,6 +99,175 @@ def clear_cookies():
     cj.clear()
     cj.save(cookiePath, ignore_discard=True)
     xbmcgui.Dialog().notification('3rbi', msg, aksvicon, 3000, False)
+
+
+@url_dispatcher.register()
+def clear_hoster_stats():
+    """Clear hoster reliability statistics"""
+    try:
+        from resources.lib.hoster_tracker import get_tracker
+        tracker = get_tracker()
+        tracker.clear_stats()
+        xbmcgui.Dialog().notification('3rbi', 'Hoster statistics cleared', aksvicon, 3000, False)
+    except Exception as e:
+        kodilog('Error clearing hoster stats: {}'.format(str(e)))
+        xbmcgui.Dialog().notification('3rbi', 'Failed to clear statistics', aksvicon, 3000, False)
+
+
+@url_dispatcher.register()
+def authorize_debrid():
+    """Authorize debrid service using OAuth flow"""
+    try:
+        from resources.lib.debrid_auth import get_debrid_auth
+        
+        debrid_service = int(getSetting('debrid_service') or '0')
+        auth = get_debrid_auth(debrid_service)
+        
+        if not auth:
+            xbmcgui.Dialog().ok('Debrid Auth', 'Invalid service selected')
+            return
+        
+        kodilog('Starting {} authorization'.format(auth.name))
+        
+        if auth.auth():
+            kodilog('{} authorization successful'.format(auth.name))
+            xbmc.executebuiltin('Container.Refresh')
+        else:
+            kodilog('{} authorization failed'.format(auth.name))
+        
+    except Exception as e:
+        kodilog('Error authorizing debrid: {}'.format(str(e)))
+        xbmcgui.Dialog().ok('Debrid Auth', 'Authorization failed', str(e))
+
+
+@url_dispatcher.register()
+def revoke_debrid():
+    """Revoke/reset debrid authorization"""
+    try:
+        from resources.lib.debrid_auth import get_debrid_auth
+        
+        debrid_service = int(getSetting('debrid_service') or '0')
+        auth = get_debrid_auth(debrid_service)
+        
+        if not auth:
+            return
+        
+        if xbmcgui.Dialog().yesno('Revoke Authorization', 
+                                  'Remove {} credentials?'.format(auth.name),
+                                  'This will log you out'):
+            auth.reset()
+            xbmcgui.Dialog().notification('3rbi', '{} authorization revoked'.format(auth.name), aksvicon, 3000, False)
+            xbmc.executebuiltin('Container.Refresh')
+        
+    except Exception as e:
+        kodilog('Error revoking debrid: {}'.format(str(e)))
+
+
+@url_dispatcher.register()
+def debrid_account_info():
+    """Show debrid account information"""
+    try:
+        from resources.lib.debrid_auth import get_debrid_auth
+        
+        debrid_service = int(getSetting('debrid_service') or '0')
+        service_names = ['Real-Debrid', 'AllDebrid', 'Premiumize', 'Debrid-Link']
+        
+        auth = get_debrid_auth(debrid_service)
+        
+        if not auth or not auth.is_authenticated():
+            xbmcgui.Dialog().ok('Debrid Account', 'Not authenticated', 'Authorize first in settings')
+            return
+        
+        # Get username from settings
+        username_settings = ['rd_username', 'ad_username', 'pm_username', 'dl_username']
+        username = getSetting(username_settings[debrid_service]) if debrid_service < len(username_settings) else 'Unknown'
+        
+        service_name = service_names[debrid_service] if debrid_service < len(service_names) else 'Unknown'
+        
+        xbmcgui.Dialog().ok('{} Account'.format(service_name),
+                           'Service: {}'.format(service_name),
+                           'Username: {}'.format(username),
+                           'Status: Active')
+        
+    except Exception as e:
+        kodilog('Error getting debrid account info: {}'.format(str(e)))
+        xbmcgui.Dialog().ok('Debrid Account', 'Failed to get info', str(e))
+
+
+def format_resolver_link(hoster_manager, source_url, site_name, video_name='', quality=''):
+    """
+    Format a resolver link with icon and check filtering settings.
+    
+    Args:
+        hoster_manager: HosterManager instance
+        source_url: The hoster URL
+        site_name: Name of the site (e.g., 'Asia2TV', 'ArabSeed')
+        video_name: Optional video name
+        quality: Optional quality indicator (e.g., '720p', '1080p')
+        
+    Returns:
+        tuple: (label, should_skip)
+            label: Formatted label with icon (e.g., "🚀 Asia2TV | mixdrop.co | Video Name")
+            should_skip: True if link should be filtered out, False otherwise
+    """
+    # Get settings
+    show_icons = addon.getSetting('show_resolver_icons') == 'true'
+    filter_unsupported = addon.getSetting('filter_unsupported') == 'true'
+    show_trusted_only = addon.getSetting('show_trusted_only') == 'true'
+    
+    # Check if URL is a direct video file (doesn't need resolver)
+    import re
+    is_direct = bool(re.search(r'\.(m3u8|mp4|avi|mkv|flv|ts|mpd)(\?|$)', source_url, re.IGNORECASE))
+    
+    # Check resolver availability
+    has_resolver = hoster_manager.has_resolver(source_url)
+    is_trusted = hoster_manager.is_trusted_hoster(source_url)
+    
+    # Treat direct video files as supported (they don't need a resolver)
+    if is_direct:
+        has_resolver = True
+    
+    # Apply filtering
+    if filter_unsupported and not has_resolver:
+        return None, True
+    
+    if show_trusted_only and not is_trusted and not is_direct:
+        return None, True
+    
+    # Extract hoster name from URL
+    try:
+        hoster_name = source_url.split('/')[2] if '/' in source_url else 'Unknown'
+    except:
+        hoster_name = 'Unknown'
+    
+    # Build icon prefix based on resolver status
+    icon = ''
+    if show_icons:
+        if is_trusted:
+            icon = '[COLOR lime][B]★[/B][/COLOR] '  # Green star for trusted
+        elif has_resolver or is_direct:
+            icon = '[COLOR yellow][B]+[/B][/COLOR] '  # Yellow plus for supported/direct
+        else:
+            icon = '[COLOR red][B]×[/B][/COLOR] '  # Red X for unsupported
+    
+    # Build label with optional quality
+    if quality:
+        label = '{}{} | {} | {} | {}'.format(
+            icon,
+            site_name,
+            quality,
+            hoster_name,
+            video_name if video_name else 'Video'
+        )
+    else:
+        label = '{}{} | {} | {}'.format(
+            icon,
+            site_name,
+            hoster_name,
+            video_name if video_name else 'Video'
+        )
+    
+    return label, False
 
 
 def i18n(string_id):
@@ -453,11 +623,40 @@ def PlayStream(name, url):
     return
 
 
-def getHtml(url, referer='', headers=None, NoCookie=None, data=None, error='return', ignoreCertificateErrors=False):
-    return cache.cacheFunction(_getHtml, url, referer, headers, NoCookie, data, error, ignoreCertificateErrors)
+def _check_and_update_site_url(site_name, original_url, redirected_url):
+    """Check if redirect is to a new domain and update sites.json"""
+    try:
+        from urllib.parse import urlparse
+        
+        original_parsed = urlparse(original_url)
+        redirected_parsed = urlparse(redirected_url)
+        
+        # Compare base domains
+        original_domain = f"{original_parsed.scheme}://{original_parsed.netloc}"
+        redirected_domain = f"{redirected_parsed.scheme}://{redirected_parsed.netloc}"
+        
+        # If domain changed, update sites.json
+        if original_domain != redirected_domain:
+            from resources.lib.site_base import SiteBase
+            kodilog(f'3rbi: Detected redirect from {original_domain} to {redirected_domain} for site {site_name}')
+            
+            if SiteBase.update_site_url(site_name, redirected_domain):
+                notify('Site URL Updated', f'{site_name} moved to {redirected_domain}')
+    except Exception as e:
+        kodilog(f'3rbi: Error checking redirect: {e}')
 
 
-def _getHtml(url, referer='', headers=None, NoCookie=None, data=None, error='return', ignoreCertificateErrors=False):
+def getHtml(url, referer='', headers=None, NoCookie=None, data=None, error='return', ignoreCertificateErrors=False, site_name=None):
+    return cache.cacheFunction(_getHtml, url, referer, headers, NoCookie, data, error, ignoreCertificateErrors, site_name)
+
+
+def _getHtml(url, referer='', headers=None, NoCookie=None, data=None, error='return', ignoreCertificateErrors=False, site_name=None):
+    # Check for abort before starting
+    if monitor.abortRequested():
+        kodilog('getHtml: Abort requested, cancelling request')
+        return ''
+    
+    original_url = url
     url = urllib_parse.quote(url, r':/%?+&=')
 
     if data:
@@ -474,14 +673,25 @@ def _getHtml(url, referer='', headers=None, NoCookie=None, data=None, error='ret
         req.add_header('Referer', referer)
     if data:
         req.add_header('Content-Length', len(data))
+    
+    # Check abort before network call
+    if monitor.abortRequested():
+        kodilog('getHtml: Abort requested before network call')
+        return ''
+    
     try:
+        # Use shorter timeout (5s instead of 10s) to be more responsive to aborts
         if ignoreCertificateErrors:
             ctx = ssl.create_default_context()
             ctx.check_hostname = False
             ctx.verify_mode = ssl.CERT_NONE
-            response = urlopen(req, timeout=30, context=ctx)
+            response = urlopen(req, timeout=5, context=ctx)
         else:
-            response = urlopen(req, timeout=30)
+            response = urlopen(req, timeout=5)
+        
+        # Check for redirects to new domain
+        if site_name and response.geturl() != url:
+            _check_and_update_site_url(site_name, original_url, response.geturl())
     except urllib_error.HTTPError as e:
         if error is True:
             response = e
@@ -501,7 +711,9 @@ def _getHtml(url, referer='', headers=None, NoCookie=None, data=None, error='ret
                     handle = [urllib_request.HTTPSHandler(context=ctx)]
                     opener = urllib_request.build_opener(*handle)
                     try:
-                        response = opener.open(req, timeout=30)
+                        if monitor.abortRequested():
+                            return ''
+                        response = opener.open(req, timeout=5)
                     except urllib_error.HTTPError as e:
                         if e.info().get('Content-Encoding', '').lower() == 'gzip':
                             buf = six.BytesIO(e.read())
@@ -517,7 +729,9 @@ def _getHtml(url, referer='', headers=None, NoCookie=None, data=None, error='ret
                             handle = [urllib_request.HTTPSHandler(context=ctx)]
                             opener = urllib_request.build_opener(*handle)
                             try:
-                                response = opener.open(req, timeout=30)
+                                if monitor.abortRequested():
+                                    return ''
+                                response = opener.open(req, timeout=5)
                             except:
                                 notify(i18n('oh_oh'), i18n('site_down'))
                                 if 'return' in error:
@@ -696,7 +910,7 @@ def _postHtml(url, form_data={}, headers={}, json_data={}, compression=True, NoC
         req.add_header('Accept-Encoding', 'gzip')
 
     try:
-        response = urllib_request.urlopen(req)
+        response = urllib_request.urlopen(req, timeout=10)
     except urllib_error.HTTPError as e:
         if e.info().get('Content-Encoding', '').lower() == 'gzip':
             buf = six.BytesIO(e.read())
@@ -730,7 +944,7 @@ def _postHtml(url, form_data={}, headers={}, json_data={}, compression=True, NoC
                     handle = [urllib_request.HTTPSHandler(context=ctx)]
                     opener = urllib_request.build_opener(*handle)
                     try:
-                        response = opener.open(req, timeout=30)
+                        response = opener.open(req, timeout=10)
                     except:
                         notify(i18n('oh_oh'), i18n('site_down'))
                         raise
@@ -1422,7 +1636,7 @@ class VideoPlayer():
 
     @_cancellable
     def play_from_link_list(self, links):
-        use_universal = addon.getSetting("universal_resolvers") == "true"
+        use_universal = addon.getSetting("enable_resolveurl") == "true"
         links = self.bypass_hosters(links)
         sources = self._clean_urls([self.resolveurl.HostedMediaFile(x, title=x.split('/')[2], include_universal=use_universal) for x in links])
         if not sources:
@@ -1809,3 +2023,14 @@ class Thumbnails:
             return img_path
         Thread(target=self.download_image, args=(img, img_path), daemon=True).start()
         return img_path
+
+
+def get_search_input():
+    """Get search text from user keyboard input"""
+    keyboard = xbmc.Keyboard('', 'Search')
+    keyboard.doModal()
+    if keyboard.isConfirmed():
+        search_text = keyboard.getText()
+        if search_text:
+            return search_text
+    return None
