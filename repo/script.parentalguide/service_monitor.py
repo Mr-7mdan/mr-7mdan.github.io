@@ -36,7 +36,7 @@ class ParentalGuideMonitor(xbmc.Monitor):
             self.debounce_delay = float(ADDON.getSetting("debounceDelay"))
         except:
             self.debounce_delay = 0.2  # Default fallback
-        logger.info(f"ParentalGuideMonitor: Initialized with debounce delay: {self.debounce_delay}s")
+        # logger.info(f"ParentalGuideMonitor: Initialized with debounce delay: {self.debounce_delay}s")
     
     def get_current_item_info(self):
         """
@@ -111,7 +111,7 @@ class ParentalGuideMonitor(xbmc.Monitor):
             # Immediately copy this provider's properties to global for display
             NudityCheck.CopyPropertiesToGlobal(imdb_id, [provider])
             
-            logger.info(f"ParentalGuideMonitor: Provider {provider} completed and properties updated")
+            # logger.info(f"ParentalGuideMonitor: Provider {provider} completed and properties updated")
         except Exception as e:
             logger.error(f"ParentalGuideMonitor: Error fetching {provider}: {str(e)}")
     
@@ -121,7 +121,7 @@ class ParentalGuideMonitor(xbmc.Monitor):
         Each provider updates properties immediately upon completion for progressive display.
         """
         try:
-            logger.info(f"ParentalGuideMonitor: Fetching data for {item_info['title']}")
+            # logger.info(f"ParentalGuideMonitor: Fetching data for {item_info['title']}")
             
             imdb_id = item_info['imdb_id']
             title = item_info['title']
@@ -179,7 +179,7 @@ class ParentalGuideMonitor(xbmc.Monitor):
             # Clear loading indicator after all providers complete
             xbmcgui.Window(10000).clearProperty("ParentalGuide-Loading")
             
-            logger.info(f"ParentalGuideMonitor: Finished fetching data for {title}")
+            # logger.info(f"ParentalGuideMonitor: Finished fetching data for {title}")
             
         except Exception as e:
             logger.error(f"ParentalGuideMonitor: Error fetching data: {str(e)}")
@@ -190,7 +190,7 @@ class ParentalGuideMonitor(xbmc.Monitor):
         """
         Main monitoring loop that runs continuously in the background.
         """
-        logger.info("ParentalGuideMonitor: Service started")
+        # logger.info("ParentalGuideMonitor: Service started")
         
         while not self.abortRequested():
             try:
@@ -250,7 +250,7 @@ class ParentalGuideMonitor(xbmc.Monitor):
                 if self.waitForAbort(1):
                     break
         
-        logger.info("ParentalGuideMonitor: Service stopped")
+        # logger.info("ParentalGuideMonitor: Service stopped")
 
 
 def start_monitor():

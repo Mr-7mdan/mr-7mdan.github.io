@@ -207,7 +207,7 @@ class SqliteCache:
         # leave it as a non-expiring value. Other-
         # wise, we add the timeout in seconds to
         # the current time
-        logx.info("Trying to save results to cache for [%s] [%s]" % (show_info["title"], show_info["provider"]))
+        # logx.info("Trying to save results to cache for [%s] [%s]" % (show_info["title"], show_info["provider"]))
         
         # Note: timeout is now passed from getData() with conditional caching logic
         # Default to permanent cache (0) if no timeout specified

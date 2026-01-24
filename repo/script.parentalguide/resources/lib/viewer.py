@@ -102,6 +102,12 @@ class SummaryViewer(ParentalGuideViewer):
     def onInit(self):
         w = xbmcgui.Window(10000)
         
+        # Debug: Check if movie info properties are set
+        title = w.getProperty("ParentalGuide.Dialog.Title")
+        year = w.getProperty("ParentalGuide.Dialog.Year")
+        mpaa = w.getProperty("ParentalGuide.Dialog.MPAA")
+        log(f"SummaryViewer: onInit - Movie properties: Title='{title}', Year='{year}', MPAA='{mpaa}'")
+        
         # Set CurrentId and CurrentItem for provider switching FIRST
         if self.imdb_id:
             w.setProperty("CurrentId", self.imdb_id)
@@ -148,6 +154,7 @@ class SummaryViewer(ParentalGuideViewer):
                 ("IMDB", "IMDB"),
                 ("Kids In Mind", "KidsInMind"),
                 ("Movie Guide Org", "MovieGuide"),
+                ("Dove Foundation", "DoveFoundation"),
                 ("Common Sense Media", "CSM"),
                 ("Raising Children", "RaisingChildren")
             ]
@@ -185,61 +192,89 @@ class SummaryViewer(ParentalGuideViewer):
             log(f"SummaryViewer: Error updating textbox: {str(e)}")
     
     def _monitorProviderChange(self):
-        """Background thread to monitor for provider changes and category selection"""
+        """Background thread to monitor for provider focus changes and category selection"""
         import time
         w = xbmcgui.Window(10000)
-        last_selected_pos = -1
+        last_category_pos = -1
+        last_provider_pos = -1
         check_count = 0
         
         log("SummaryViewer: Monitoring thread started")
         
         while self._monitor_active:
             try:
-                # Check for provider changes
-                provider_flag = w.getProperty("ParentalGuide.ProviderChanged")
                 check_count += 1
                 
-                # Log every 25 checks (every 5 seconds at 200ms intervals) for debugging
-                if check_count % 25 == 0:
-                    log(f"SummaryViewer: Monitoring check #{check_count}, current flag='{provider_flag}', last flag='{self._last_provider_flag}'")
-                
-                if provider_flag and provider_flag != self._last_provider_flag:
-                    self._last_provider_flag = provider_flag
-                    log(f"SummaryViewer: Provider changed detected! New flag: '{provider_flag}', refreshing category list")
-                    try:
-                        self._rebuildCategoryList()
-                        self._updateTextbox()
-                        last_selected_pos = 0  # Reset position tracking
-                        log("SummaryViewer: Category list rebuilt successfully")
-                    except Exception as e:
-                        log(f"SummaryViewer: Error rebuilding category list: {str(e)}")
+                # Check for provider focus changes
+                try:
+                    provider_list = self.getControl(4400)
+                    current_provider_pos = provider_list.getSelectedPosition()
+                    
+                    if current_provider_pos != last_provider_pos and current_provider_pos >= 0:
+                        last_provider_pos = current_provider_pos
+                        selected_item = provider_list.getSelectedItem()
+                        
+                        if selected_item:
+                            provider_key = selected_item.getProperty('provider_key')
+                            has_data = selected_item.getProperty('has_data')
+                            
+                            log(f"SummaryViewer: Provider focus changed to {provider_key} (has_data={has_data})")
+                            
+                            # Clear description first
+                            w.clearProperty("ParentalGuide.Desc.Summary")
+                            textbox = self.getControl(5)
+                            textbox.setText("")
+                            
+                            # Clear categories
+                            category_list = self.getControl(4500)
+                            category_list.reset()
+                            
+                            # Rebuild if provider has data
+                            if has_data == "True":
+                                self._rebuildCategoryListForProvider(provider_key)
+                            else:
+                                log(f"SummaryViewer: Provider {provider_key} has no data")
+                            
+                            # Reset category position tracking
+                            last_category_pos = -1
+                except Exception as e:
+                    if "Non-Existent Control" not in str(e):
+                        log(f"SummaryViewer: Error checking provider position: {str(e)}")
                 
                 # Check for category selection changes
                 try:
                     category_list = self.getControl(4500)
-                    current_pos = category_list.getSelectedPosition()
+                    current_category_pos = category_list.getSelectedPosition()
                     
-                    if current_pos != last_selected_pos and current_pos >= 0:
-                        last_selected_pos = current_pos
+                    if current_category_pos != last_category_pos and current_category_pos >= 0:
+                        last_category_pos = current_category_pos
                         selected_item = category_list.getSelectedItem()
+                        
+                        # Always clear first
+                        w.clearProperty("ParentalGuide.Desc.Summary")
+                        textbox = self.getControl(5)
+                        textbox.setText("")
+                        
                         if selected_item:
-                            # Get description directly from ListItem property (set when building list)
+                            # Get description directly from ListItem property
                             desc = selected_item.getProperty('description')
-                            if desc:
+                            if desc and desc.strip():
                                 import html
                                 desc = html.unescape(str(desc))
                                 w.setProperty("ParentalGuide.Desc.Summary", desc)
-                                textbox = self.getControl(5)
                                 textbox.setText(desc)
-                                log(f"SummaryViewer: Category at position {current_pos} selected")
+                                log(f"SummaryViewer: Category at position {current_category_pos} selected with description")
+                            else:
+                                log(f"SummaryViewer: Category at position {current_category_pos} has no description")
                 except Exception as e:
-                    # Don't log every iteration, only real errors
                     if "Non-Existent Control" not in str(e):
                         log(f"SummaryViewer: Error checking category position: {str(e)}")
                 
-                time.sleep(0.2)  # Check every 200ms for responsive UI
+                time.sleep(0.15)  # Check every 150ms for responsive UI
             except Exception as e:
                 log(f"SummaryViewer: Monitoring thread error: {str(e)}")
+                import traceback
+                log(traceback.format_exc())
                 break
         
         log("SummaryViewer: Monitoring thread stopped")
@@ -331,21 +366,33 @@ class SummaryViewer(ParentalGuideViewer):
                     section = entry.get('name', '')
                     cat_name = entry.get('cat', 'N/A')
                     
-                    # Format votes
+                    # Format votes - only show if available
                     votes_str = entry.get('votes', '')
+                    label_parts = [section, cat_name]
+                    
                     if votes_str:
                         import re
                         nums = [int(s) for s in re.findall(r'\b\d+\b', str(votes_str))]
-                        votes = f"{nums[0]}/{nums[1]}" if len(nums) >= 2 else (f"{nums[0]}" if len(nums) == 1 else "N/A")
-                    else:
-                        votes = "N/A"
+                        if len(nums) >= 2:
+                            label_parts.append(f"({nums[0]}/{nums[1]})")
+                        elif len(nums) == 1:
+                            label_parts.append(f"({nums[0]})")
+                    
+                    label = " - ".join(label_parts)
                     
                     icon = f"special://home/addons/script.parentalguide/resources/skins/Default/media/tags/{cat_name}.png"
                     
-                    listitem = xbmcgui.ListItem(label=f"{section} - {cat_name} ({votes})")
+                    listitem = xbmcgui.ListItem(label=label)
                     listitem.setArt({'icon': icon, 'thumb': icon})
                     listitem.setProperty('cat_index', str(i + 1))
-                    listitem.setProperty('description', entry.get('description', 'No description available.'))
+                    
+                    # Store description, but handle empty/None cases
+                    desc = entry.get('description', '')
+                    if desc and desc.strip() and desc.lower() not in ['none', 'n/a']:
+                        listitem.setProperty('description', desc)
+                    else:
+                        listitem.setProperty('description', '')  # Empty description
+                    
                     category_list.addItem(listitem)
                 
                 # Set focus to first item and update description
@@ -416,25 +463,73 @@ class SummaryViewer(ParentalGuideViewer):
     
     def onFocus(self, controlID):
         """Handle focus events on controls"""
-        if controlID == 4500:  # Category list focused
+        if controlID == 4400:  # Provider list focused
+            # Update categories when provider focus changes
+            try:
+                provider_list = self.getControl(4400)
+                selected_item = provider_list.getSelectedItem()
+                if not selected_item:
+                    return
+                    
+                provider_key = selected_item.getProperty('provider_key')
+                has_data = selected_item.getProperty('has_data')
+                
+                if provider_key:
+                    w = xbmcgui.Window(10000)
+                    w.setProperty("SelectedProvider", provider_key)
+                    
+                    log(f"SummaryViewer: Provider {provider_key} focused (has_data={has_data}), updating categories")
+                    
+                    # Always clear previous data first
+                    w.clearProperty("ParentalGuide.Desc.Summary")
+                    textbox = self.getControl(5)
+                    textbox.setText("")
+                    
+                    category_list = self.getControl(4500)
+                    category_list.reset()
+                    
+                    # Rebuild category list with this provider's data only if has data
+                    if has_data == "True":
+                        self._rebuildCategoryListForProvider(provider_key)
+                    else:
+                        log(f"SummaryViewer: Provider {provider_key} has no data, categories cleared")
+            except Exception as e:
+                log(f"SummaryViewer: Error in provider onFocus: {str(e)}")
+                import traceback
+                log(traceback.format_exc())
+        
+        elif controlID == 4500:  # Category list focused
             # Update textbox when category focus changes
             try:
                 category_list = self.getControl(4500)
                 selected_item = category_list.getSelectedItem()
+                w = xbmcgui.Window(10000)
+                textbox = self.getControl(5)
+                
                 if selected_item:
                     cat_index = selected_item.getProperty('cat_index')
-                    if cat_index:
-                        w = xbmcgui.Window(10000)
-                        w.setProperty("SelectedCat", cat_index)
-                        desc = w.getProperty(f"ParentalGuide.Desc.{cat_index}")
-                        if desc:
-                            w.setProperty("ParentalGuide.Desc.Summary", desc)
-                            # Directly update textbox instead of using flag
-                            textbox = self.getControl(5)
-                            textbox.setText(desc)
-                            log(f"SummaryViewer: Category {cat_index} focused, textbox updated")
+                    desc = selected_item.getProperty('description')
+                    
+                    # Clear first, then set if we have data
+                    w.clearProperty("ParentalGuide.Desc.Summary")
+                    textbox.setText("")
+                    
+                    if desc and desc.strip():
+                        import html
+                        desc = html.unescape(str(desc))
+                        w.setProperty("ParentalGuide.Desc.Summary", desc)
+                        textbox.setText(desc)
+                        log(f"SummaryViewer: Category at index {cat_index} focused, textbox updated")
+                    else:
+                        log(f"SummaryViewer: Category at index {cat_index} has no description, cleared")
+                else:
+                    # No item selected, clear everything
+                    w.clearProperty("ParentalGuide.Desc.Summary")
+                    textbox.setText("")
             except Exception as e:
-                log(f"SummaryViewer: Error in onFocus: {str(e)}")
+                log(f"SummaryViewer: Error in category onFocus: {str(e)}")
+                import traceback
+                log(traceback.format_exc())
 
     # Set all the values to display on the property screen
     def _setProperties(self, details):

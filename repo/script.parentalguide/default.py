@@ -76,7 +76,12 @@ def runForVideo(videoName, IMDBID, isTvShow=False):
                     xbmcgui.Window(10000).setProperty(IMDBID + '-NIcon', f"tags/{entry['cat']}.png")
             
             try:
-                viewer = SummaryViewer("summary.xml", CWD, title=videoName, details=details, imdb_id=IMDBID, video_name=videoName)
+                # Get movie info for dialog display
+                movie_title = xbmc.getInfoLabel("ListItem.Title")
+                movie_year = xbmc.getInfoLabel("ListItem.Year")
+                movie_mpaa = xbmc.getInfoLabel("ListItem.MPAA")
+                
+                viewer = SummaryViewer("summary.xml", CWD, title=videoName, details=details, imdb_id=IMDBID, video_name=videoName, movie_title=movie_title, movie_year=movie_year, movie_mpaa=movie_mpaa)
                 viewer.doModal()
                 del viewer
             except Exception as dialog_error:
@@ -139,6 +144,13 @@ if __name__ == '__main__':
     IMDBID = xbmc.getInfoLabel("ListItem.IMDBNumber")
     year = xbmc.getInfoLabel("ListItem.Year")
     logger.info("ParentalGuide: Year " + year)
+    
+    # Get movie info for dialog display
+    movie_title = xbmc.getInfoLabel("ListItem.Title")
+    movie_year = xbmc.getInfoLabel("ListItem.Year")
+    movie_mpaa = xbmc.getInfoLabel("ListItem.MPAA")
+    logger.info(f"ParentalGuide: Movie info - Title: '{movie_title}', Year: '{movie_year}', MPAA: '{movie_mpaa}'")
+    
     videoName = None
     isTvShow = getIsTvShow()
 

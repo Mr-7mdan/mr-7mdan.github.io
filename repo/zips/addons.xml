@@ -337,7 +337,7 @@
             <fanart>fanart.jpg</fanart>
         </assets>
     </extension>
-</addon><addon id="skin.arctic.fuse.3.mod" name="Arctic Fuse 3 Mod" provider-name="jurialmunkey" version="3.1.91">
+</addon><addon id="skin.arctic.fuse.3.mod" name="Arctic Fuse 3 Mod" provider-name="jurialmunkey" version="3.1.92">
     <requires>
         <import addon="xbmc.gui" version="5.17.0" />
         <import addon="script.skinvariables" version="2.1.28" />
@@ -376,7 +376,7 @@
             <fanart>fanart.jpg</fanart>
         </assets>
     </extension>
-</addon><addon id="skin.arctic.horizon.2.mod" name="Arctic Horizon 2 Mod" provider-name="jurialmunkey" version="0.8.33~omega">
+</addon><addon id="skin.arctic.horizon.2.mod" name="Arctic Horizon 2 Mod" provider-name="jurialmunkey" version="0.8.34~omega">
     <requires>
         <import addon="xbmc.gui" version="5.17.0" />
         <import addon="script.skinshortcuts" version="0.4.0" />

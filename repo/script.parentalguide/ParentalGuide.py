@@ -167,6 +167,31 @@ if __name__ == '__main__':
     if videoName in [None, ""]:
         videoName = xbmc.getInfoLabel("ListItem.Title")
          
-    dialog = xbmcgui.WindowXMLDialog("Summary.xml", xbmcaddon.Addon(id='script.parentalguide').getAddonInfo('path'), 'default', '1080i')
-    dialog.doModal()
-    del dialog
+    # Get ListItem properties to pass to dialog
+    movie_title = xbmc.getInfoLabel("ListItem.Title")
+    movie_year = xbmc.getInfoLabel("ListItem.Year")
+    movie_mpaa = xbmc.getInfoLabel("ListItem.MPAA")
+    imdb_id = xbmc.getInfoLabel("ListItem.IMDBNumber")
+    
+    log(f"ParentalGuide: Movie info - Title: '{movie_title}', Year: '{movie_year}', MPAA: '{movie_mpaa}', IMDB: '{imdb_id}'")
+    
+    # Set window properties so dialog can access them
+    w = xbmcgui.Window(10000)
+    w.setProperty("ParentalGuide.Dialog.Title", movie_title)
+    w.setProperty("ParentalGuide.Dialog.Year", movie_year)
+    w.setProperty("ParentalGuide.Dialog.MPAA", movie_mpaa)
+    
+    log(f"ParentalGuide: Properties set - verifying...")
+    log(f"ParentalGuide: Title prop: '{w.getProperty('ParentalGuide.Dialog.Title')}'")
+    log(f"ParentalGuide: Year prop: '{w.getProperty('ParentalGuide.Dialog.Year')}'")
+    log(f"ParentalGuide: MPAA prop: '{w.getProperty('ParentalGuide.Dialog.MPAA')}'")
+    
+    # Use SummaryViewer class to get custom functionality (onFocus, etc)
+    viewer = SummaryViewer("summary.xml", CWD, title=movie_title, details=None, imdb_id=imdb_id, video_name=videoName, movie_title=movie_title, movie_year=movie_year, movie_mpaa=movie_mpaa)
+    viewer.doModal()
+    del viewer
+    
+    # Clear properties after dialog closes
+    w.clearProperty("ParentalGuide.Dialog.Title")
+    w.clearProperty("ParentalGuide.Dialog.Year")
+    w.clearProperty("ParentalGuide.Dialog.MPAA")

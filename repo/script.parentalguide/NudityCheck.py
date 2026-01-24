@@ -54,7 +54,7 @@ def getIsTvShow():
 def setProperty(PropertyName, PropertyVal, WindowID):
     # Force 10000 (Home) for global properties
     xbmcgui.Window(10000).setProperty(PropertyName, PropertyVal)
-    logger.info(PropertyName + " was set sucessfully")
+    # logger.debug(PropertyName + " was set sucessfully")
     
 def Notify(title, msg):
     xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % (title, msg , ADDON.getAddonInfo('icon')))
@@ -101,11 +101,11 @@ def getData(videoName, ID, Session, wid, Provider, order):
             
         show_info = db.get(key)
     except:
-        logger.info("Failed to fetch from cache or cache not found")
+        # logger.debug("Failed to fetch from cache or cache not found")
         show_info = None
                 
     if show_info is None: ##if not in cache
-        logger.info('Loading from scratch, no cache found for [%s][%s]' % (videoName, Provider))
+        # logger.debug('Loading from scratch, no cache found for [%s][%s]' % (videoName, Provider))
         
         # Check if there's a pending retry for this item
         current_time = time.time()
@@ -113,7 +113,7 @@ def getData(videoName, ID, Session, wid, Provider, order):
         
         if retry_entry:
             # Still within retry delay, skip for now
-            logger.info(f"Retry scheduled for {videoName} [{Provider}] at {retry_entry['retry_time']}")
+            # logger.debug(f"Retry scheduled for {videoName} [{Provider}] at {retry_entry['retry_time']}")
             AddFurnitureProperties(None, Provider, wid, ID)
             return None
         
@@ -123,10 +123,10 @@ def getData(videoName, ID, Session, wid, Provider, order):
             if should_retry:
                 # Schedule retry in 1 minute
                 schedule_retry(key, videoName, ID, Provider, wid, order, current_time)
-                logger.info(f"Scheduled retry for {videoName} [{Provider}] in {RETRY_DELAY_SECONDS} seconds due to failure/timeout")
+                # logger.debug(f"Scheduled retry for {videoName} [{Provider}] in {RETRY_DELAY_SECONDS} seconds due to failure/timeout")
             else:
                 # No data available, cache empty result
-                logger.info("No Results found for this movie (" + videoName + ") on [" + Provider + "]")
+                # logger.info("No Results found for this movie (" + videoName + ") on [" + Provider + "]")
                 Xshow_info = {
                             "id": ID,
                             "title": videoName,
@@ -135,13 +135,13 @@ def getData(videoName, ID, Session, wid, Provider, order):
                             "review-items": None,
                             "review-link": None
                             }
-                logger.info("Trying to save blank data for this movie (" + videoName + ") on [" + Provider + "]")
+                # logger.debug("Trying to save blank data for this movie (" + videoName + ") on [" + Provider + "]")
                 # Use cache_missing_ratings setting for items without ratings
                 safe_db_set(Xshow_info, cache_missing_ratings)
             
             AddFurnitureProperties(None, Provider, wid, ID)
         else:
-            logger.info('Finished loading new data for [%s][%s] \n' % (videoName, Provider)+ str(show_info))
+            # logger.debug('Finished loading new data for [%s][%s]' % (videoName, Provider))
             AddXMLProperties(show_info,wid)
             AddFurnitureProperties(show_info, Provider, wid, ID)
             
@@ -154,12 +154,11 @@ def getData(videoName, ID, Session, wid, Provider, order):
                 exp = cache_recent_items  # Recent items (1-2 years)
                 
             safe_db_set(show_info, exp)
-            logger.info("Added New Data for "+videoName + "[" + Provider +"] to cache sucessfully with expiry: " + str(exp) + " seconds" )
+            # logger.debug("Added New Data for "+videoName + "[" + Provider +"] to cache with expiry: " + str(exp) + " seconds" )
     else:
-        logger.info("Loading from cache : Cache found for " +videoName + "[" + Provider +"]\n"+ str(show_info))
+        # logger.debug("Loading from cache for " +videoName + "[" + Provider +"]")
         AddXMLProperties(show_info,wid)
         AddFurnitureProperties(show_info, Provider, wid, ID)
-        logger.info("Data from cache for "+videoName + "[" + Provider +"] \n")
     return show_info
 
 def callParentalGuideAPI(videoName, ID, Provider, timeout=15):
@@ -185,7 +184,7 @@ def callParentalGuideAPI(videoName, ID, Provider, timeout=15):
             # Check for failed status from API
             status = data.get("status", "")
             if status == "Failed":
-                logger.error(f"API returned Failed status for {Provider} - {videoName}: {data}")
+                # logger.error(f"API returned Failed status for {Provider} - {videoName}: {data}")
                 # Return None and indicate retry should be attempted
                 return (None, True)
             
@@ -196,7 +195,7 @@ def callParentalGuideAPI(videoName, ID, Provider, timeout=15):
             
             # Check if we got actual data (not empty)
             if not review_items and not data.get("recommended-age"):
-                logger.info(f"API returned no data for {Provider} - {videoName}")
+                # logger.debug(f"API returned no data for {Provider} - {videoName}")
                 return (None, False)  # No data, don't retry
             
             show_info = {
@@ -210,13 +209,13 @@ def callParentalGuideAPI(videoName, ID, Provider, timeout=15):
             return (show_info, False)  # Success, no retry needed
             
         except requests.Timeout as e:
-            logger.error(f"Timeout calling ParentalGuide API for {Provider} (attempt {attempt+1}/{max_retries}): {str(e)}")
+            # logger.error(f"Timeout calling ParentalGuide API for {Provider} (attempt {attempt+1}/{max_retries}): {str(e)}")
             if attempt == max_retries - 1:
                 return (None, True)  # Timeout, should retry later
             time.sleep(1)
             
         except requests.RequestException as e:
-            logger.error(f"Error calling ParentalGuide API for {Provider} (attempt {attempt+1}/{max_retries}): {str(e)}")
+            # logger.error(f"Error calling ParentalGuide API for {Provider} (attempt {attempt+1}/{max_retries}): {str(e)}")
             if attempt == max_retries - 1:
                 return (None, True)  # Network error, should retry later
             time.sleep(1)
@@ -224,7 +223,7 @@ def callParentalGuideAPI(videoName, ID, Provider, timeout=15):
 def getIMDBID(name,year):
     k = "da6c8b4d"
     url = "http://www.omdbapi.com/?t=" + name.strip() +"&y=" + year + "&apikey=" + k +"&plot=full&r=json"
-    logger.info(url)
+    # logger.debug(url)
     res = requests.get(url).content
     json_object = json.loads(res)
 
@@ -311,7 +310,7 @@ def AddFurnitureProperties(review, provider, WindowID, imdb_id=None):
                         votesProp = f" {entry['cat']} (No votes)"
                     WID.setProperty(f"{property_prefix}-NVotes", votesProp)
                 except Exception as e:
-                    logger.error(f"Error setting votes for {Suffix}: {str(e)}")
+                    # logger.error(f"Error setting votes for {Suffix}: {str(e)}")
                     WID.setProperty(f"{property_prefix}-NVotes", f" {entry['cat']} (Error parsing votes)")
                 
                 break
@@ -322,8 +321,7 @@ def AddFurnitureProperties(review, provider, WindowID, imdb_id=None):
             WID.clearProperty(f"{property_prefix}-NVotes")
             WID.clearProperty(f"{property_prefix}-NIcon")
     
-    logger.info(f"AddFurnitureProperties: Finished for provider {Suffix} with IMDB ID {imdb_id}")
-    logger.info(f"Set properties: NRate={WID.getProperty(f'{property_prefix}-NRate')}, NVotes={WID.getProperty(f'{property_prefix}-NVotes')}, NIcon={WID.getProperty(f'{property_prefix}-NIcon')}")
+    # logger.debug(f"AddFurnitureProperties: Finished for provider {Suffix} with IMDB ID {imdb_id}")
 
 def ClearGlobalProperties(providers):
     """
@@ -342,7 +340,7 @@ def ClearGlobalProperties(providers):
             global_prop_name = f"{provider}-{prop}"
             WID.clearProperty(global_prop_name)
     
-    logger.info(f"ClearGlobalProperties: Cleared properties for {len(providers)} providers")
+    # logger.debug(f"ClearGlobalProperties: Cleared properties for {len(providers)} providers")
 
 def CopyPropertiesToGlobal(imdb_id, providers):
     """
@@ -377,7 +375,7 @@ def CopyPropertiesToGlobal(imdb_id, providers):
                 # Clear global property if unique property is empty
                 WID.clearProperty(global_prop_name)
         
-        logger.info(f"CopyPropertiesToGlobal: Copied properties for {provider} (IMDB: {imdb_id})")
+        # logger.debug(f"CopyPropertiesToGlobal: Copied properties for {provider} (IMDB: {imdb_id})")
 
 # Replace the existing db.set() calls with:
 def safe_db_set(show_info, timeout):
@@ -399,7 +397,7 @@ def schedule_retry(key, videoName, ID, Provider, wid, order, current_time):
             'wid': wid,
             'order': order
         }
-    logger.info(f"Scheduled retry for {key} at {retry_dict[key]['retry_time']}")
+    # logger.debug(f"Scheduled retry for {key} at {retry_dict[key]['retry_time']}")
 
 def check_retry_queue(key, current_time):
     """Check if an item is in the retry queue and if retry time has passed."""
@@ -412,7 +410,7 @@ def check_retry_queue(key, current_time):
             else:
                 # Retry time has passed, remove from queue and allow retry
                 del retry_dict[key]
-                logger.info(f"Retry time reached for {key}, attempting fetch")
+                # logger.debug(f"Retry time reached for {key}, attempting fetch")
     return None
 
 def clean_old_retries(current_time, max_age=300):
@@ -424,7 +422,7 @@ def clean_old_retries(current_time, max_age=300):
                 keys_to_remove.append(key)
         for key in keys_to_remove:
             del retry_dict[key]
-            logger.info(f"Cleaned old retry entry for {key}")
+            # logger.debug(f"Cleaned old retry entry for {key}")
 
 def process_retries():
     """Background thread to process retry queue."""
@@ -446,7 +444,7 @@ def process_retries():
         
         # Process retries
         for key, entry in items_to_retry:
-            logger.info(f"Processing retry for {entry['videoName']} [{entry['Provider']}]")
+            # logger.debug(f"Processing retry for {entry['videoName']} [{entry['Provider']}]")
             try:
                 # Create a thread for the retry
                 retry_thread = Thread(
@@ -489,14 +487,14 @@ if __name__ == '__main__':
     # If we do not have the title yet, get the default title
     if videoName in [None, ""]:
         videoName = xbmc.getInfoLabel("ListItem.Title")
-        logger.info("ParentalGuide: Video Name detected %s" % videoName)
+        # logger.info("ParentalGuide: Video Name detected %s" % videoName)
     
     if IMDBID in [None, ""]:
-        logger.info("ParentalGuide: Video ID not found for %s, trying to loaded it from OMDB" % videoName)
+        # logger.info("ParentalGuide: Video ID not found for %s, trying to loaded it from OMDB" % videoName)
         IMDBID = getIMDBID(videoName,year)
         
     if IMDBID not in [None, ""]:
-        logger.info("ParentalGuide: Video ID detected %s" % IMDBID)
+        # logger.info("ParentalGuide: Video ID detected %s" % IMDBID)
         
         if ADDON.getSetting("IMDBProvider")== "true":
             order = order + 1 
@@ -554,15 +552,14 @@ if __name__ == '__main__':
         # This ensures the skin can display the parental guide indicators
         if IMDBID and ProvidersList:
             CopyPropertiesToGlobal(IMDBID, ProvidersList)
-            logger.info("ParentalGuide: Copied properties to global for dialog display")
+            # logger.debug("ParentalGuide: Copied properties to global for dialog display")
         
         # Clean old retry entries
         clean_old_retries(time.time())
         
-        logger.info("ParentalGuide Finished in {s}s".format(s=time.time()-starttime))
-        logger.info("InfoLabel: " + xbmc.getInfoLabel("ListItem.ParentalGuide"))
+        # logger.info("ParentalGuide: Finished in {s:.2f}s".format(s=time.time()-starttime))
     else:
-        log("ParentalGuide: Failed to detect selected video")
+        # log("ParentalGuide: Failed to detect selected video")
         xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ("ParentalGuide", "Failed to detect a video" , ADDON.getAddonInfo('icon')))
 
-    log("ParentalGuide: Ended")
+    # log("ParentalGuide: Ended")

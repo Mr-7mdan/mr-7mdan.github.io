@@ -2,86 +2,182 @@
 <window>
     <defaultcontrol always="true">4400</defaultcontrol>
     <controls>
-        <!-- Background Overlay -->
+        <!-- Background Overlay with smooth fade -->
         <control type="button">
             <description>Exit button</description>
             <left>0</left>
             <top>0</top>
             <width>1920</width>
             <height>1080</height>
-            <texturenofocus colordiffuse="D0000000">common/white.png</texturenofocus>
-            <texturefocus colordiffuse="D0000000">common/white.png</texturefocus>
+            <texturenofocus colordiffuse="E6000000">common/white.png</texturenofocus>
+            <texturefocus colordiffuse="E6000000">common/white.png</texturefocus>
             <onclick>Close</onclick>
         </control>
 
         <!-- Main Dialog Group -->
         <control type="group">
-            <left>160</left>
-            <top>90</top>
-            <width>1600</width>
-            <height>900</height>
-            <animation effect="fade" time="200">WindowOpen</animation>
-            <animation effect="fade" time="200">WindowClose</animation>
+            <left>120</left>
+            <top>60</top>
+            <width>1680</width>
+            <height>960</height>
+            <animation effect="fade" start="0" end="100" time="250">WindowOpen</animation>
+            <animation effect="zoom" start="95" end="100" center="960,540" time="250" tween="cubic" easing="out">WindowOpen</animation>
+            <animation effect="fade" start="100" end="0" time="200">WindowClose</animation>
+            <animation effect="zoom" start="100" end="95" center="960,540" time="200" tween="cubic" easing="in">WindowClose</animation>
             
-            <!-- Dialog Background -->
+            <!-- Dialog Background with gradient -->
             <control type="image">
                 <left>0</left>
                 <top>0</top>
-                <width>1600</width>
-                <height>900</height>
-                <texture colordiffuse="FF1A1A1A" border="20">common/dialog.png</texture>
+                <width>1680</width>
+                <height>960</height>
+                <texture colordiffuse="FF0F0F0F" border="24">common/dialog.png</texture>
             </control>
             
-            <!-- Dialog Border -->
+            <!-- Accent border -->
             <control type="image">
                 <left>0</left>
                 <top>0</top>
-                <width>1600</width>
-                <height>900</height>
-                <texture colordiffuse="33FFFFFF" border="20">common/dialog-outline.png</texture>
+                <width>1680</width>
+                <height>3</height>
+                <texture colordiffuse="FFE11D48">common/white.png</texture>
             </control>
 
-            <!-- Header -->
-            <control type="label">
-                <left>40</left>
-                <top>20</top>
-                <width>1520</width>
-                <height>60</height>
-                <font>font_head_bold</font>
-                <textcolor>white</textcolor>
-                <label>Parental Guide</label>
-                <align>left</align>
+            <!-- Header Section -->
+            <control type="group">
+                <left>48</left>
+                <top>32</top>
+                <width>1584</width>
+                <height>128</height>
+                
+                <!-- Title -->
+                <control type="label">
+                    <left>0</left>
+                    <top>0</top>
+                    <width>1200</width>
+                    <height>40</height>
+                    <font>font_head_bold</font>
+                    <textcolor>FFFFFFFF</textcolor>
+                    <label>Parental Guide</label>
+                    <align>left</align>
+                </control>
+
+                <!-- Movie Title -->
+                <control type="label">
+                    <left>0</left>
+                    <top>52</top>
+                    <width>1584</width>
+                    <height>32</height>
+                    <font>font_midi_bold</font>
+                    <textcolor>FFB0B0B0</textcolor>
+                    <label>$INFO[Window(10000).Property(ParentalGuide.Dialog.Title)]</label>
+                    <align>left</align>
+                </control>
+
+                <!-- Movie Info: Year and MPAA -->
+                <control type="grouplist">
+                    <left>0</left>
+                    <top>96</top>
+                    <width>1584</width>
+                    <height>32</height>
+                    <orientation>horizontal</orientation>
+                    <itemgap>16</itemgap>
+                    
+                    <!-- Year Badge -->
+                    <control type="group">
+                        <width>100</width>
+                        <height>32</height>
+                        <visible>!String.IsEmpty(Window(10000).Property(ParentalGuide.Dialog.Year))</visible>
+                        
+                        <control type="image">
+                            <left>0</left>
+                            <top>0</top>
+                            <width>100</width>
+                            <height>32</height>
+                            <texture colordiffuse="33FFFFFF" border="4">common/white.png</texture>
+                        </control>
+                        
+                        <control type="label">
+                            <left>0</left>
+                            <top>0</top>
+                            <width>100</width>
+                            <height>32</height>
+                            <font>font_tiny</font>
+                            <textcolor>FFE0E0E0</textcolor>
+                            <label>$INFO[Window(10000).Property(ParentalGuide.Dialog.Year)]</label>
+                            <align>center</align>
+                            <aligny>center</aligny>
+                        </control>
+                    </control>
+                    
+                    <!-- MPAA Rating Badge -->
+                    <control type="group">
+                        <width>auto</width>
+                        <height>32</height>
+                        <visible>!String.IsEmpty(Window(10000).Property(ParentalGuide.Dialog.MPAA))</visible>
+                        
+                        <control type="image">
+                            <left>0</left>
+                            <top>0</top>
+                            <width>180</width>
+                            <height>32</height>
+                            <texture colordiffuse="FFE11D48" border="4">common/white.png</texture>
+                        </control>
+                        
+                        <control type="label">
+                            <left>8</left>
+                            <top>0</top>
+                            <width>164</width>
+                            <height>32</height>
+                            <font>font_tiny_bold</font>
+                            <textcolor>FFFFFFFF</textcolor>
+                            <label>$INFO[Window(10000).Property(ParentalGuide.Dialog.MPAA)]</label>
+                            <align>center</align>
+                            <aligny>center</aligny>
+                        </control>
+                    </control>
+                </control>
             </control>
 
-            <!-- Horizontal Line -->
+            <!-- Divider -->
             <control type="image">
-                <left>40</left>
-                <top>90</top>
-                <width>1520</width>
+                <left>48</left>
+                <top>172</top>
+                <width>1584</width>
                 <height>1</height>
-                <texture colordiffuse="33FFFFFF">common/white.png</texture>
+                <texture colordiffuse="1AFFFFFF">common/white.png</texture>
             </control>
 
             <!-- Left Panel: Providers -->
             <control type="group">
-                <left>40</left>
-                <top>110</top>
-                <width>280</width>
-                <height>750</height>
+                <left>48</left>
+                <top>188</top>
+                <width>340</width>
+                <height>740</height>
                 
                 <control type="list" id="4400">
                     <left>0</left>
                     <top>0</top>
-                    <width>280</width>
-                    <height>750</height>
+                    <width>340</width>
+                    <height>740</height>
                     <onright>4500</onright>
                     <onup>4400</onup>
                     <ondown>4400</ondown>
-                    <scrolltime>200</scrolltime>
-                    <itemlayout height="80" width="280">
-                        <!-- Icon with opacity for providers without data -->
+                    <scrolltime>250</scrolltime>
+                    <itemlayout height="70" width="340">
+                        <!-- Card background for items with data -->
                         <control type="image">
-                            <left>10</left>
+                            <left>0</left>
+                            <top>4</top>
+                            <width>340</width>
+                            <height>62</height>
+                            <texture colordiffuse="15FFFFFF" border="8">common/white.png</texture>
+                            <visible>String.IsEqual(ListItem.Property(has_data),True)</visible>
+                        </control>
+                        
+                        <!-- Icon with full opacity for providers with data -->
+                        <control type="image">
+                            <left>16</left>
                             <top>15</top>
                             <width>40</width>
                             <height>40</height>
@@ -90,33 +186,38 @@
                             <colordiffuse>FFFFFFFF</colordiffuse>
                             <visible>String.IsEqual(ListItem.Property(has_data),True)</visible>
                         </control>
+                        
+                        <!-- Icon with low opacity for providers without data -->
                         <control type="image">
-                            <left>10</left>
+                            <left>16</left>
                             <top>15</top>
                             <width>40</width>
                             <height>40</height>
                             <aspectratio>keep</aspectratio>
                             <texture>$INFO[ListItem.Icon]</texture>
-                            <colordiffuse>40FFFFFF</colordiffuse>
+                            <colordiffuse>30FFFFFF</colordiffuse>
                             <visible>!String.IsEqual(ListItem.Property(has_data),True)</visible>
                         </control>
-                        <!-- Label with grey for providers without data -->
+                        
+                        <!-- Label for providers with data -->
                         <control type="label">
-                            <left>60</left>
-                            <top>0</top>
-                            <width>200</width>
-                            <height>80</height>
+                            <left>68</left>
+                            <top>4</top>
+                            <width>260</width>
+                            <height>62</height>
                             <font>font_main</font>
-                            <textcolor>grey</textcolor>
+                            <textcolor>FFD0D0D0</textcolor>
                             <label>$INFO[ListItem.Label]</label>
                             <aligny>center</aligny>
                             <visible>String.IsEqual(ListItem.Property(has_data),True)</visible>
                         </control>
+                        
+                        <!-- Label for providers without data -->
                         <control type="label">
-                            <left>60</left>
-                            <top>0</top>
-                            <width>200</width>
-                            <height>80</height>
+                            <left>68</left>
+                            <top>4</top>
+                            <width>260</width>
+                            <height>62</height>
                             <font>font_main</font>
                             <textcolor>40FFFFFF</textcolor>
                             <label>$INFO[ListItem.Label]</label>
@@ -124,29 +225,47 @@
                             <visible>!String.IsEqual(ListItem.Property(has_data),True)</visible>
                         </control>
                     </itemlayout>
-                    <focusedlayout height="80" width="280">
+                    
+                    <focusedlayout height="70" width="340">
+                        <!-- Accent highlight -->
                         <control type="image">
                             <left>0</left>
-                            <top>0</top>
-                            <width>280</width>
-                            <height>80</height>
-                            <texture colordiffuse="33FFFFFF">common/white.png</texture>
+                            <top>4</top>
+                            <width>4</width>
+                            <height>62</height>
+                            <texture colordiffuse="FFE11D48">common/white.png</texture>
+                            <animation effect="fade" start="0" end="100" time="150">Focus</animation>
                         </control>
+                        
+                        <!-- Focused card background -->
                         <control type="image">
-                            <left>10</left>
+                            <left>0</left>
+                            <top>4</top>
+                            <width>340</width>
+                            <height>62</height>
+                            <texture colordiffuse="40FFFFFF" border="8">common/white.png</texture>
+                            <animation effect="fade" start="50" end="100" time="150">Focus</animation>
+                        </control>
+                        
+                        <!-- Icon -->
+                        <control type="image">
+                            <left>16</left>
                             <top>15</top>
                             <width>40</width>
                             <height>40</height>
                             <aspectratio>keep</aspectratio>
                             <texture>$INFO[ListItem.Icon]</texture>
+                            <colordiffuse>FFFFFFFF</colordiffuse>
                         </control>
+                        
+                        <!-- Label -->
                         <control type="label">
-                            <left>60</left>
-                            <top>0</top>
-                            <width>200</width>
-                            <height>80</height>
+                            <left>68</left>
+                            <top>4</top>
+                            <width>260</width>
+                            <height>62</height>
                             <font>font_main_bold</font>
-                            <textcolor>white</textcolor>
+                            <textcolor>FFFFFFFF</textcolor>
                             <label>$INFO[ListItem.Label]</label>
                             <aligny>center</aligny>
                         </control>
@@ -154,74 +273,122 @@
                 </control>
             </control>
 
-            <!-- Vertical Line -->
+            <!-- Vertical divider -->
             <control type="image">
-                <left>330</left>
-                <top>110</top>
+                <left>408</left>
+                <top>188</top>
                 <width>1</width>
-                <height>750</height>
-                <texture colordiffuse="33FFFFFF">common/white.png</texture>
+                <height>740</height>
+                <texture colordiffuse="1AFFFFFF">common/white.png</texture>
             </control>
 
             <!-- Middle Panel: Categories -->
             <control type="group">
-                <left>350</left>
-                <top>110</top>
-                <width>550</width>
-                <height>750</height>
+                <left>429</left>
+                <top>188</top>
+                <width>460</width>
+                <height>740</height>
+                
+                <!-- Empty state message -->
+                <control type="label">
+                    <left>0</left>
+                    <top>320</top>
+                    <width>460</width>
+                    <height>100</height>
+                    <font>font_main</font>
+                    <textcolor>60FFFFFF</textcolor>
+                    <label>No categories available[CR]for this provider</label>
+                    <align>center</align>
+                    <aligny>center</aligny>
+                    <visible>String.IsEmpty(Container(4500).NumItems) | Integer.IsEqual(Container(4500).NumItems,0)</visible>
+                </control>
                 
                 <control type="list" id="4500">
                     <left>0</left>
                     <top>0</top>
-                    <width>550</width>
-                    <height>750</height>
+                    <width>460</width>
+                    <height>740</height>
                     <onleft>4400</onleft>
                     <onright>61</onright>
                     <onup>4500</onup>
                     <ondown>4500</ondown>
-                    <itemlayout height="80" width="550">
+                    <scrolltime>250</scrolltime>
+                    <visible>!String.IsEmpty(Container(4500).NumItems)</visible>
+                    
+                    <itemlayout height="70" width="460">
+                        <!-- Card background -->
                         <control type="image">
-                            <left>10</left>
-                            <top>25</top>
+                            <left>0</left>
+                            <top>4</top>
+                            <width>460</width>
+                            <height>62</height>
+                            <texture colordiffuse="12FFFFFF" border="8">common/white.png</texture>
+                        </control>
+                        
+                        <!-- Rating icon -->
+                        <control type="image">
+                            <left>16</left>
+                            <top>20</top>
                             <width>30</width>
                             <height>30</height>
                             <aspectratio>keep</aspectratio>
                             <texture>$INFO[ListItem.Icon]</texture>
+                            <colordiffuse>FFB0B0B0</colordiffuse>
                         </control>
+                        
+                        <!-- Category name -->
                         <control type="label">
-                            <left>50</left>
-                            <top>0</top>
-                            <width>480</width>
-                            <height>80</height>
+                            <left>58</left>
+                            <top>4</top>
+                            <width>390</width>
+                            <height>62</height>
                             <font>font_main</font>
-                            <textcolor>grey</textcolor>
+                            <textcolor>FFC0C0C0</textcolor>
                             <label>$INFO[ListItem.Label]</label>
                             <aligny>center</aligny>
                         </control>
                     </itemlayout>
-                    <focusedlayout height="80" width="550">
+                    
+                    <focusedlayout height="70" width="460">
+                        <!-- Accent highlight bar -->
                         <control type="image">
                             <left>0</left>
-                            <top>0</top>
-                            <width>550</width>
-                            <height>80</height>
-                            <texture colordiffuse="33FFFFFF">common/white.png</texture>
+                            <top>4</top>
+                            <width>4</width>
+                            <height>62</height>
+                            <texture colordiffuse="FF2563EB">common/white.png</texture>
+                            <animation effect="fade" start="0" end="100" time="150">Focus</animation>
                         </control>
+                        
+                        <!-- Focused card background -->
                         <control type="image">
-                            <left>10</left>
-                            <top>25</top>
+                            <left>0</left>
+                            <top>4</top>
+                            <width>460</width>
+                            <height>62</height>
+                            <texture colordiffuse="35FFFFFF" border="8">common/white.png</texture>
+                            <animation effect="fade" start="50" end="100" time="150">Focus</animation>
+                        </control>
+                        
+                        <!-- Rating icon -->
+                        <control type="image">
+                            <left>16</left>
+                            <top>20</top>
                             <width>30</width>
                             <height>30</height>
                             <aspectratio>keep</aspectratio>
                             <texture>$INFO[ListItem.Icon]</texture>
+                            <colordiffuse>FFFFFFFF</colordiffuse>
                         </control>
+                        
+                        <!-- Category name -->
                         <control type="label">
-                            <left>50</left>
-                            <top>0</top>
-                            <width>480</width>
-                            <height>80</height>
+                            <left>58</left>
+                            <top>4</top>
+                            <width>390</width>
+                            <height>62</height>
                             <font>font_main_bold</font>
-                            <textcolor>white</textcolor>
+                            <textcolor>FFFFFFFF</textcolor>
                             <label>$INFO[ListItem.Label]</label>
                             <aligny>center</aligny>
                         </control>
@@ -229,46 +396,65 @@
                 </control>
             </control>
 
-            <!-- Vertical Line -->
+            <!-- Vertical divider -->
             <control type="image">
-                <left>920</left>
-                <top>110</top>
+                <left>909</left>
+                <top>188</top>
                 <width>1</width>
-                <height>750</height>
-                <texture colordiffuse="33FFFFFF">common/white.png</texture>
+                <height>740</height>
+                <texture colordiffuse="1AFFFFFF">common/white.png</texture>
             </control>
 
             <!-- Right Panel: Description -->
             <control type="group">
-                <left>940</left>
-                <top>110</top>
-                <width>620</width>
-                <height>750</height>
+                <left>930</left>
+                <top>188</top>
+                <width>702</width>
+                <height>740</height>
                 
+                <!-- Empty state for no description -->
+                <control type="label">
+                    <left>0</left>
+                    <top>320</top>
+                    <width>682</width>
+                    <height>100</height>
+                    <font>font_main</font>
+                    <textcolor>60FFFFFF</textcolor>
+                    <label>No description available[CR]for this category</label>
+                    <align>center</align>
+                    <aligny>center</aligny>
+                    <visible>String.IsEmpty(Control.GetLabel(5))</visible>
+                </control>
+                
+                <!-- Description textbox with improved typography -->
                 <control type="textbox" id="5">
                     <left>0</left>
                     <top>0</top>
-                    <width>610</width>
-                    <height>750</height>
-                    <font>font_midi_plot</font>
-                    <textcolor>grey</textcolor>
+                    <width>682</width>
+                    <height>740</height>
+                    <font>font_midi</font>
+                    <textcolor>FFD0D0D0</textcolor>
                     <align>left</align>
                     <aligny>top</aligny>
                     <pagecontrol>61</pagecontrol>
+                    <visible>!String.IsEmpty(Control.GetLabel(5))</visible>
                 </control>
 
+                <!-- Modern scrollbar -->
                 <control type="scrollbar" id="61">
-                    <left>615</left>
+                    <left>690</left>
                     <top>0</top>
-                    <width>8</width>
-                    <height>750</height>
+                    <width>6</width>
+                    <height>740</height>
                     <onleft>4500</onleft>
                     <onright>4400</onright>
-                    <texturesliderbackground colordiffuse="1AFFFFFF">common/white.png</texturesliderbackground>
-                    <texturesliderbar colordiffuse="33FFFFFF">common/white.png</texturesliderbar>
-                    <texturesliderbarfocus colordiffuse="white">common/white.png</texturesliderbarfocus>
+                    <texturesliderbackground colordiffuse="15FFFFFF">common/white.png</texturesliderbackground>
+                    <texturesliderbar colordiffuse="60FFFFFF">common/white.png</texturesliderbar>
+                    <texturesliderbarfocus colordiffuse="FFE11D48">common/white.png</texturesliderbarfocus>
                     <orientation>vertical</orientation>
                     <showonepage>false</showonepage>
+                    <animation effect="fade" start="100" end="50" time="200" condition="!Control.HasFocus(61)">Conditional</animation>
+                    <animation effect="fade" start="50" end="100" time="200" condition="Control.HasFocus(61)">Conditional</animation>
                 </control>
             </control>
         </control>
