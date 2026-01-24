@@ -53,12 +53,12 @@ class SqliteCache:
 
     def __init__(self):
         ADDON = xbmcaddon.Addon(id='script.parentalguide')
-        temp_dir = xbmcvfs.translatePath('special://temp')
-        temp_dir = ADDON.getAddonInfo('path')
-        logger.info('temp dir is ' + temp_dir)
-        cache_dir = os.path.join(temp_dir, 'cache', ADDON.getAddonInfo('id'))
+        # Use addon_data directory which is writable (not the addon install path which is read-only)
+        addon_data_dir = xbmcvfs.translatePath('special://profile/addon_data/script.parentalguide/')
+        logger.info('addon data dir is ' + addon_data_dir)
+        cache_dir = os.path.join(addon_data_dir, 'cache')
         if not xbmcvfs.exists(cache_dir):
-            xbmcvfs.mkdir(cache_dir)
+            xbmcvfs.mkdirs(cache_dir)
         logger.info('the cache dir is ' + cache_dir)
         
         self.path = cache_dir

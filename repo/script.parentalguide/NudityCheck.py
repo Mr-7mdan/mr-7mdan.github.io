@@ -8,6 +8,7 @@ from threading import Thread
 import re
 from concurrent.futures import ThreadPoolExecutor, wait
 import threading
+import queue
 
 # Import the common settings
 from resources.lib.settings import Settings
@@ -28,10 +29,15 @@ ADDON = xbmcaddon.Addon(id='script.parentalguide')
 CWD = ADDON.getAddonInfo('path')
 
 # Add the API base URL
-API_BASE_URL = "https://pg-indol.vercel.app/get_data"
+API_BASE_URL = "https://pg-2.vercel.app/get_data"
 
 # Add db_lock for thread-safe database operations
 db_lock = threading.Lock()
+
+# Retry queue for failed API requests
+# Format: (timestamp, videoName, ID, Provider, wid, order)
+retry_queue = queue.Queue()
+RETRY_DELAY_SECONDS = 60  # 1 minute delay for retries
 
 def getIsTvShow():
     if xbmc.getCondVisibility("Container.Content(tvshows)"):
@@ -100,22 +106,40 @@ def getData(videoName, ID, Session, wid, Provider, order):
                 
     if show_info is None: ##if not in cache
         logger.info('Loading from scratch, no cache found for [%s][%s]' % (videoName, Provider))
-        show_info = callParentalGuideAPI(videoName, ID, Provider)   
+        
+        # Check if there's a pending retry for this item
+        current_time = time.time()
+        retry_entry = check_retry_queue(key, current_time)
+        
+        if retry_entry:
+            # Still within retry delay, skip for now
+            logger.info(f"Retry scheduled for {videoName} [{Provider}] at {retry_entry['retry_time']}")
+            AddFurnitureProperties(None, Provider, wid, ID)
+            return None
+        
+        show_info, should_retry = callParentalGuideAPI(videoName, ID, Provider)   
         
         if show_info is None:
-            logger.info("No Results found for this movie (" + videoName + ") on [" + Provider + "]")
-            Xshow_info = {
-                        "id": ID,
-                        "title": videoName,
-                        "provider": Provider,
-                        "recommended-age": None,
-                        "review-items": None,
-                        "review-link": None
-                        }
-            logger.info("Trying to save blank data for this movie (" + videoName + ") on [" + Provider + "]")
-            # Use cache_missing_ratings setting for items without ratings
-            safe_db_set(Xshow_info, cache_missing_ratings)
-            AddFurnitureProperties(Xshow_info, Provider, wid, ID)
+            if should_retry:
+                # Schedule retry in 1 minute
+                schedule_retry(key, videoName, ID, Provider, wid, order, current_time)
+                logger.info(f"Scheduled retry for {videoName} [{Provider}] in {RETRY_DELAY_SECONDS} seconds due to failure/timeout")
+            else:
+                # No data available, cache empty result
+                logger.info("No Results found for this movie (" + videoName + ") on [" + Provider + "]")
+                Xshow_info = {
+                            "id": ID,
+                            "title": videoName,
+                            "provider": Provider,
+                            "recommended-age": None,
+                            "review-items": None,
+                            "review-link": None
+                            }
+                logger.info("Trying to save blank data for this movie (" + videoName + ") on [" + Provider + "]")
+                # Use cache_missing_ratings setting for items without ratings
+                safe_db_set(Xshow_info, cache_missing_ratings)
+            
+            AddFurnitureProperties(None, Provider, wid, ID)
         else:
             logger.info('Finished loading new data for [%s][%s] \n' % (videoName, Provider)+ str(show_info))
             AddXMLProperties(show_info,wid)
@@ -138,7 +162,13 @@ def getData(videoName, ID, Session, wid, Provider, order):
         logger.info("Data from cache for "+videoName + "[" + Provider +"] \n")
     return show_info
 
-def callParentalGuideAPI(videoName, ID, Provider, timeout=10):
+def callParentalGuideAPI(videoName, ID, Provider, timeout=15):
+    """
+    Call the Parental Guide API and handle responses.
+    Returns: tuple (show_info, should_retry)
+        - show_info: dict with parental guide data or None
+        - should_retry: bool indicating if request should be retried later
+    """
     params = {
         "video_name": videoName,
         "imdb_id": ID,
@@ -152,10 +182,22 @@ def callParentalGuideAPI(videoName, ID, Provider, timeout=10):
             response.raise_for_status()
             data = response.json()
             
+            # Check for failed status from API
+            status = data.get("status", "")
+            if status == "Failed":
+                logger.error(f"API returned Failed status for {Provider} - {videoName}: {data}")
+                # Return None and indicate retry should be attempted
+                return (None, True)
+            
             # Handle null values from API - convert None to empty array
             review_items = data.get("review-items")
             if review_items is None:
                 review_items = []
+            
+            # Check if we got actual data (not empty)
+            if not review_items and not data.get("recommended-age"):
+                logger.info(f"API returned no data for {Provider} - {videoName}")
+                return (None, False)  # No data, don't retry
             
             show_info = {
                 "id": data.get("id") or ID,
@@ -165,12 +207,19 @@ def callParentalGuideAPI(videoName, ID, Provider, timeout=10):
                 "review-items": review_items,
                 "review-link": data.get("review-link")
             }
-            return show_info
+            return (show_info, False)  # Success, no retry needed
+            
+        except requests.Timeout as e:
+            logger.error(f"Timeout calling ParentalGuide API for {Provider} (attempt {attempt+1}/{max_retries}): {str(e)}")
+            if attempt == max_retries - 1:
+                return (None, True)  # Timeout, should retry later
+            time.sleep(1)
+            
         except requests.RequestException as e:
             logger.error(f"Error calling ParentalGuide API for {Provider} (attempt {attempt+1}/{max_retries}): {str(e)}")
             if attempt == max_retries - 1:
-                return None
-            time.sleep(1)  # Wait a second before retrying
+                return (None, True)  # Network error, should retry later
+            time.sleep(1)
 
 def getIMDBID(name,year):
     k = "da6c8b4d"
@@ -335,12 +384,93 @@ def safe_db_set(show_info, timeout):
     with db_lock:
         db.set(show_info, timeout)
 
+# Retry queue management
+retry_dict = {}  # key -> {retry_time, videoName, ID, Provider, wid, order}
+retry_dict_lock = threading.Lock()
+
+def schedule_retry(key, videoName, ID, Provider, wid, order, current_time):
+    """Schedule a retry for a failed API request after RETRY_DELAY_SECONDS."""
+    with retry_dict_lock:
+        retry_dict[key] = {
+            'retry_time': current_time + RETRY_DELAY_SECONDS,
+            'videoName': videoName,
+            'ID': ID,
+            'Provider': Provider,
+            'wid': wid,
+            'order': order
+        }
+    logger.info(f"Scheduled retry for {key} at {retry_dict[key]['retry_time']}")
+
+def check_retry_queue(key, current_time):
+    """Check if an item is in the retry queue and if retry time has passed."""
+    with retry_dict_lock:
+        if key in retry_dict:
+            retry_entry = retry_dict[key]
+            if current_time < retry_entry['retry_time']:
+                # Still waiting for retry time
+                return retry_entry
+            else:
+                # Retry time has passed, remove from queue and allow retry
+                del retry_dict[key]
+                logger.info(f"Retry time reached for {key}, attempting fetch")
+    return None
+
+def clean_old_retries(current_time, max_age=300):
+    """Remove retry entries older than max_age seconds to prevent memory leaks."""
+    with retry_dict_lock:
+        keys_to_remove = []
+        for key, entry in retry_dict.items():
+            if current_time - entry['retry_time'] > max_age:
+                keys_to_remove.append(key)
+        for key in keys_to_remove:
+            del retry_dict[key]
+            logger.info(f"Cleaned old retry entry for {key}")
+
+def process_retries():
+    """Background thread to process retry queue."""
+    while True:
+        current_time = time.time()
+        clean_old_retries(current_time)
+        
+        # Check for items ready to retry
+        with retry_dict_lock:
+            items_to_retry = []
+            for key, entry in list(retry_dict.items()):
+                if current_time >= entry['retry_time']:
+                    items_to_retry.append((key, entry))
+            
+            # Remove from queue
+            for key, _ in items_to_retry:
+                if key in retry_dict:
+                    del retry_dict[key]
+        
+        # Process retries
+        for key, entry in items_to_retry:
+            logger.info(f"Processing retry for {entry['videoName']} [{entry['Provider']}]")
+            try:
+                # Create a thread for the retry
+                retry_thread = Thread(
+                    target=getData,
+                    args=(entry['videoName'], entry['ID'], None, entry['wid'], entry['Provider'], entry['order'])
+                )
+                retry_thread.daemon = True
+                retry_thread.start()
+            except Exception as e:
+                logger.error(f"Error processing retry for {key}: {str(e)}")
+        
+        time.sleep(5)  # Check every 5 seconds
+
 #########################
 # Main
 #########################
 if __name__ == '__main__':
     logger.info("ParentalGuide: Started")
     starttime = time.time()
+    
+    # Start background retry processor
+    retry_processor = Thread(target=process_retries)
+    retry_processor.daemon = True
+    retry_processor.start()
     
     IMDBID = None
     IMDBID = xbmc.getInfoLabel("ListItem.IMDBNumber")
@@ -426,10 +556,9 @@ if __name__ == '__main__':
             CopyPropertiesToGlobal(IMDBID, ProvidersList)
             logger.info("ParentalGuide: Copied properties to global for dialog display")
         
+        # Clean old retry entries
+        clean_old_retries(time.time())
         
-        # with ThreadPoolExecutor(max_workers=100) as p:
-            # p.map(getData, [videoName]*(order-1), [IMDBID]*(order-1), [s]*(order-1), [wid]*(order-1), ProvidersList , [0,1,2,3,4,5,6])
-
         logger.info("ParentalGuide Finished in {s}s".format(s=time.time()-starttime))
         logger.info("InfoLabel: " + xbmc.getInfoLabel("ListItem.ParentalGuide"))
     else:

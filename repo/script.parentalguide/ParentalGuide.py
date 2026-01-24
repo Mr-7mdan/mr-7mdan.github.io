@@ -48,24 +48,44 @@ def runForVideo(videoName, isTvShow=False):
                 "video_name": videoName,
                 "provider": searchSource.lower()
             }
-            response = requests.get(API_BASE_URL, params=params)
+            response = requests.get(API_BASE_URL, params=params, timeout=15)
             response.raise_for_status()
             data = response.json()
             
-            if data and 'review-items' in data:
-                selectedItem = {
-                    'name': data.get('title', videoName),
-                    'link': data.get('review-link', '')
-                }
-                details = {
-                    'review-items': data['review-items'],
-                    'recommended-age': None,  # API doesn't provide this
-                    'review-link': data.get('review-link')
-                }
+            # Check for failed status from API
+            status = data.get("status", "")
+            if status == "Failed":
+                log("runForVideo: API returned Failed status for %s" % searchSource, xbmc.LOGWARNING)
+                selectedItem = None
+                details = None
+            elif data and 'review-items' in data:
+                review_items = data.get('review-items')
+                if review_items is None:
+                    review_items = []
+                
+                # Check if we got actual data
+                if review_items or data.get('recommended-age'):
+                    selectedItem = {
+                        'name': data.get('title', videoName),
+                        'link': data.get('review-link', '')
+                    }
+                    details = {
+                        'review-items': review_items,
+                        'recommended-age': data.get('recommended-age'),
+                        'review-link': data.get('review-link')
+                    }
+                else:
+                    selectedItem = None
+                    details = None
             else:
                 selectedItem = None
                 details = None
 
+        except requests.Timeout as e:
+            log("runForVideo: Timeout fetching data from API: %s" % str(e), xbmc.LOGERROR)
+            xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % (ADDON.getLocalizedString(32001).encode('utf-8'), "API Timeout - Try again later", ADDON.getAddonInfo('icon')))
+            selectedItem = None
+            details = None
         except requests.RequestException as e:
             log("runForVideo: Failed to fetch data from API: %s" % str(e), xbmc.LOGERROR)
             xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % (ADDON.getLocalizedString(32001).encode('utf-8'), ADDON.getLocalizedString(32037).encode('utf-8'), ADDON.getAddonInfo('icon')))

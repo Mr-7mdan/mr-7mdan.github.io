@@ -251,7 +251,7 @@
                     <width>610</width>
                     <height>750</height>
                     <font>font_midi_plot</font>
-                    <textcolor>dialog_fg_90</textcolor>
+                    <textcolor>grey</textcolor>
                     <align>left</align>
                     <aligny>top</aligny>
                     <pagecontrol>61</pagecontrol>

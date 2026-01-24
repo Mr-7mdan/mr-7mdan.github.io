@@ -230,7 +230,7 @@
       <icon>resources/icon.png</icon>
     </assets>
   </extension>
-</addon><addon id="script.parentalguide" name="ParentalGuide" version="2.6" provider-name="Mr-Hamdan">
+</addon><addon id="script.parentalguide" name="ParentalGuide" version="2.7" provider-name="Mr-Hamdan">
 	<requires>
 		<import addon="xbmc.python" version="3.0.0" />
 		<import addon="script.module.beautifulsoup4" version="4.9.3" />
