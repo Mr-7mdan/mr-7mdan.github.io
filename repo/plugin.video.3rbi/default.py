@@ -32,6 +32,7 @@ from resources.lib import pin
 from resources.lib.site_base import SiteBase
 from resources.lib.sites import *  # noqa
 from resources.lib import category_browser  # noqa
+from resources.lib import live_tv  # noqa
 
 socket.setdefaulttimeout(60)
 
@@ -63,6 +64,8 @@ def INDEX():
                            basics.addon_image('matrix-icon-pack/All.png'), '', list_avail=False)
     url_dispatcher.add_dir('Browse by Category', '', 'category_browser.show_categories',
                            basics.addon_image('matrix-icon-pack/Genres.png'), '', list_avail=False)
+    url_dispatcher.add_dir('Live TV', '', 'live_tv.Main',
+                           basics.addon_image('matrix-icon-pack/LiveTV.png'), '', list_avail=False)
     url_dispatcher.add_dir('{}'.format(utils.i18n('fav_videos')), '1', 'favorites.List',
                            basics.addon_image('matrix-icon-pack/Favs.png'), '', list_avail=False)
     url_dispatcher.add_dir('Play a Link', '', 'PlayTestLink',

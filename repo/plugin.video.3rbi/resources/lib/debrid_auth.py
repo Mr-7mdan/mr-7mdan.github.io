@@ -64,10 +64,10 @@ class RealDebridAuth(DebridAuth):
             
             # Show auth dialog
             self.progress_dialog = xbmcgui.DialogProgress()
-            self.progress_dialog.create('Real-Debrid Authorization',
-                                       'Go to: [B]https://real-debrid.com/device[/B]',
-                                       'Enter code: [B]{}[/B]'.format(user_code),
-                                       'Or scan QR code at: {}'.format(verification_url))
+            message = ('Go to: [B]https://real-debrid.com/device[/B]\n'
+                      'Enter code: [B]{}[/B]\n'
+                      'Or scan QR code at: {}'.format(user_code, verification_url))
+            self.progress_dialog.create('Real-Debrid Authorization', message)
             
             # Poll for authorization
             elapsed = 0
@@ -91,7 +91,7 @@ class RealDebridAuth(DebridAuth):
             utils.kodilog('RealDebrid Auth Error: {}'.format(str(e)))
             if self.progress_dialog:
                 self.progress_dialog.close()
-            xbmcgui.Dialog().ok('Real-Debrid', 'Authentication failed', str(e))
+            xbmcgui.Dialog().ok('Real-Debrid', 'Authentication failed: {}'.format(str(e)))
             return False
     
     def _check_auth(self):
@@ -125,7 +125,7 @@ class RealDebridAuth(DebridAuth):
             response = requests.post(url, data=data, timeout=10).json()
             
             if 'error' in response:
-                xbmcgui.Dialog().ok('Real-Debrid', 'Token error', response['error'])
+                xbmcgui.Dialog().ok('Real-Debrid', 'Token error: {}'.format(response['error']))
                 return False
             
             self.token = response['access_token']
@@ -144,15 +144,14 @@ class RealDebridAuth(DebridAuth):
                 utils.setSetting('rd_username', username)
                 
                 xbmcgui.Dialog().ok('Real-Debrid',
-                                   'Authorization successful!',
-                                   'Username: {}'.format(username))
+                                   'Authorization successful!\nUsername: {}'.format(username))
                 return True
             
             return False
             
         except Exception as e:
             utils.kodilog('RealDebrid Token Error: {}'.format(str(e)))
-            xbmcgui.Dialog().ok('Real-Debrid', 'Failed to get token', str(e))
+            xbmcgui.Dialog().ok('Real-Debrid', 'Failed to get token: {}'.format(str(e)))
             return False
     
     def _get_account_info(self):
@@ -238,8 +237,7 @@ class AllDebridAuth(DebridAuth):
                 utils.setSetting('ad_api_key', api_key)
                 utils.setSetting('ad_username', username)
                 xbmcgui.Dialog().ok('AllDebrid',
-                                   'Authorization successful!',
-                                   'Username: {}'.format(username))
+                                   'Authorization successful!\nUsername: {}'.format(username))
                 return True
             else:
                 xbmcgui.Dialog().ok('AllDebrid', 'Invalid API key')
@@ -247,7 +245,7 @@ class AllDebridAuth(DebridAuth):
                 
         except Exception as e:
             utils.kodilog('AllDebrid Auth Error: {}'.format(str(e)))
-            xbmcgui.Dialog().ok('AllDebrid', 'Authentication failed', str(e))
+            xbmcgui.Dialog().ok('AllDebrid', 'Authentication failed: {}'.format(str(e)))
             return False
     
     def reset(self):
@@ -284,8 +282,7 @@ class PremiumizeAuth(DebridAuth):
                 utils.setSetting('pm_api_key', api_key)
                 utils.setSetting('pm_username', username)
                 xbmcgui.Dialog().ok('Premiumize',
-                                   'Authorization successful!',
-                                   'Customer ID: {}'.format(username))
+                                   'Authorization successful!\nCustomer ID: {}'.format(username))
                 return True
             else:
                 xbmcgui.Dialog().ok('Premiumize', 'Invalid API key')
@@ -293,7 +290,7 @@ class PremiumizeAuth(DebridAuth):
                 
         except Exception as e:
             utils.kodilog('Premiumize Auth Error: {}'.format(str(e)))
-            xbmcgui.Dialog().ok('Premiumize', 'Authentication failed', str(e))
+            xbmcgui.Dialog().ok('Premiumize', 'Authentication failed: {}'.format(str(e)))
             return False
     
     def reset(self):

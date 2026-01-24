@@ -9,20 +9,20 @@
         <setting id="quality_in_name" label="30009" type="bool" default="true" />
         <setting id="duration_in_name" label="30010" type="bool" default="true" />
         <setting id="download_path" type="folder" source="video" label="30052"  option="writeable" default=""/>
-        <setting id="setpin" type="action" label="30028" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=pin.SetPin)" />
+        <setting id="setpin" type="action" label="30028" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=pin.SetPin)" />
         <setting id="content" type="enum" label="30500" lvalues="30501|30502" default="0" />
     </category>
     <category label="30065">
         <setting type="lsep" label="30029" />
-        <setting id="clear_cache" label="33011" type="action" action="RunPlugin(plugin://plugin.video.aksv/?mode=utils.clear_cache)"/>
+        <setting id="clear_cache" label="33011" type="action" action="RunPlugin(plugin://plugin.video.3rbi/?mode=utils.clear_cache)"/>
         <setting id="cache_time" label="30030" type="slider" default="4" range="1,1,8" option="int" />
         <setting type="lsep" label="30031" />
-        <setting id="clear_cookies" label="30032" type="action" action="RunPlugin(plugin://plugin.video.aksv/?mode=utils.clear_cookies)"/>
+        <setting id="clear_cookies" label="30032" type="action" action="RunPlugin(plugin://plugin.video.3rbi/?mode=utils.clear_cookies)"/>
     </category>
     <category label="30053">
         <setting id="qualityask" type="enum" label="30001" lvalues="30401|30402|30403|30404|30405" default="0" />
         <setting id="dontask" label="30002" type="bool" default="false" />
-        <setting id="open_smr_settings" type="action" label="30027" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=main.smrSettings)" />
+        <setting id="open_smr_settings" type="action" label="30027" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=main.smrSettings)" />
     </category>
 
     <category label="Resolvers">
@@ -37,14 +37,14 @@
         <setting id="track_hoster_success" type="bool" label="Track Hoster Reliability" default="true" />
         <setting id="trusted_threshold" type="slider" label="Success Rate for 🚀 (%)" default="80" range="50,5,100" option="int" />
         <setting id="min_attempts_trusted" type="slider" label="Min Attempts for 🚀" default="5" range="3,1,20" option="int" />
-        <setting id="clear_hoster_stats" type="action" label="Clear Hoster Statistics" action="RunPlugin(plugin://plugin.video.aksv/?mode=utils.clear_hoster_stats)" />
+        <setting id="clear_hoster_stats" type="action" label="Clear Hoster Statistics" action="RunPlugin(plugin://plugin.video.3rbi/?mode=utils.clear_hoster_stats)" />
         <setting type="lsep" label="Debrid Services" />
         <setting id="use_debrid" type="bool" label="Enable Debrid Services" default="false" />
-        <setting id="debrid_service" enable="eq(-1,true)" type="enum" label="Debrid Provider" lvalues="Real-Debrid|AllDebrid|Premiumize|Debrid-Link" default="0" />
+        <setting id="debrid_service" enable="eq(-1,true)" type="enum" label="Debrid Provider" values="Real-Debrid|AllDebrid|Premiumize|Debrid-Link" default="0" />
         <setting type="lsep" label="Authentication" />
-        <setting id="authorize_debrid" enable="eq(-3,true)" type="action" label="Authorize Service" action="RunPlugin(plugin://plugin.video.aksv/?mode=utils.authorize_debrid)" />
-        <setting id="debrid_account" enable="eq(-4,true)" type="action" label="Account Info" action="RunPlugin(plugin://plugin.video.aksv/?mode=utils.debrid_account_info)" />
-        <setting id="revoke_debrid" enable="eq(-5,true)" type="action" label="Revoke Authorization" action="RunPlugin(plugin://plugin.video.aksv/?mode=utils.revoke_debrid)" />
+        <setting id="authorize_debrid" enable="eq(-3,true)" type="action" label="Authorize Service" action="RunPlugin(plugin://plugin.video.3rbi/?mode=utils.authorize_debrid)" />
+        <setting id="debrid_account" enable="eq(-4,true)" type="action" label="Account Info" action="RunPlugin(plugin://plugin.video.3rbi/?mode=utils.debrid_account_info)" />
+        <setting id="revoke_debrid" enable="eq(-5,true)" type="action" label="Revoke Authorization" action="RunPlugin(plugin://plugin.video.3rbi/?mode=utils.revoke_debrid)" />
         <setting type="lsep" label="Stored Credentials (Read-Only)" />
         <setting id="rd_username" type="text" label="Real-Debrid User" default="" enable="false" visible="eq(-9,0)" />
         <setting id="ad_username" type="text" label="AllDebrid User" default="" enable="false" visible="eq(-10,1)" />
@@ -57,38 +57,38 @@
         <setting id="item.limit" label="33027" type="slider" default="0" range="0,5,200" option="int" />
         <setting id="custom_favorites" label="30214" type="bool" default="false" />
         <setting id="favorites_path" enable="eq(-1,true)" type="folder" source="" label="30215"  option="writeable" default=""/>
-        <setting id="backup_favorites" type="action" label="30201" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=favorites.backup_fav)" />
-        <setting id="restore_favorites" type="action" label="30202" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=favorites.restore_fav)" />
-        <setting id="clear_favorites" type="action" label="30203" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=favorites.clear_fav)" />
+        <setting id="backup_favorites" type="action" label="30201" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=favorites.backup_fav)" />
+        <setting id="restore_favorites" type="action" label="30202" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=favorites.restore_fav)" />
+        <setting id="clear_favorites" type="action" label="30203" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=favorites.clear_fav)" />
         <setting type="lsep" label="30061" />
-        <setting id="backup_keywords" type="action" label="30211" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=utils.backup_keywords)" />
-        <setting id="restore_keywords" type="action" label="30212" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=utils.restore_keywords)" />
-        <setting id="clear_keywords" type="action" label="30213" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=utils.delallKeyword)" />
+        <setting id="backup_keywords" type="action" label="30211" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=utils.backup_keywords)" />
+        <setting id="restore_keywords" type="action" label="30212" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=utils.restore_keywords)" />
+        <setting id="clear_keywords" type="action" label="30213" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=utils.delallKeyword)" />
     </category>
     <category label="Site Management">
         <setting type="lsep" label="Installed Sites" />
-        <setting id="list_sites" type="action" label="List All Sites" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=site_manager.list_sites)" />
-        <setting id="enable_site" type="action" label="Enable Site" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=site_manager.enable_site)" />
-        <setting id="disable_site" type="action" label="Disable Site" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=site_manager.disable_site)" />
-        <setting id="enable_all_sites" type="action" label="Enable All Sites" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=site_manager.enable_all_sites)" />
-        <setting id="disable_all_sites" type="action" label="Disable All Sites" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=site_manager.disable_all_sites)" />
+        <setting id="list_sites" type="action" label="List All Sites" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=site_manager.list_sites)" />
+        <setting id="enable_site" type="action" label="Enable Site" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=site_manager.enable_site)" />
+        <setting id="disable_site" type="action" label="Disable Site" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=site_manager.disable_site)" />
+        <setting id="enable_all_sites" type="action" label="Enable All Sites" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=site_manager.enable_all_sites)" />
+        <setting id="disable_all_sites" type="action" label="Disable All Sites" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=site_manager.disable_all_sites)" />
         <setting type="lsep" label="Updates from GitHub" />
-        <setting id="check_site_updates" type="action" label="Check for Site Updates" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=site_manager.check_updates)" />
-        <setting id="update_all_sites" type="action" label="Update All Sites" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=site_manager.update_all_sites)" />
+        <setting id="check_site_updates" type="action" label="Check for Site Updates" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=site_manager.check_updates)" />
+        <setting id="update_all_sites" type="action" label="Update All Sites" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=site_manager.update_all_sites)" />
         <setting id="github_repo_url" type="text" label="GitHub Repository URL" default="https://raw.githubusercontent.com/Mr-7mdan/mr-7mdan.github.io/master/repo/plugin.video.3rbi" enable="false" />
     </category>
     <category label="30062">
         <setting id="custom_sites" label="30301" type="bool" default="false" />
-        <setting id="list_custom_sites" type="action" label="30306" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=favorites.list_custom_sites)" />
+        <setting id="list_custom_sites" type="action" label="30306" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=favorites.list_custom_sites)" />
         <setting type="lsep" label="30063" />
-        <setting id="enable_custom_site" type="action" label="30304" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=favorites.enable_custom_site)" />
-        <setting id="disable_custom_site" type="action" label="30305" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=favorites.disable_custom_site)" />
-        <setting id="enable_all_custom_sites" type="action" label="30307" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=favorites.enable_all_custom_sites)" />
-        <setting id="disable_all_custom_sites" type="action" label="30308" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=favorites.disable_all_custom_sites)" />
+        <setting id="enable_custom_site" type="action" label="30304" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=favorites.enable_custom_site)" />
+        <setting id="disable_custom_site" type="action" label="30305" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=favorites.disable_custom_site)" />
+        <setting id="enable_all_custom_sites" type="action" label="30307" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=favorites.enable_all_custom_sites)" />
+        <setting id="disable_all_custom_sites" type="action" label="30308" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=favorites.disable_all_custom_sites)" />
         <setting type="lsep" label="30064" />
-        <setting id="install_custom_site" type="action" label="30302" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=favorites.install_custom_site)" />
-        <setting id="uninstall_custom_site" type="action" label="30303" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=favorites.uninstall_custom_site)" />
-        <setting id="install_custom_sites_from_folder" type="action" label="30309" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=favorites.install_custom_sites_from_folder)" />
+        <setting id="install_custom_site" type="action" label="30302" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=favorites.install_custom_site)" />
+        <setting id="uninstall_custom_site" type="action" label="30303" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=favorites.uninstall_custom_site)" />
+        <setting id="install_custom_sites_from_folder" type="action" label="30309" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=favorites.install_custom_sites_from_folder)" />
     </category>
     <category label="33015">
         <setting type="lsep" label="33016" />
@@ -96,8 +96,8 @@
         <setting id="filter_hosters" label="33018" type="text" default=""/>
         <setting type="lsep" label="33019" />
         <setting id="enh_debug" type="bool" label="33021" default="true" />
-        <setting id="debuglog" type="action" label="30017" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=utils.ToggleDebug)" />
-        <setting id="startlog" type="action" label="33020" enable="true" option="close" action="RunPlugin(plugin://plugin.video.aksv/?mode=main.openLogUploader)" />
+        <setting id="debuglog" type="action" label="30017" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=utils.ToggleDebug)" />
+        <setting id="startlog" type="action" label="33020" enable="true" option="close" action="RunPlugin(plugin://plugin.video.3rbi/?mode=main.openLogUploader)" />
         <setting type="lsep" label="33024" />
         <setting id="fs_enable" type="bool" label="33022" default="false" />
         <setting id="fs_host" enable="eq(-1,true)" type="text" label="33023" default="http://localhost:8191/v1"/>

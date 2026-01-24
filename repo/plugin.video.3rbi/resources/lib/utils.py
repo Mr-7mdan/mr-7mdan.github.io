@@ -120,7 +120,7 @@ def authorize_debrid():
     try:
         from resources.lib.debrid_auth import get_debrid_auth
         
-        debrid_service = int(getSetting('debrid_service') or '0')
+        debrid_service = int(addon.getSetting('debrid_service') or '0')
         auth = get_debrid_auth(debrid_service)
         
         if not auth:
@@ -137,7 +137,7 @@ def authorize_debrid():
         
     except Exception as e:
         kodilog('Error authorizing debrid: {}'.format(str(e)))
-        xbmcgui.Dialog().ok('Debrid Auth', 'Authorization failed', str(e))
+        xbmcgui.Dialog().ok('Debrid Auth', 'Authorization failed: {}'.format(str(e)))
 
 
 @url_dispatcher.register()
@@ -146,7 +146,7 @@ def revoke_debrid():
     try:
         from resources.lib.debrid_auth import get_debrid_auth
         
-        debrid_service = int(getSetting('debrid_service') or '0')
+        debrid_service = int(addon.getSetting('debrid_service') or '0')
         auth = get_debrid_auth(debrid_service)
         
         if not auth:
@@ -169,7 +169,7 @@ def debrid_account_info():
     try:
         from resources.lib.debrid_auth import get_debrid_auth
         
-        debrid_service = int(getSetting('debrid_service') or '0')
+        debrid_service = int(addon.getSetting('debrid_service') or '0')
         service_names = ['Real-Debrid', 'AllDebrid', 'Premiumize', 'Debrid-Link']
         
         auth = get_debrid_auth(debrid_service)
