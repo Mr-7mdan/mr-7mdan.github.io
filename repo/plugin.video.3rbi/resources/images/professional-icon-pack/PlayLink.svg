@@ -1,0 +1,16 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Navy background -->
+  <rect width="512" height="512" fill="#1e3a5f"/>
+  
+  <!-- Link chain icon -->
+  <path d="M200 180 L200 140 Q200 100 240 100 L280 100 Q320 100 320 140 L320 180" stroke="white" stroke-width="20" fill="none" stroke-linecap="round"/>
+  <path d="M312 232 L312 272 Q312 312 272 312 L232 312 Q192 312 192 272 L192 232" stroke="white" stroke-width="20" fill="none" stroke-linecap="round"/>
+  <line x1="220" y1="180" x2="292" y2="232" stroke="white" stroke-width="20" stroke-linecap="round"/>
+  
+  <!-- Play button overlay -->
+  <circle cx="256" cy="206" r="50" fill="#F5A623"/>
+  <path d="M246 186 L246 226 L286 206 Z" fill="white"/>
+  
+  <!-- Text with proper spacing -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">PLAY LINK</text>
+</svg>

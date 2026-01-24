@@ -1,0 +1,19 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Navy background -->
+  <rect width="512" height="512" fill="#1e3a5f"/>
+  
+  <!-- Antenna signal waves -->
+  <path d="M256 100 L256 140" stroke="white" stroke-width="12" stroke-linecap="round"/>
+  <path d="M220 120 Q220 100 200 100" stroke="white" stroke-width="8" fill="none"/>
+  <path d="M292 120 Q292 100 312 100" stroke="white" stroke-width="8" fill="none"/>
+  <path d="M200 140 Q200 110 170 110" stroke="white" stroke-width="8" fill="none"/>
+  <path d="M312 140 Q312 110 342 110" stroke="white" stroke-width="8" fill="none"/>
+  
+  <!-- TV screen -->
+  <rect x="156" y="150" width="200" height="130" rx="8" fill="white"/>
+  <rect x="170" y="164" width="172" height="102" fill="#1e3a5f"/>
+  <path d="M240 200 L240 240 L270 220 Z" fill="white"/>
+  
+  <!-- Text with proper spacing -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">LIVE TV</text>
+</svg>

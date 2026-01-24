@@ -1,0 +1,22 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Navy background -->
+  <rect width="512" height="512" fill="#1e3a5f"/>
+  
+  <!-- TV screen -->
+  <rect x="116" y="80" width="280" height="180" rx="8" fill="white"/>
+  <rect x="132" y="96" width="248" height="148" fill="#1e3a5f"/>
+  
+  <!-- TV stand -->
+  <rect x="226" y="270" width="60" height="35" fill="white"/>
+  <rect x="166" y="305" width="180" height="16" rx="4" fill="white"/>
+  
+  <!-- Play button inside screen -->
+  <path d="M236 150 L236 200 L276 175 Z" fill="white"/>
+  
+  <!-- Korean Taeguk symbol (simplified yin-yang) - top right corner -->
+  <circle cx="425" cy="80" r="25" fill="none" stroke="#F5A623" stroke-width="3"/>
+  <path d="M425 55 Q440 80 425 105" fill="#F5A623"/>
+  
+  <!-- Text with proper spacing -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">KOREAN TV SHOWS</text>
+</svg>

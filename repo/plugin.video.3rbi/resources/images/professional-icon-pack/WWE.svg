@@ -1,0 +1,17 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Navy background -->
+  <rect width="512" height="512" fill="#1e3a5f"/>
+  
+  <!-- Wrestling ring -->
+  <rect x="140" y="160" width="232" height="140" fill="none" stroke="white" stroke-width="12"/>
+  <line x1="140" y1="180" x2="372" y2="180" stroke="white" stroke-width="4"/>
+  <line x1="140" y1="200" x2="372" y2="200" stroke="white" stroke-width="4"/>
+  <line x1="140" y1="280" x2="372" y2="280" stroke="white" stroke-width="4"/>
+  
+  <!-- Championship belt symbol - top right corner -->
+  <rect x="405" y="70" width="50" height="30" rx="5" fill="#F5A623"/>
+  <circle cx="430" cy="85" r="8" fill="#1e3a5f"/>
+  
+  <!-- Text with proper spacing -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">WWE</text>
+</svg>

@@ -1,0 +1,22 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Navy background -->
+  <rect width="512" height="512" fill="#1e3a5f"/>
+  
+  <!-- Gear/Settings icon -->
+  <circle cx="256" cy="206" r="50" fill="white"/>
+  <circle cx="256" cy="206" r="30" fill="#1e3a5f"/>
+  
+  <!-- Gear teeth -->
+  <rect x="246" y="126" width="20" height="30" fill="white"/>
+  <rect x="246" y="256" width="20" height="30" fill="white"/>
+  <rect x="176" y="196" width="30" height="20" fill="white"/>
+  <rect x="306" y="196" width="30" height="20" fill="white"/>
+  
+  <rect x="196" y="146" width="20" height="20" fill="white" transform="rotate(45 206 156)"/>
+  <rect x="296" y="146" width="20" height="20" fill="white" transform="rotate(-45 306 156)"/>
+  <rect x="196" y="246" width="20" height="20" fill="white" transform="rotate(-45 206 256)"/>
+  <rect x="296" y="246" width="20" height="20" fill="white" transform="rotate(45 306 256)"/>
+  
+  <!-- Text with proper spacing -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">SETTINGS</text>
+</svg>

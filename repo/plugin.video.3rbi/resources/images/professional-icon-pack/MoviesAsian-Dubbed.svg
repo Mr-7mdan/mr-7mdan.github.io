@@ -1,0 +1,20 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Navy background -->
+  <rect width="512" height="512" fill="#1e3a5f"/>
+  
+  <!-- Film reel icon -->
+  <path d="M256 80c-70.692 0-128 57.308-128 128s57.308 128 128 128 128-57.308 128-128S326.692 80 256 80zm0 224c-53.019 0-96-42.981-96-96s42.981-96 96-96 96 42.981 96 96-42.981 96-96 96z" fill="white"/>
+  <circle cx="256" cy="208" r="32" fill="white"/>
+  <circle cx="216" cy="168" r="16" fill="white"/>
+  <circle cx="296" cy="168" r="16" fill="white"/>
+  <circle cx="216" cy="248" r="16" fill="white"/>
+  <circle cx="296" cy="248" r="16" fill="white"/>
+  
+  <!-- Asian pagoda + subtitle lines - top right corner -->
+  <path d="M405 100 L445 100 L443 90 L407 90 Z M410 90 L440 90 L438 80 L412 80 Z M415 80 L435 80 L425 65 Z" fill="#F5A623"/>
+  <rect x="405" y="110" width="50" height="3" fill="#F5A623"/>
+  <rect x="405" y="118" width="50" height="3" fill="#F5A623"/>
+  
+  <!-- Text with proper spacing -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">ASIAN DUBBED</text>
+</svg>

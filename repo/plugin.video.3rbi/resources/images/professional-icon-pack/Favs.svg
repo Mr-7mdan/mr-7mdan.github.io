@@ -1,0 +1,10 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Navy background -->
+  <rect width="512" height="512" fill="#1e3a5f"/>
+  
+  <!-- Star icon for favorites -->
+  <path d="M256 100 L286 190 L380 190 L306 244 L336 334 L256 280 L176 334 L206 244 L132 190 L226 190 Z" fill="#F5A623"/>
+  
+  <!-- Text with proper spacing -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">FAVORITES</text>
+</svg>

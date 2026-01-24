@@ -1,0 +1,16 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Navy background -->
+  <rect width="512" height="512" fill="#1e3a5f"/>
+  
+  <!-- Grid of category icons - centered -->
+  <rect x="126" y="100" width="80" height="80" rx="8" fill="white"/>
+  <rect x="216" y="100" width="80" height="80" rx="8" fill="white"/>
+  <rect x="306" y="100" width="80" height="80" rx="8" fill="white"/>
+  
+  <rect x="126" y="200" width="80" height="80" rx="8" fill="white"/>
+  <rect x="216" y="200" width="80" height="80" rx="8" fill="white"/>
+  <rect x="306" y="200" width="80" height="80" rx="8" fill="white"/>
+  
+  <!-- Text with proper spacing -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">GENRES</text>
+</svg>

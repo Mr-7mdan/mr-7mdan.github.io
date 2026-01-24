@@ -30,20 +30,20 @@ def _get_cat_icon(title):
         'مسلسلات': 'TVShows.png',
         'search': 'Search.png',
         'بحث': 'Search.png',
-        'mix': 'Misc.png',
+        'mix': 'Genres.png',
         'cartoon': 'Cartoon.png',
         'كرتون': 'Cartoon.png',
-        'anime': 'Anime.png',
-        'انمي': 'Anime.png',
-        'korean': 'Korean.png',
-        'كوري': 'Korean.png',
+        'anime': 'MoviesAnime.png',
+        'انمي': 'MoviesAnime.png',
+        'korean': 'MoviesKorean.png',
+        'كوري': 'MoviesKorean.png',
         'reality': 'Programs.png',
         'برامج': 'Programs.png'
     }
     
     for key, icon in mapping.items():
         if key in lower_title:
-            return addon_image(os.path.join('matrix-icon-pack', icon))
+            return addon_image(os.path.join('professional-icon-pack', icon))
             
     # Fallback to general category icon if it's a known icon string
     if title.startswith('addon-'):

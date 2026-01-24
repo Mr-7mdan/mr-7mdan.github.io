@@ -1,0 +1,14 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Navy background -->
+  <rect width="512" height="512" fill="#1e3a5f"/>
+  
+  <!-- Download arrow -->
+  <line x1="256" y1="100" x2="256" y2="240" stroke="white" stroke-width="20" stroke-linecap="round"/>
+  <path d="M196 200 L256 260 L316 200" stroke="white" stroke-width="20" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Download tray -->
+  <path d="M180 260 L180 290 Q180 300 190 300 L322 300 Q332 300 332 290 L332 260" stroke="white" stroke-width="20" fill="none" stroke-linecap="round"/>
+  
+  <!-- Text with proper spacing -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">DOWNLOADS</text>
+</svg>

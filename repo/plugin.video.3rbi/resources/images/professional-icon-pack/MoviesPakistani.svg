@@ -1,0 +1,19 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Navy background -->
+  <rect width="512" height="512" fill="#1e3a5f"/>
+  
+  <!-- Film reel icon -->
+  <path d="M256 80c-70.692 0-128 57.308-128 128s57.308 128 128 128 128-57.308 128-128S326.692 80 256 80zm0 224c-53.019 0-96-42.981-96-96s42.981-96 96-96 96 42.981 96 96-42.981 96-96 96z" fill="white"/>
+  <circle cx="256" cy="208" r="32" fill="white"/>
+  <circle cx="216" cy="168" r="16" fill="white"/>
+  <circle cx="296" cy="168" r="16" fill="white"/>
+  <circle cx="216" cy="248" r="16" fill="white"/>
+  <circle cx="296" cy="248" r="16" fill="white"/>
+  
+  <!-- Pakistani crescent and star - top right corner -->
+  <path d="M410 60 Q430 60 430 80 Q430 100 410 100 Q420 90 420 80 Q420 70 410 60 Z" fill="#F5A623"/>
+  <path d="M440 75 L445 85 L455 85 L447 91 L450 101 L440 95 L430 101 L433 91 L425 85 L435 85 Z" fill="#F5A623"/>
+  
+  <!-- Text with proper spacing -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">PAKISTANI MOVIES</text>
+</svg>

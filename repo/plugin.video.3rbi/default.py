@@ -61,26 +61,28 @@ if addon.getSetting('custom_sites') == 'true':
 @url_dispatcher.register()
 def INDEX():
     url_dispatcher.add_dir('{}'.format(utils.i18n('sites')), '', 'site_list',
-                           basics.addon_image('matrix-icon-pack/All.png'), '', list_avail=False)
+                           basics.addon_image('professional-icon-pack/All.png'), '', list_avail=False)
     url_dispatcher.add_dir('Browse by Category', '', 'category_browser.show_categories',
-                           basics.addon_image('matrix-icon-pack/Genres.png'), '', list_avail=False)
+                           basics.addon_image('professional-icon-pack/Genres.png'), '', list_avail=False)
     url_dispatcher.add_dir('Live TV', '', 'live_tv.Main',
-                           basics.addon_image('matrix-icon-pack/LiveTV.png'), '', list_avail=False)
+                           basics.addon_image('professional-icon-pack/LiveTV.png'), '', list_avail=False)
     url_dispatcher.add_dir('{}'.format(utils.i18n('fav_videos')), '1', 'favorites.List',
-                           basics.addon_image('matrix-icon-pack/Favs.png'), '', list_avail=False)
+                           basics.addon_image('professional-icon-pack/Favs.png'), '', list_avail=False)
     url_dispatcher.add_dir('Play a Link', '', 'PlayTestLink',
-                           basics.addon_image('matrix-icon-pack/PlayLink.png'), '', Folder=False, list_avail=False)
+                           basics.addon_image('professional-icon-pack/PlayLink.png'), '', Folder=False, list_avail=False)
     download_path = addon.getSetting('download_path')
     if download_path != '' and xbmcvfs.exists(download_path):
         url_dispatcher.add_dir('{}'.format(utils.i18n('dnld_folder')), download_path, 'OpenDownloadFolder',
-                               basics.addon_image('matrix-icon-pack/Download.png'), '', list_avail=False)
+                               basics.addon_image('professional-icon-pack/Download.png'), '', list_avail=False)
 
     url_dispatcher.add_dir('{}'.format(utils.i18n('custom_list')), '', 'favorites.create_custom_list', Folder=False, list_avail=False)
     for rowid, name in favorites.get_custom_lists():
         url_dispatcher.add_dir(name, str(rowid), 'favorites.load_custom_list', list_avail=False, custom_list=True)
     favorites.load_custom_list('main')
     url_dispatcher.add_dir('{}'.format(utils.i18n('clear_cache')), '', 'utils.clear_cache',
-                           basics.addon_image('matrix-icon-pack/Trash.png'), '', Folder=False, list_avail=False)
+                           basics.addon_image('professional-icon-pack/Trash.png'), '', Folder=False, list_avail=False)
+    url_dispatcher.add_dir('Settings', '', 'open_settings',
+                           basics.addon_image('professional-icon-pack/Settings.png'), '', Folder=False, list_avail=False)
 
     utils.eod(basics.addon_handle, False)
 
@@ -130,6 +132,12 @@ def about_site(name, about, custom):
     with open(TRANSLATEPATH(os.path.join(dir, '{}.txt'.format(about)))) as f:
         announce = f.read()
     utils.textBox(heading, announce)
+
+
+@url_dispatcher.register()
+def open_settings():
+    """Open addon settings dialog"""
+    addon.openSettings()
 
 
 @url_dispatcher.register()

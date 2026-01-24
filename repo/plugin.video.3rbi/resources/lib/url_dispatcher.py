@@ -39,9 +39,9 @@ class URL_Dispatcher(object):
             raise Exception(message)
 
         self.module_name = module_name
-        self.img_search = addon_image('matrix-icon-pack/Search.png')
-        self.img_cat = addon_image('matrix-icon-pack/cat.png')
-        self.img_next = addon_image('matrix-icon-pack/Next.png')
+        self.img_search = addon_image('professional-icon-pack/Search.png')
+        self.img_cat = addon_image('professional-icon-pack/Genres.png')
+        self.img_next = addon_image('professional-icon-pack/Next.png')
         self.widget = False
 
     def get_full_mode(self, mode):

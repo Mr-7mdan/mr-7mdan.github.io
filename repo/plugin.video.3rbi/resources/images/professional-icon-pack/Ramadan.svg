@@ -1,0 +1,13 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Navy background -->
+  <rect width="512" height="512" fill="#1e3a5f"/>
+  
+  <!-- Large crescent moon - centered -->
+  <path d="M216 100 Q296 100 296 200 Q296 300 216 300 Q256 250 256 200 Q256 150 216 100 Z" fill="white"/>
+  
+  <!-- Star - centered -->
+  <path d="M326 180 L336 210 L366 210 L341 230 L351 260 L326 240 L301 260 L311 230 L286 210 L316 210 Z" fill="white"/>
+  
+  <!-- Text with proper spacing -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">RAMADAN</text>
+</svg>

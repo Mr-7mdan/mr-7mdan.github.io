@@ -1,0 +1,16 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Navy background -->
+  <rect width="512" height="512" fill="#1e3a5f"/>
+  
+  <!-- Clock icon for history -->
+  <circle cx="256" cy="206" r="80" fill="white"/>
+  <circle cx="256" cy="206" r="70" fill="#1e3a5f"/>
+  <circle cx="256" cy="206" r="10" fill="white"/>
+  
+  <!-- Clock hands -->
+  <line x1="256" y1="206" x2="256" y2="156" stroke="white" stroke-width="8" stroke-linecap="round"/>
+  <line x1="256" y1="206" x2="296" y2="206" stroke="white" stroke-width="8" stroke-linecap="round"/>
+  
+  <!-- Text with proper spacing -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">HISTORY</text>
+</svg>

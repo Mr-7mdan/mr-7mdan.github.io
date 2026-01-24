@@ -1,0 +1,13 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Navy background -->
+  <rect width="512" height="512" fill="#1e3a5f"/>
+  
+  <!-- Microphone icon -->
+  <rect x="236" y="100" width="40" height="80" rx="20" fill="white"/>
+  <path d="M196 160 Q196 210 256 210 Q316 210 316 160" stroke="white" stroke-width="12" fill="none"/>
+  <line x1="256" y1="210" x2="256" y2="260" stroke="white" stroke-width="12"/>
+  <line x1="226" y1="260" x2="286" y2="260" stroke="white" stroke-width="12"/>
+  
+  <!-- Text with proper spacing -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">PROGRAMS</text>
+</svg>

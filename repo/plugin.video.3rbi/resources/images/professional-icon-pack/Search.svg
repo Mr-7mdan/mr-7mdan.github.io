@@ -1,0 +1,11 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Navy background -->
+  <rect width="512" height="512" fill="#1e3a5f"/>
+  
+  <!-- Magnifying glass - centered -->
+  <circle cx="236" cy="180" r="80" fill="none" stroke="white" stroke-width="20"/>
+  <path d="M296 240 L346 290" stroke="white" stroke-width="20" stroke-linecap="round"/>
+  
+  <!-- Text with proper spacing -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">SEARCH</text>
+</svg>

@@ -1,0 +1,27 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Navy background -->
+  <rect width="512" height="512" fill="#1e3a5f"/>
+  
+  <!-- Newspaper icon - centered -->
+  <rect x="140" y="100" width="232" height="180" rx="8" fill="white"/>
+  
+  <!-- Headline -->
+  <rect x="160" y="120" width="192" height="20" fill="#1e3a5f"/>
+  
+  <!-- Text columns -->
+  <rect x="160" y="150" width="85" height="8" fill="#1e3a5f"/>
+  <rect x="160" y="165" width="85" height="8" fill="#1e3a5f"/>
+  <rect x="160" y="180" width="85" height="8" fill="#1e3a5f"/>
+  <rect x="160" y="195" width="85" height="8" fill="#1e3a5f"/>
+  
+  <rect x="267" y="150" width="85" height="8" fill="#1e3a5f"/>
+  <rect x="267" y="165" width="85" height="8" fill="#1e3a5f"/>
+  <rect x="267" y="180" width="85" height="8" fill="#1e3a5f"/>
+  <rect x="267" y="195" width="85" height="8" fill="#1e3a5f"/>
+  
+  <!-- Image placeholder -->
+  <rect x="160" y="220" width="192" height="45" fill="#1e3a5f"/>
+  
+  <!-- Text with proper spacing -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">NEWS</text>
+</svg>

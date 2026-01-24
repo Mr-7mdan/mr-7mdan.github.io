@@ -1,0 +1,14 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Navy background -->
+  <rect width="512" height="512" fill="#1e3a5f"/>
+  
+  <!-- Wrench and screwdriver crossed -->
+  <rect x="200" y="120" width="20" height="140" fill="white" transform="rotate(-30 210 190)"/>
+  <circle cx="195" cy="110" r="15" fill="white"/>
+  
+  <path d="M280 120 L300 260" stroke="white" stroke-width="20" stroke-linecap="round"/>
+  <path d="M280 120 L270 110 L290 110 Z" fill="white"/>
+  
+  <!-- Text with proper spacing -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">TOOLS</text>
+</svg>
