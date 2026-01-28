@@ -323,8 +323,8 @@
             <control type="grouplist">
                 <left>30</left>
                 <top>5</top>
-                <bottom>10</bottom>
-                <height>40</height>
+                <bottom>5</bottom>
+                <height>38</height>
                 <orientation>horizontal</orientation>
                 <itemgap>2</itemgap>
 
