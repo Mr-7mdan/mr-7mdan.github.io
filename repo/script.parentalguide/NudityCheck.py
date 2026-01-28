@@ -316,7 +316,7 @@ def AddFurnitureProperties(review, provider, WindowID, imdb_id=None):
                 xbmc.log(f"PG_DEBUG: Set {Suffix}-NIcon property to: {icon_path}", xbmc.LOGINFO)
                 
                 # Show notification to verify on screen
-                xbmc.executebuiltin(f'Notification(PG Debug,{Suffix} icon: {entry["cat"]},3000)')
+                # xbmc.executebuiltin(f'Notification(PG Debug,{Suffix} icon: {entry["cat"]},3000)')
                 
                 try:
                     if entry.get('votes'):
