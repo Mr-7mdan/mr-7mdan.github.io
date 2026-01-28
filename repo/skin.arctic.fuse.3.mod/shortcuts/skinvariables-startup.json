@@ -23,6 +23,7 @@
                         "String.IsEmpty(Window.Property(ReloadDone))",
                         "!Skin.HasSetting(DefaultConfig.InitDone)"],
                     "value": [
+                        "Skin.SetBool(TMDbHelper.EnableData)",
                         "Skin.SetBool(TMDbHelper.EnableCrop)",
                         "Skin.SetBool(TMDbHelper.EnableBlur)",
                         "Skin.SetBool(TMDbHelper.Service)",
@@ -108,7 +109,11 @@
                     "rules": ["String.IsEmpty(Skin.String(DialogInfo.Others.Item03))"],
                     "value": "Skin.SetString(DialogInfo.Others.Item03,Wikipedia)"
                 }],
-                "SetProperty(InitStatus,Generating Textures)",
+                [{
+                    "rules": ["Skin.HasSetting(TMDbHelper.Service)"],
+                    "value": "Skin.SetBool(TMDbHelper.EnableData)"
+                }],
+                "SetProperty(InitStatus,Reticulating Splines,1198)",
                 "RunScript(plugin.video.themoviedb.helper,blur_image={var_image_simplebackground},prefix=SimpleBackground)"
             ]
         }],
@@ -119,14 +124,14 @@
         "sleep=0.5",
         {
             "rules": [
-                "Skin.HasSetting(Startup.WaitForLoad)",
+                "!Skin.HasSetting(Startup.DisableWaitForLoad)",
                 "System.HasAlarm(SplashTimeOut)",
                 "System.HasPVRAddon",
                 "!PVR.HasTVChannels",
                 "!PVR.HasRadioChannels"
             ],
             "value": [
-                "SetProperty(InitStatus,Waiting for PVR)",
+                "SetProperty(InitStatus,Waiting for PVR,1198)",
                 "route=run_executebuiltin=special://skin/shortcuts/skinvariables-startup.json&use_rules=True&var_image_simplebackground={var_image_simplebackground}"
             ]
         },
