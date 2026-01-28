@@ -1,3 +1,0 @@
-Need to create a Gemini provider icon (PNG file). Since I cannot create image files, please:
-1. Create a Gemini logo PNG file (similar size to other provider icons ~50-60KB)
-2. Save it as: script.parentalguide/resources/skins/Default/media/providers/Gemini.png

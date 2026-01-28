@@ -1464,21 +1464,20 @@
     <include name="DialogInfo_VideoDetails">
         <param name="left_group_width">480</param>
         <param name="right">80</param>
-        <param name="top">20</param>
         <definition>
             <control type="group">
-                <top>$PARAM[top]</top>
+                <top>20</top>
                 <left>20</left>
                 <height>80</height>
                 <include content="View_Line">
-                    <param name="top">42</param>
+                    <param name="top">20</param>
                     <param name="use_spinner">false</param>
                     <param name="left">20</param>
                     <param name="label" />
                 </include>
                 <control type="grouplist" id="9000">
                     <orientation>horizontal</orientation>
-                    <top>20</top>
+                    <top>-2</top>
                     <left>20</left>
                     <height>57</height>
                     <itemgap>40</itemgap>
@@ -1524,15 +1523,6 @@
                         <onclick>Action(select)</onclick>
                         <onclick>SetFocus(4002)</onclick>
                         <visible>!String.IsEmpty(Container(4900).ListItemAbsolute(2).Label)</visible>
-                    </include>
-
-                    <!-- Parental Guide -->
-                    <include content="Button_Underline_Switcher" condition="!String.IsEqual(ListItem.Property(tmdb_type),person)">
-                        <param name="id">4006</param>
-                        <param name="control">button</param>
-                        <label>Parental Guide</label>
-                        <usealttexture>false</usealttexture>
-                        <onclick>RunScript(special://home/addons/script.parentalguide/default.py,)</onclick>
                     </include>
 
                     <!-- Options -->

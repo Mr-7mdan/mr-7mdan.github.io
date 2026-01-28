@@ -1,0 +1,22 @@
+<contents>
+    <value name="comments">Custom Tabbar Widgets (Special Rendering)</value>
+    <template>generator/data/parts/basic_include.xmltemplate</template>
+    <value name="includes_name">skinvariables-{item}-standard</value>
+    <value name="includes_part">
+        <items menu="{item}">
+            <item>
+                <condition>{item_path}==Custom_Tabbar</condition>
+                <template><![CDATA[
+                    <include content="Hub_Widget_Switcher">
+                        <param name="include_content">skinvariables-{item}-tabbar-{item_guid}-items</param>
+                    </include>
+                    <control type="group" id="500">
+                        <include content="Hub_Combined_Widgets_Grouplist">
+                            <include>skinvariables-{item}-tabbar-{item_guid}-widgets</include>
+                        </include>
+                    </control>
+                ]]></template>
+            </item>
+        </items>
+    </value>
+</contents>

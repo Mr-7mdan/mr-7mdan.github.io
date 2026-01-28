@@ -1455,7 +1455,7 @@
 
             <control type="group">
                 <left>40</left>
-                <height>50</height>
+                <height>40</height>
                 <orientation>vertical</orientation>
                 <itemgap>10</itemgap>
                 <visible>$PARAM[visible]</visible>
@@ -1594,7 +1594,27 @@
                     <visible>String.IsEqual(Window(home).Property(IMDB-Status),true)</visible>
                     <width>12</width>
                 </control>
-                
+
+            <!-- CringMDB Provider Icon -->
+                <include content="Info_Meta_Object">
+                    <param name="icon">$INFO[Window(home).Property(Cring-Icon)]</param>
+                    <param name="visible">String.IsEqual(Window(home).Property(Cring-Status),true)</param>
+                    <param name="colordiffuse">$PARAM[colordiffuse]</param>
+                </include>
+                <!-- IMDB Severity Icon -->
+                <include content="Info_Meta_Object">
+                    <param name="icon">$INFO[Window(home).Property(Cring-NIcon)]</param>
+                    <param name="label">$INFO[Window(home).Property(Cring-NRate)]</param>
+                    <param name="visible">!String.IsEmpty(Window(home).Property(Cring-Icon)) + !String.Contains(Window(home).Property(Cring-Icon),Unknown)</param>
+                    <param name="colordiffuse">$PARAM[colordiffuse]</param>
+                    <param name="font">font_tiny</param>
+                </include>
+                <!-- Spacer after IMDB -->
+                <control type="group">
+                    <visible>String.IsEqual(Window(home).Property(IMDB-Status),true)</visible>
+                    <width>12</width>
+                </control>
+
                 <!-- Kids In Mind Provider Icon -->
                 <include content="Info_Meta_Object">
                     <param name="icon">$INFO[Window(home).Property(KidsInMind-Icon)]</param>

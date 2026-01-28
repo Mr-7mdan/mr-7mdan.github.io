@@ -265,6 +265,9 @@ def AddFurnitureProperties(review, provider, WindowID, imdb_id=None):
     Suffix = provider
     WID = xbmcgui.Window(10000) # Force Home window for furniture properties
     
+    logger.debug(f"=== AddFurnitureProperties called for {provider} (IMDB: {imdb_id}) ===")
+    logger.debug(f"Review data: {review}")
+    
     # Always set the provider icon (global - never changes)
     WID.setProperty(f"{Suffix}-Icon", f"special://home/addons/script.parentalguide/resources/skins/Default/media/providers/{Suffix}.png")
     
@@ -295,8 +298,26 @@ def AddFurnitureProperties(review, provider, WindowID, imdb_id=None):
             if entry['name'] in ["Sex & Nudity", "Nudity"]:
                 found_nudity = True
                 WID.setProperty(f"{property_prefix}-toggle", "true")
+                
+                # Build the icon path
+                icon_path = f"special://home/addons/script.parentalguide/resources/skins/Default/media/providers/ribbon_mono/{Suffix}_{entry['cat']}.png"
+                
+                # DEBUG: Use xbmc.log to ensure it shows up
+                xbmc.log(f"PG_DEBUG: Setting icon for {Suffix}: cat={entry['cat']}, path={icon_path}", xbmc.LOGINFO)
+                
+                # Set NRate (movie-specific and global)
                 WID.setProperty(f"{property_prefix}-NRate", f" {entry['cat']}")
-                WID.setProperty(f"{property_prefix}-NIcon", f"special://home/addons/script.parentalguide/resources/skins/Default/media/tags/{entry['cat']}.png")
+                WID.setProperty(f"{Suffix}-NRate", f" {entry['cat']}")
+                
+                # Set NIcon (movie-specific and global)
+                WID.setProperty(f"{property_prefix}-NIcon", icon_path)
+                WID.setProperty(f"{Suffix}-NIcon", icon_path)
+                
+                xbmc.log(f"PG_DEBUG: Set {Suffix}-NIcon property to: {icon_path}", xbmc.LOGINFO)
+                
+                # Show notification to verify on screen
+                xbmc.executebuiltin(f'Notification(PG Debug,{Suffix} icon: {entry["cat"]},3000)')
+                
                 try:
                     if entry.get('votes'):
                         xMainVotes = [int(s) for s in re.findall(r'\b\d+\b', entry['votes'])]
@@ -308,7 +329,10 @@ def AddFurnitureProperties(review, provider, WindowID, imdb_id=None):
                             votesProp = f" {entry['cat']} ({entry['votes']})"
                     else:
                         votesProp = f" {entry['cat']} (No votes)"
+                    
+                    # Set NVotes (movie-specific and global)
                     WID.setProperty(f"{property_prefix}-NVotes", votesProp)
+                    WID.setProperty(f"{Suffix}-NVotes", votesProp)
                 except Exception as e:
                     # logger.error(f"Error setting votes for {Suffix}: {str(e)}")
                     WID.setProperty(f"{property_prefix}-NVotes", f" {entry['cat']} (Error parsing votes)")

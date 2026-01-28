@@ -75,15 +75,27 @@
             <onclick>Skin.ToggleSetting(Submenu.EnableSideMode)</onclick>
             <selected>Skin.HasSetting(Submenu.EnableSideMode)</selected>
         </include>
-        <include content="Settings_Button" description="Presets">
+
+        <include content="Settings_Button" description="Spotlight">
             <param name="dialog">false</param>
             <param name="window">skinsettings</param>
             <param name="baseid">$PARAM[baseid]</param>
             <param name="id">007</param>
+            <param name="control">button</param>
             <label>$LOCALIZE[31105]</label>
-            <onclick>SetProperty(CustomDialogSettingsTitle,[CAPITALIZE]$LOCALIZE[31105][/CAPITALIZE],Home)</onclick>
-            <onclick>SetProperty(CustomDialogSettingsItems,DialogCustom_SpotlightStyle_Items,Home)</onclick>
-            <onclick>ActivateWindow(1118)</onclick>
+            <label2>$VAR[Label_Setting_Spotlight_UseMenuButton]</label2>
+            <onclick>Skin.ToggleSetting(Spotlight.UseMenuButton)</onclick>
+        </include>
+
+        <include content="Settings_Button" description="Slide">
+            <param name="dialog">false</param>
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">008</param>
+            <param name="control">button</param>
+            <label>$LOCALIZE[31060]</label>
+            <label2>$VAR[Label_Setting_Spotlight_Slide]</label2>
+            <onclick>Skin.ToggleSetting(Spotlight.EnableSlide)</onclick>
         </include>
     </include>
 
@@ -175,16 +187,6 @@
             <onclick>SetProperty(CustomDialogSettingsItems,DialogCustom_Settings_Items_BackgroundStyle,Home)</onclick>
             <onclick>ActivateWindow(1118)</onclick>
         </include>
-        <include content="Settings_Button" description="Ratings">
-            <param name="dialog">false</param>
-            <param name="window">skinsettings</param>
-            <param name="baseid">$PARAM[baseid]</param>
-            <param name="id">009</param>
-            <param name="control">button</param>
-            <label>$LOCALIZE[31082]</label>
-            <label2>$VAR[Label_Setting_Ratings]</label2>
-            <onclick>Skin.ToggleSetting(Ratings.EnableColor)</onclick>
-        </include>
     </include>
 
     <!-- Viewtypes -->
@@ -249,36 +251,15 @@
             <onclick>ActivateWindow(1118)</onclick>
         </include>
 
-
-
-        <include content="Settings_Label" description="Buttons">
-            <param name="window">skinsettings</param>
-            <param name="baseid">$PARAM[baseid]</param>
-            <param name="id">008</param>
-            <label>$LOCALIZE[19033]</label>
-        </include>
-
         <include content="Settings_Button" description="Information">
             <param name="dialog">false</param>
             <param name="window">skinsettings</param>
             <param name="baseid">$PARAM[baseid]</param>
             <param name="id">007</param>
             <param name="control">button</param>
-            <label>$LOCALIZE[31103]</label>
+            <label>$LOCALIZE[19033]</label>
             <onclick>SetProperty(CustomDialogSettingsItems,DialogCustom_VideoInfo_Items,Home)</onclick>
-            <onclick>SetProperty(CustomDialogSettingsTitle,$LOCALIZE[31103],Home)</onclick>
-            <onclick>ActivateWindow(1118)</onclick>
-        </include>
-
-        <include content="Settings_Button" description="Information">
-            <param name="dialog">false</param>
-            <param name="window">skinsettings</param>
-            <param name="baseid">$PARAM[baseid]</param>
-            <param name="id">009</param>
-            <param name="control">button</param>
-            <label>$LOCALIZE[35059]</label>
-            <onclick>SetProperty(CustomDialogSettingsItems,DialogCustom_Buttons_Items,Home)</onclick>
-            <onclick>SetProperty(CustomDialogSettingsTitle,$LOCALIZE[35059],Home)</onclick>
+            <onclick>SetProperty(CustomDialogSettingsTitle,$LOCALIZE[19033],Home)</onclick>
             <onclick>ActivateWindow(1118)</onclick>
         </include>
 
@@ -629,6 +610,17 @@
             <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
         </include>
 
+        <include content="Settings_Button">
+            <param name="window">skinsettings</param>
+            <param name="baseid">$PARAM[baseid]</param>
+            <param name="id">006</param>
+            <param name="control">radiobutton</param>
+            <label>Use Colored Rating Icons</label>
+            <selected>Skin.HasSetting(Furniture.EnableColourRatings)</selected>
+            <onclick>Skin.ToggleSetting(Furniture.EnableColourRatings)</onclick>
+            <visible>$EXP[Exp_TMDbHelper_IsData]</visible>
+        </include>
+
         <include content="Settings_Label" description="Interface">
             <param name="window">skinsettings</param>
             <param name="baseid">$PARAM[baseid]</param>
@@ -708,20 +700,8 @@
             <param name="control">radiobutton</param>
             <param name="slevel">1</param>
             <label>$LOCALIZE[31428]</label>
-            <onclick>Skin.ToggleSetting(Startup.DisableWaitForLoad)</onclick>
-            <selected>!Skin.HasSetting(Startup.DisableWaitForLoad)</selected>
-        </include>
-        <include content="Settings_Button" description="Hub preloading">
-            <param name="dialog">false</param>
-            <param name="window">skinsettings</param>
-            <param name="baseid">$PARAM[baseid]</param>
-            <param name="id">006</param>
-            <param name="control">radiobutton</param>
-            <param name="slevel">1</param>
-            <label>$LOCALIZE[31084]</label>
-            <onclick>Skin.ToggleSetting(Startup.EnableHubPreloading)</onclick>
-            <selected>Skin.HasSetting(Startup.EnableHubPreloading)</selected>
-            <visible>!Skin.HasSetting(Startup.DisableWaitForLoad)</visible>
+            <onclick>Skin.ToggleSetting(Startup.WaitForLoad)</onclick>
+            <selected>Skin.HasSetting(Startup.WaitForLoad)</selected>
         </include>
         <include content="Settings_Button" description="Widget profiles">
             <param name="dialog">false</param>
@@ -819,7 +799,7 @@
             <label>$LOCALIZE[31374]</label>
             <onclick>SetProperty(StartupReplaceWindow,skinsettings,Home)</onclick>
             <onclick>Skin.ResetSettings</onclick>
-            <onclick>ActivateWindow(Startup)</onclick>
+            <onclick>ActivateWindow(1198)</onclick>
         </include>
         <include content="Settings_Button" description="TMDbHelper for PVR">
             <param name="dialog">false</param>
