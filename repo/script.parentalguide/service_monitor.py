@@ -19,6 +19,40 @@ import NudityCheck
 
 ADDON = xbmcaddon.Addon(id='script.parentalguide')
 
+def sync_settings_to_properties():
+    """
+    Sync addon settings to Window properties so the skin can read them.
+    This should be called on startup and when settings change.
+    """
+    # Reload addon to get fresh settings
+    addon = xbmcaddon.Addon(id='script.parentalguide')
+    window = xbmcgui.Window(10000)
+    
+    # Sync provider settings
+    providers = [
+        'IMDBProvider',
+        'kidsInMindProvider',
+        'movieGuideOrgProvider',
+        'DoveFoundationProvider',
+        'ParentPreviewsProvider',
+        'CSMProvider',
+        'RaisingChildrenProvider',
+        'CringMDBProvider'
+    ]
+    
+    for provider in providers:
+        setting_value = addon.getSetting(provider)
+        property_name = f"script.parentalguide.{provider}"
+        window.setProperty(property_name, setting_value)
+        logger.info(f"ParentalGuideMonitor: Set {property_name} = {setting_value}")
+    
+    # Sync loading indicator setting
+    show_loading = ADDON.getSetting('showLoadingIndicator')
+    window.setProperty('script.parentalguide.showLoadingIndicator', show_loading)
+    logger.info(f"ParentalGuideMonitor: Set showLoadingIndicator = {show_loading}")
+    
+    logger.info("ParentalGuideMonitor: Settings synced to Window properties")
+
 class ParentalGuideMonitor(xbmc.Monitor):
     """
     Background service that monitors ListItem focus changes and automatically
@@ -36,7 +70,23 @@ class ParentalGuideMonitor(xbmc.Monitor):
             self.debounce_delay = float(ADDON.getSetting("debounceDelay"))
         except:
             self.debounce_delay = 0.2  # Default fallback
+        # Sync settings to Window properties on startup
+        sync_settings_to_properties()
         # logger.info(f"ParentalGuideMonitor: Initialized with debounce delay: {self.debounce_delay}s")
+    
+    def onSettingsChanged(self):
+        """
+        Called when addon settings are changed.
+        Sync the new settings to Window properties.
+        """
+        # Update debounce delay
+        try:
+            self.debounce_delay = float(ADDON.getSetting("debounceDelay"))
+        except:
+            self.debounce_delay = 0.2
+        
+        # Sync all settings to Window properties
+        sync_settings_to_properties()
     
     def get_current_item_info(self):
         """

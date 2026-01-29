@@ -344,13 +344,13 @@
                 <include content="Info_Meta_Object">
                     <param name="icon">$INFO[Window(home).Property(IMDB-NIcon)]</param>
                     <param name="label">$INFO[Window(home).Property(IMDB-NVotes)]</param>
-                    <param name="visible">!String.IsEmpty(Window(home).Property(IMDB-NIcon)) + !String.Contains(Window(home).Property(IMDB-NIcon),Unknown)</param>
+                    <param name="visible">[String.IsEqual(Window(Home).Property(script.parentalguide.IMDBProvider),true) | String.IsEmpty(Window(Home).Property(script.parentalguide.IMDBProvider))] + !String.IsEmpty(Window(home).Property(IMDB-NIcon)) + !String.Contains(Window(home).Property(IMDB-NIcon),Unknown)</param>
                     <param name="colordiffuse">$PARAM[colordiffuse]</param>
                     <param name="font">font_tiny</param>
                 </include>
                 <!-- Spacer after IMDB -->
                 <control type="group">
-                    <visible>String.IsEqual(Window(home).Property(IMDB-Status),true)</visible>
+                    <visible>[String.IsEqual(Window(Home).Property(script.parentalguide.IMDBProvider),true) | String.IsEmpty(Window(Home).Property(script.parentalguide.IMDBProvider))] + String.IsEqual(Window(home).Property(IMDB-Status),true)</visible>
                     <width>12</width>
                 </control>
                 
@@ -364,13 +364,13 @@
                 <include content="Info_Meta_Object">
                     <param name="icon">$INFO[Window(home).Property(KidsInMind-NIcon)]</param>
                     <param name="label">$INFO[Window(home).Property(KidsInMind-NRate)]</param>
-                    <param name="visible">!String.IsEmpty(Window(home).Property(KidsInMind-NIcon)) + !String.Contains(Window(home).Property(KidsInMind-NIcon),Unknown)</param>
+                    <param name="visible">[String.IsEqual(Window(Home).Property(script.parentalguide.kidsInMindProvider),true) | String.IsEmpty(Window(Home).Property(script.parentalguide.kidsInMindProvider))] + !String.IsEmpty(Window(home).Property(KidsInMind-NIcon)) + !String.Contains(Window(home).Property(KidsInMind-NIcon),Unknown)</param>
                     <param name="colordiffuse">$PARAM[colordiffuse]</param>
                     <param name="font">font_tiny</param>
                 </include>
                 <!-- Spacer after Kids In Mind -->
                 <control type="group">
-                    <visible>String.IsEqual(Window(home).Property(KidsInMind-Status),true)</visible>
+                    <visible>[String.IsEqual(Window(Home).Property(script.parentalguide.kidsInMindProvider),true) | String.IsEmpty(Window(Home).Property(script.parentalguide.kidsInMindProvider))] + String.IsEqual(Window(home).Property(KidsInMind-Status),true)</visible>
                     <width>12</width>
                 </control>
                 
@@ -384,13 +384,13 @@
                 <include content="Info_Meta_Object">
                     <param name="icon">$INFO[Window(home).Property(DoveFoundation-NIcon)]</param>
                     <param name="label">$INFO[Window(home).Property(DoveFoundation-NRate)]</param>
-                    <param name="visible">!String.IsEmpty(Window(home).Property(DoveFoundation-NIcon)) + !String.Contains(Window(home).Property(DoveFoundation-NIcon),Unknown)</param>
+                    <param name="visible">[String.IsEqual(Window(Home).Property(script.parentalguide.DoveFoundationProvider),true) | String.IsEmpty(Window(Home).Property(script.parentalguide.DoveFoundationProvider))] + !String.IsEmpty(Window(home).Property(DoveFoundation-NIcon)) + !String.Contains(Window(home).Property(DoveFoundation-NIcon),Unknown)</param>
                     <param name="colordiffuse">$PARAM[colordiffuse]</param>
                     <param name="font">font_tiny</param>
                 </include>
                 <!-- Spacer after Dove Foundation -->
                 <control type="group">
-                    <visible>String.IsEqual(Window(home).Property(DoveFoundation-Status),true)</visible>
+                    <visible>[String.IsEqual(Window(Home).Property(script.parentalguide.DoveFoundationProvider),true) | String.IsEmpty(Window(Home).Property(script.parentalguide.DoveFoundationProvider))] + String.IsEqual(Window(home).Property(DoveFoundation-Status),true)</visible>
                     <width>12</width>
                 </control>
                 
@@ -404,13 +404,13 @@
                 <include content="Info_Meta_Object">
                     <param name="icon">$INFO[Window(home).Property(ParentPreviews-NIcon)]</param>
                     <param name="label">$INFO[Window(home).Property(ParentPreviews-NRate)]</param>
-                    <param name="visible">!String.IsEmpty(Window(home).Property(ParentPreviews-NIcon)) + !String.Contains(Window(home).Property(ParentPreviews-NIcon),Unknown)</param>
+                    <param name="visible">[String.IsEqual(Window(Home).Property(script.parentalguide.ParentPreviewsProvider),true) | String.IsEmpty(Window(Home).Property(script.parentalguide.ParentPreviewsProvider))] + !String.IsEmpty(Window(home).Property(ParentPreviews-NIcon)) + !String.Contains(Window(home).Property(ParentPreviews-NIcon),Unknown)</param>
                     <param name="colordiffuse">$PARAM[colordiffuse]</param>
                     <param name="font">font_tiny</param>
                 </include>
                 <!-- Spacer after Parent Previews -->
                 <control type="group">
-                    <visible>String.IsEqual(Window(home).Property(ParentPreviews-Status),true)</visible>
+                    <visible>[String.IsEqual(Window(Home).Property(script.parentalguide.ParentPreviewsProvider),true) | String.IsEmpty(Window(Home).Property(script.parentalguide.ParentPreviewsProvider))] + String.IsEqual(Window(home).Property(ParentPreviews-Status),true)</visible>
                     <width>12</width>
                 </control>
                 
@@ -424,20 +424,20 @@
                 <include content="Info_Meta_Object">
                     <param name="icon">$INFO[Window(home).Property(CSM-NIcon)]</param>
                     <param name="label">$INFO[Window(home).Property(CSM-NRate)]</param>
-                    <param name="visible">!String.IsEmpty(Window(home).Property(CSM-NIcon)) + !String.Contains(Window(home).Property(CSM-NIcon),Unknown)</param>
+                    <param name="visible">[String.IsEqual(Window(Home).Property(script.parentalguide.CSMProvider),true) | String.IsEmpty(Window(Home).Property(script.parentalguide.CSMProvider))] + !String.IsEmpty(Window(home).Property(CSM-NIcon)) + !String.Contains(Window(home).Property(CSM-NIcon),Unknown)</param>
                     <param name="colordiffuse">$PARAM[colordiffuse]</param>
                     <param name="font">font_tiny</param>
                 </include>
                 <!-- CSM Age Rating (if no Sex & Nudity data) -->
                 <include content="Info_Meta_Object">
                     <param name="label">$INFO[Window(home).Property(CSM-Age)]</param>
-                    <param name="visible">!String.IsEmpty(Window(home).Property(CSM-Age)) + String.IsEmpty(Window(home).Property(CSM-NIcon))</param>
+                    <param name="visible">[String.IsEqual(Window(Home).Property(script.parentalguide.CSMProvider),true) | String.IsEmpty(Window(Home).Property(script.parentalguide.CSMProvider))] + !String.IsEmpty(Window(home).Property(CSM-Age)) + String.IsEmpty(Window(home).Property(CSM-NIcon))</param>
                     <param name="colordiffuse">$PARAM[colordiffuse]</param>
                     <param name="font">font_tiny</param>
                 </include>
                 <!-- Spacer after CSM -->
                 <control type="group">
-                    <visible>String.IsEqual(Window(home).Property(CSM-Status),true)</visible>
+                    <visible>[String.IsEqual(Window(Home).Property(script.parentalguide.CSMProvider),true) | String.IsEmpty(Window(Home).Property(script.parentalguide.CSMProvider))] + String.IsEqual(Window(home).Property(CSM-Status),true)</visible>
                     <width>12</width>
                 </control>
                 
@@ -451,7 +451,7 @@
                 <include content="Info_Meta_Object">
                     <param name="icon">$INFO[Window(home).Property(RaisingChildren-NIcon)]</param>
                     <param name="label">$INFO[Window(home).Property(RaisingChildren-Age)]</param>
-                    <param name="visible">!String.IsEmpty(Window(home).Property(RaisingChildren-Age)) + !String.Contains(Window(home).Property(RaisingChildren-NIcon),Unknown)</param>
+                    <param name="visible">[String.IsEqual(Window(Home).Property(script.parentalguide.RaisingChildrenProvider),true) | String.IsEmpty(Window(Home).Property(script.parentalguide.RaisingChildrenProvider))] + !String.IsEmpty(Window(home).Property(RaisingChildren-Age)) + !String.Contains(Window(home).Property(RaisingChildren-NIcon),Unknown)</param>
                     <param name="colordiffuse">$PARAM[colordiffuse]</param>
                     <param name="font">font_tiny</param>
                 </include>
@@ -460,7 +460,7 @@
                 <include content="Info_Meta_Object">
                     <param name="icon">special://skin/extras/icons/spinner.png</param>
                     <param name="label">Loading...</param>
-                    <param name="visible">String.IsEqual(Window(home).Property(ParentalGuide-Loading),true)</param>
+                    <param name="visible">String.IsEqual(Window(home).Property(ParentalGuide-Loading),true) + !String.IsEqual(Window(Home).Property(script.parentalguide.showLoadingIndicator),false)</param>
                     <param name="colordiffuse">$PARAM[colordiffuse]</param>
                     <param name="font">font_tiny</param>
                 </include>
