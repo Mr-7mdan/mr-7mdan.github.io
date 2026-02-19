@@ -12,11 +12,24 @@ site = SiteBase(name='akwam', title='Akwam', url=None, image='sites/AKSV.png')
 def Main():
     from resources.lib.category_mapper import get_category_icon
 
-    site.add_dir('Movies', '{0}/movies'.format(site.url), 'getMovies', _get_cat_icon('Movies'), fanart=site.image, landscape=site.image)
-    site.add_dir('Series', '{0}/series'.format(site.url), 'getTVShows', _get_cat_icon('Series'), fanart=site.image, landscape=site.image)
-    site.add_dir('TV Shows', '{0}/shows'.format(site.url), 'getTVShows', _get_cat_icon('TV Shows'), fanart=site.image, landscape=site.image)
-    site.add_dir('Mix', '{0}/mix'.format(site.url), 'getMovies', _get_cat_icon('Mix'), fanart=site.image, landscape=site.image)
-    site.add_dir('Search', '{0}/search'.format(site.url), 'Search', _get_cat_icon('Search'))
+    # Movies by region (section param) - full inline URLs for category_browser compatibility
+    site.add_dir('Arabic Movies',  site.url + 'movies?section=29&category=0&rating=0&year=0&language=0&formats=0&quality=0', 'getMovies', get_category_icon('Arabic Movies'),  fanart=site.image, landscape=site.image)
+    site.add_dir('English Movies', site.url + 'movies?section=30&category=0&rating=0&year=0&language=0&formats=0&quality=0', 'getMovies', get_category_icon('English Movies'), fanart=site.image, landscape=site.image)
+    site.add_dir('Indian Movies',  site.url + 'movies?section=31&category=0&rating=0&year=0&language=0&formats=0&quality=0', 'getMovies', get_category_icon('Indian Movies'),  fanart=site.image, landscape=site.image)
+    site.add_dir('Turkish Movies', site.url + 'movies?section=32&category=0&rating=0&year=0&language=0&formats=0&quality=0', 'getMovies', get_category_icon('Turkish Movies'), fanart=site.image, landscape=site.image)
+    site.add_dir('Asian Movies',   site.url + 'movies?section=33&category=0&rating=0&year=0&language=0&formats=0&quality=0', 'getMovies', get_category_icon('Asian Movies'),   fanart=site.image, landscape=site.image)
+    site.add_dir('Anime Movies',   site.url + 'movies?section=0&category=30&rating=0&year=0&language=0&formats=0&quality=0', 'getMovies', get_category_icon('Anime Movies'),   fanart=site.image, landscape=site.image)
+    site.add_dir('Dubbed Movies',  site.url + 'movies?section=0&category=71&rating=0&year=0&language=0&formats=0&quality=0', 'getMovies', get_category_icon('Dubbed Movies'),  fanart=site.image, landscape=site.image)
+
+    # TV Shows by region (section param)
+    site.add_dir('Arabic TV Shows',  site.url + 'series?section=29&category=0&rating=0&year=0&language=0&formats=0&quality=0', 'getTVShows', get_category_icon('Arabic TV Shows'),  fanart=site.image, landscape=site.image)
+    site.add_dir('English TV Shows', site.url + 'series?section=30&category=0&rating=0&year=0&language=0&formats=0&quality=0', 'getTVShows', get_category_icon('English TV Shows'), fanart=site.image, landscape=site.image)
+    site.add_dir('Indian TV Shows',  site.url + 'series?section=31&category=0&rating=0&year=0&language=0&formats=0&quality=0', 'getTVShows', get_category_icon('Indian TV Shows'),  fanart=site.image, landscape=site.image)
+    site.add_dir('Turkish TV Shows', site.url + 'series?section=32&category=0&rating=0&year=0&language=0&formats=0&quality=0', 'getTVShows', get_category_icon('Turkish TV Shows'), fanart=site.image, landscape=site.image)
+    site.add_dir('Asian TV Shows',   site.url + 'series?section=33&category=0&rating=0&year=0&language=0&formats=0&quality=0', 'getTVShows', get_category_icon('Asian TV Shows'),   fanart=site.image, landscape=site.image)
+    site.add_dir('Ramadan TV Shows', site.url + 'series?section=0&category=87&rating=0&year=0&language=0&formats=0&quality=0', 'getTVShows', get_category_icon('Ramadan TV Shows'), fanart=site.image, landscape=site.image)
+
+    site.add_dir('Search', site.url + 'search', 'Search', get_category_icon('Search'))
     utils.eod()
 
 def _get_cat_icon(title):

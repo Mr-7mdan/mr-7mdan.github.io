@@ -114,7 +114,7 @@ def show_categories():
         # Get category icon
         icon = get_category_icon(category_name)
         if not icon:
-            icon = addon_image('matrix-icon-pack/Genres.png')
+            icon = addon_image('professional-icon-pack/Genres.png')
         
         # Add directory for this category
         url_dispatcher.add_dir(

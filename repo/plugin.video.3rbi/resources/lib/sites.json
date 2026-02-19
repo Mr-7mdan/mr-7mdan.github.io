@@ -28,7 +28,7 @@
         "fajershow": {
             "label": "FajerShow",
             "active": true,
-            "url": "https://show.alfajertv.com/"
+            "url": "https://fajer.show/"
         },
         "shoofvod": {
             "label": "ShoofVOD",
@@ -38,7 +38,7 @@
         "egydead": {
             "label": "EgyDead",
             "active": true,
-            "url": "https://egydead.rip"
+            "url": "https://w.egydead.live"
         },
         "esseq": {
             "label": "Esseq",

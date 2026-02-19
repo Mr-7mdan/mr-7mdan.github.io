@@ -1,0 +1,11 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Navy background -->
+  <rect width="512" height="512" fill="#1e3a5f"/>
+  
+  <!-- Arrow pointing right for next page -->
+  <path d="M180 120 L320 206 L180 292 Z" fill="white"/>
+  <rect x="330" y="120" width="20" height="172" fill="white"/>
+  
+  <!-- Text with proper spacing -->
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="white" text-anchor="middle">NEXT PAGE</text>
+</svg>

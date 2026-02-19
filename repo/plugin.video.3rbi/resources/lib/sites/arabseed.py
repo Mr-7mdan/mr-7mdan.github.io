@@ -127,9 +127,6 @@ def _parseSearchResults(html, content_type):
     entries = re.findall(pattern, html, re.DOTALL)
     
     for item_url, img, title in entries:
-        # Get high-res image by removing dimension suffix
-        img = re.sub(r'-\d+x\d+\.', '.', img)
-        
         # Clean title
         clean_title = utils.cleantext(title)
         clean_title = re.sub(r'(مشاهدة|مسلسل|انمي|مترجمة|مترجم|برنامج|فيلم|مدبلج|كاملة|اونلاين|HD)', '', clean_title)
@@ -190,9 +187,6 @@ def _parseListings(html, content_type):
     entries = re.findall(pattern, html, re.DOTALL)
     
     for item_url, title, img in entries:
-        # Get high-res image by removing dimension suffix
-        img = re.sub(r'-\d+x\d+\.', '.', img)
-        
         # Clean title
         clean_title = utils.cleantext(title)
         clean_title = re.sub(r'(مشاهدة|مسلسل|انمي|مترجمة|مترجم|برنامج|فيلم|مدبلج|كاملة|اونلاين|HD)', '', clean_title)

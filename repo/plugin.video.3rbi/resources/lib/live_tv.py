@@ -205,9 +205,10 @@ def play_channel(channel):
 
 
 @url_dispatcher.register()
-def play_stream(url, name='Live TV'):
+def play_stream(url):
     """Play a live stream"""
     utils.kodilog(f'LiveTV: Playing stream: {url}')
     
-    # Use playvid which handles both direct play and setResolvedUrl correctly
-    utils.playvid(url, name, IA_check='IA')
+    # Use VideoPlayer to play the stream
+    player = utils.VideoPlayer('Live TV', False)
+    player.play_from_direct_link(url)
