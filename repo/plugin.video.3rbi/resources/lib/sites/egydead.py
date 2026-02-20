@@ -168,86 +168,71 @@ def getTVShows(url):
         utils.eod()
         return
     
-    # Same pattern as movies
     pattern = r'<li class="movieItem">\s*<a href="([^"]+)"[^>]*>.*?<img src="([^"]+)"[^>]*>.*?<h1 class="BottomTitle">([^<]+)</h1>'
     matches = re.findall(pattern, html, re.DOTALL)
     
-    utils.kodilog(f'{site.title}: Found {len(matches)} series')
+    utils.kodilog(f'{site.title}: Found {len(matches)} raw items')
     
-    seen_titles = set()
+    # Group by show title — prefer /season/ URL over /episode/ URL per show
+    # show_data: {show_title: (url, image, year)}
+    show_data = {}
     
-    items_added = 0
-    items_skipped_empty = 0
-    items_skipped_duplicate = 0
+    for series_url, image, title in matches:
+        title = title.strip()
+        title = re.sub(r'مشاهدة|مسلسل|انمي|مترجمة|مدبلجة|اون لاين|HD|كاملة', '', title).strip()
+        title = re.sub(r'مترجم|مدبلج|كامل', '', title).strip()
+        
+        # Extract year
+        year = ''
+        year_match = re.search(r'(\d{4})', title)
+        if year_match:
+            year = year_match.group(1)
+            title = title.replace(year, '').strip()
+        
+        # Convert Arabic season numbers to S notation (both aleph forms)
+        title = re.sub(r'الموسم الثالث عشر', 'S13', title)
+        title = re.sub(r'الموسم الثاني عشر', 'S12', title)
+        title = re.sub(r'الموسم الحادي عشر', 'S11', title)
+        title = re.sub(r'الموسم العاشر', 'S10', title)
+        title = re.sub(r'الموسم التاسع', 'S9', title)
+        title = re.sub(r'الموسم الثامن', 'S8', title)
+        title = re.sub(r'الموسم السابع', 'S7', title)
+        title = re.sub(r'الموسم السادس', 'S6', title)
+        title = re.sub(r'الموسم الخامس', 'S5', title)
+        title = re.sub(r'الموسم الرابع', 'S4', title)
+        title = re.sub(r'الموسم الثالث', 'S3', title)
+        title = re.sub(r'الموسم الثاني', 'S2', title)
+        title = re.sub(r'الموسم الأول|الموسم الاول', 'S1', title)
+        
+        # Strip episode suffix to get the show title used as dedup key
+        # "Show Name S3 الحلقة 10" → "Show Name S3"
+        show_title = re.split(r'\s*(?:الحلقة|حلقة)\s*\d+', title)[0].strip()
+        show_title = re.sub(r'\s+', ' ', show_title).strip()
+        
+        if not show_title:
+            continue
+        
+        full_image = re.sub(r'-\d+x\d+', '', image)
+        
+        if show_title not in show_data:
+            show_data[show_title] = (series_url, full_image, year)
+        elif '/season/' in series_url and '/episode/' in show_data[show_title][0]:
+            # Upgrade: prefer a /season/ URL over an /episode/ URL
+            show_data[show_title] = (series_url, full_image, year)
     
-    if matches:
-        for series_url, image, title in matches:
-            # Clean title
-            original_title = title
-            title = title.strip()
-            title = re.sub(r'مشاهدة|مسلسل|انمي|مترجمة|مدبلجة|اون لاين|HD|كاملة', '', title).strip()
-            title = re.sub(r'مترجم|مدبلج|كامل', '', title).strip()
-            # Extract year
-            year = ''
-            year_match = re.search(r'(\d{4})', title)
-            if year_match:
-                year = year_match.group(1)
-                title = title.replace(year, '').strip()
-            
-            # Extract episode number
-            ep_num = ''
-            ep_match = re.search(r'(?:الحلقة|حلقة|Episode|EP)\s*(\d+)', title, re.IGNORECASE)
-            if ep_match:
-                ep_num = ep_match.group(1)
-            
-            # Convert Arabic season numbers to S notation
-            title = re.sub(r'الموسم الأول', 'S1', title)
-            title = re.sub(r'الموسم الثاني', 'S2', title)
-            title = re.sub(r'الموسم الثالث', 'S3', title)
-            title = re.sub(r'الموسم الرابع', 'S4', title)
-            title = re.sub(r'الموسم الخامس', 'S5', title)
-            title = re.sub(r'الموسم السادس', 'S6', title)
-            title = re.sub(r'الموسم السابع', 'S7', title)
-            title = re.sub(r'الموسم الثامن', 'S8', title)
-            title = re.sub(r'الموسم التاسع', 'S9', title)
-            title = re.sub(r'الموسم العاشر', 'S10', title)
-            title = re.sub(r'الموسم الحادي عشر', 'S11', title)
-            title = re.sub(r'الموسم الثاني عشر', 'S12', title)
-            title = re.sub(r'الموسم الثالث عشر', 'S13', title)
-
-            
-            # Check if title became empty after cleaning
-            if not title:
-                items_skipped_empty += 1
-                utils.kodilog(f'{site.title}: Empty title after cleaning: {original_title[:50]}')
-                continue
-            
-            # Deduplicate by title
-            if title in seen_titles:
-                items_skipped_duplicate += 1
-                continue
-            seen_titles.add(title)
-            
-            # Try to get full-size image
-            full_image = re.sub(r'-\d+x\d+', '', image)
-            
-            # Route based on URL type
-            # Series categories can contain: seasons, episodes, or TV show pages
-            if '/season/' in series_url:
-                # Season page → getEpisodes
-                site.add_dir(title, series_url, 'getEpisodes', full_image,
-                           year=year, media_type='season')
-            elif '/episode/' in series_url:
-                # Direct episode → getLinks
-                site.add_dir(title, series_url, 'getLinks', full_image,
-                           year=year, episode=ep_num, media_type='episode')
-            else:
-                # TV show page → getSeasons
-                site.add_dir(title, series_url, 'getSeasons', full_image,
-                           year=year, media_type='tvshow')
-            items_added += 1
+    utils.kodilog(f'{site.title}: Deduplicated to {len(show_data)} shows')
     
-    utils.kodilog(f'{site.title}: Added {items_added} items (skipped: {items_skipped_empty} empty, {items_skipped_duplicate} duplicates)')
+    for show_title, (show_url, show_image, show_year) in show_data.items():
+        if '/episode/' in show_url:
+            # Derive season URL from episode URL:
+            # /episode/show-name-s01e07/ → /season/show-name-s01/
+            season_url = re.sub(r'/episode/(.+-s\d+)e\d+/?$', r'/season/\1/', show_url)
+            if season_url != show_url:
+                utils.kodilog(f'{site.title}: Derived season URL: {season_url}')
+                show_url = season_url
+        
+        site.add_dir(show_title, show_url, 'getEpisodes', show_image,
+                   year=show_year, media_type='tvshow')
     
     # Pagination
     next_match = re.search(r'<a class="next page-numbers" href="([^"]+)"', html)

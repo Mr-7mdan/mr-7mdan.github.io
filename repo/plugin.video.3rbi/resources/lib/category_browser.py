@@ -17,64 +17,79 @@ from resources.lib.url_dispatcher import URL_Dispatcher
 url_dispatcher = URL_Dispatcher('category_browser')
 
 
+_ADD_DIR_PATTERN = r"site\.add_dir\(['\"]([^'\"]+)['\"],\s*([^,]+),\s*['\"]([^'\"]+)['\"]"
+_NAV_MODE_KEYWORDS = ('categories', 'category', 'menu', 'submenu')
+
+
+def _is_nav_mode(mode):
+    """Return True if mode is a navigation/submenu function, not a content function."""
+    return any(k in mode.lower() for k in _NAV_MODE_KEYWORDS)
+
+
+def _extract_add_dirs(source, site):
+    """Parse site.add_dir calls from function source. Returns list of (label, url, mode)."""
+    results = []
+    for label, url_expr, mode in re.findall(_ADD_DIR_PATTERN, source):
+        if 'search' in mode.lower():
+            continue
+        try:
+            actual_url = eval(url_expr, {'__builtins__': {}}, {'site': site})
+        except Exception:
+            actual_url = url_expr
+        results.append((label, actual_url, mode))
+    return results
+
+
 def get_site_categories():
     """
     Dynamically discover which categories each site offers.
     Returns: dict mapping category_name -> list of site info dicts
     """
     from resources.lib.sites import __all__ as site_modules
-    
+
     category_sites = {}
-    
+
     for site_module_name in site_modules:
         try:
-            # Import the site module
             site_module = importlib.import_module(f'resources.lib.sites.{site_module_name}')
-            
-            # Get the site instance
+
             if not hasattr(site_module, 'site'):
                 continue
-            
             site = site_module.site
-            
-            # Skip if site URL is not configured
             if not site.url:
                 continue
-            
-            # Get the Main function to extract categories
             if not hasattr(site_module, 'Main'):
                 continue
-            
-            # Parse the Main function source to extract add_dir calls
+
             try:
                 main_source = inspect.getsource(site_module.Main)
-            except:
+            except Exception:
                 continue
-            
-            # Extract site.add_dir calls with category names
-            # Pattern: site.add_dir('Category Name', url_expression, 'mode', ...)
-            pattern = r"site\.add_dir\(['\"]([^'\"]+)['\"],\s*([^,]+),\s*['\"]([^'\"]+)['\"]"
-            matches = re.findall(pattern, main_source)
-            
-            for category_name, url_expr, mode in matches:
-                # Skip search functions
-                if 'search' in mode.lower():
-                    continue
-                
-                # Evaluate the URL expression to get the actual URL
-                # This handles expressions like: site.url + '/category/movies/'
-                try:
-                    # Create a safe evaluation context with site object
-                    eval_context = {'site': site}
-                    actual_url = eval(url_expr, {"__builtins__": {}}, eval_context)
-                except:
-                    # If evaluation fails, use the expression as-is
-                    actual_url = url_expr
-                
-                # Add this site to the category
+
+            top_entries = _extract_add_dirs(main_source, site)
+
+            for category_name, actual_url, mode in top_entries:
+                # If mode is a navigation-only function, scan one level deeper
+                if _is_nav_mode(mode) and hasattr(site_module, mode):
+                    try:
+                        nav_source = inspect.getsource(getattr(site_module, mode))
+                        sub_entries = _extract_add_dirs(nav_source, site)
+                        for sub_label, sub_url, sub_mode in sub_entries:
+                            if sub_label not in category_sites:
+                                category_sites[sub_label] = []
+                            category_sites[sub_label].append({
+                                'site_name': site.name,
+                                'site_title': site.title,
+                                'site_image': site.image,
+                                'mode': sub_mode,
+                                'url': sub_url,
+                            })
+                    except Exception:
+                        pass
+                    continue  # don't also add the nav entry itself
+
                 if category_name not in category_sites:
                     category_sites[category_name] = []
-                
                 category_sites[category_name].append({
                     'site_name': site.name,
                     'site_title': site.title,
@@ -82,11 +97,11 @@ def get_site_categories():
                     'mode': mode,
                     'url': actual_url,
                 })
-        
+
         except Exception as e:
             utils.kodilog(f'CategoryBrowser: Error processing {site_module_name}: {str(e)}')
             continue
-    
+
     return category_sites
 
 

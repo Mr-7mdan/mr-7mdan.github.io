@@ -23,7 +23,7 @@
         "daktna": {
             "label": "Daktna",
             "active": true,
-            "url": "https://daktna.com/"
+            "url": "https://video.daktna.tv/"
         },
         "fajershow": {
             "label": "FajerShow",
@@ -54,6 +54,11 @@
             "label": "Qrmzi",
             "active": true,
             "url": "https://www.qrmzi.tv"
+        },
+        "faselhd": {
+            "label": "FaselHD",
+            "active": true,
+            "url": "https://faselhd.club"
         }
     }
 }

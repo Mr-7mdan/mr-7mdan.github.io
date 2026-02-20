@@ -70,7 +70,7 @@ def _performSearch(search_text, content_type):
     if not csrf_token:
         utils.kodilog('ArabSeed Search: Failed to extract csrf_token from {}'.format(token_url))
         utils.notify('ArabSeed', 'Search failed - no token')
-        utils.eod()
+        utils.eod(content='movies')
         return
     
     # POST to search endpoint
@@ -117,7 +117,7 @@ def _performSearch(search_text, content_type):
         utils.kodilog('ArabSeed Search Traceback: {}'.format(traceback.format_exc()))
         utils.notify('ArabSeed', 'Search failed')
     
-    utils.eod()
+    utils.eod(content='movies')
 
 def _parseSearchResults(html, content_type):
     """Parse search results HTML - different structure than category listings"""
@@ -153,7 +153,7 @@ def _parseSearchResults(html, content_type):
 def getRecent(url):
     html = utils.getHtml(url)
     _parseListings(html, 'mixed')
-    utils.eod()
+    utils.eod(content='movies')
 
 @site.register()
 def getMovies(url):
@@ -165,7 +165,7 @@ def getMovies(url):
     if next_match:
         site.add_dir('Next Page', next_match.group(1), 'getMovies', addon_image(site.img_next))
     
-    utils.eod()
+    utils.eod(content='movies')
 
 @site.register()
 def getTVShows(url):
@@ -177,7 +177,7 @@ def getTVShows(url):
     if next_match:
         site.add_dir('Next Page', next_match.group(1), 'getTVShows', addon_image(site.img_next))
     
-    utils.eod()
+    utils.eod(content='tvshows')
 
 def _parseListings(html, content_type):
     """Parse movie/series listings"""
@@ -218,6 +218,9 @@ def _parseListings(html, content_type):
 @site.register()
 def getSeasons(url):
     html = utils.getHtml(url)
+    if not html:
+        utils.eod(content='seasons')
+        return
     
     # Extract show info
     title_match = re.search(r'<h1[^>]*>([^<]+)</h1>', html)
@@ -253,11 +256,14 @@ def getSeasons(url):
         getEpisodes(url, show_title=show_title, year=year)
         return
     
-    utils.eod()
+    utils.eod(content='seasons')
 
 @site.register()
 def getEpisodes(url, show_title=None, year=None):
     html = utils.getHtml(url)
+    if not html:
+        utils.eod(content='episodes')
+        return
     
     # Extract show title if not provided
     if not show_title:
@@ -303,7 +309,7 @@ def getEpisodes(url, show_title=None, year=None):
         utils.kodilog('ArabSeed: No episodes found, trying direct playback')
         site.add_dir(show_title if show_title else 'Play', url, 'getLinks', site.image)
     
-    utils.eod()
+    utils.eod(content='episodes')
 
 @site.register()
 def getLinks(url, name=''):
@@ -315,24 +321,34 @@ def getLinks(url, name=''):
     # Get watch page HTML
     watch_url = url.rstrip('/') + '/watch/'
     html = utils.getHtml(watch_url)
+    if not html:
+        utils.notify('ArabSeed', 'No video links found')
+        utils.eod(content='videos')
+        return
     
-    # Extract server links from data-link attributes
-    # Pattern: <li data-server="X" data-link="URL" ...>
-    server_pattern = r'<li[^>]+data-server="([^"]+)"[^>]+data-link="([^"]+)"[^>]*>.*?<span>([^<]*)</span>'
+    # Extract server links — pattern captures data-qu quality attribute
+    # <li data-server="0" data-qu="480" data-link="URL" ...><span>Server Name</span></li>
+    server_pattern = r'<li[^>]*data-server="([^"]+)"[^>]*data-qu="([^"]*)"[^>]*data-link="([^"]+)"[^>]*>.*?<span>([^<]*)</span>'
     servers = re.findall(server_pattern, html, re.DOTALL)
     
     utils.kodilog('ArabSeed: Found {} servers with data-link'.format(len(servers)))
     
     if not servers:
         utils.notify('ArabSeed', 'No video links found')
-        utils.eod()
+        utils.eod(content='videos')
         return
     
     # Process each server
     hoster_manager = get_hoster_manager()
     
-    for server_id, link_url, server_name in servers:
+    for server_id, quality_raw, link_url, server_name in servers:
         utils.kodilog('ArabSeed: Processing server {}: {}'.format(server_id, server_name))
+        
+        # Normalise quality string (e.g. "480" → "480p")
+        quality = ''
+        if quality_raw:
+            q = quality_raw.strip()
+            quality = q if q.endswith('p') else q + 'p' if q.isdigit() else q
         
         # Handle relative URLs
         if link_url.startswith('/'):
@@ -344,17 +360,13 @@ def getLinks(url, name=''):
         final_url = link_url
         if '?url=' in link_url or '?id=' in link_url:
             try:
-                # Extract base64 parameter
                 param_match = re.search(r'[?&](?:url|id)=([^&]+)', link_url)
                 if param_match:
                     encoded = param_match.group(1)
-                    # Strip any non-base64 characters (like __iframe suffix)
                     encoded = re.sub(r'[^A-Za-z0-9+/=]', '', encoded)
-                    # Fix base64 padding if needed
                     padding = len(encoded) % 4
                     if padding:
                         encoded += '=' * (4 - padding)
-                    # Decode base64
                     decoded = base64.b64decode(encoded).decode('utf-8')
                     utils.kodilog('ArabSeed: Decoded URL: {}'.format(decoded))
                     final_url = decoded
@@ -366,7 +378,8 @@ def getLinks(url, name=''):
             hoster_manager,
             final_url,
             'ArabSeed',
-            name if name else 'Video'
+            name if name else 'Video',
+            quality
         )
         
         if should_skip:
@@ -375,9 +388,9 @@ def getLinks(url, name=''):
         
         # Add link WITHOUT resolving - resolution happens in PlayVid
         site.add_download_link(label, final_url, 'PlayVid', site.image, desc=name,
-                              fanart=site.image, landscape=site.image)
+                              quality=quality, fanart=site.image, landscape=site.image)
     
-    utils.eod()
+    utils.eod(content='videos')
 
 
 @site.register()

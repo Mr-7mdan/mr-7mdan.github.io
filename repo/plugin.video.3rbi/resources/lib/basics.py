@@ -49,7 +49,11 @@ if not os.path.exists(customSitesDir):
 if not os.path.exists(tempDir):
     os.makedirs(tempDir)
 
-KODIVER = float(xbmcaddon.Addon('xbmc.addon').getAddonInfo('version')[:4])
+try:
+    _kodi_build = xbmc.getInfoLabel('system.buildversion')
+    KODIVER = float(_kodi_build.split(' ')[0][:4]) if _kodi_build else float(xbmcaddon.Addon('xbmc.addon').getAddonInfo('version')[:4])
+except:
+    KODIVER = float(xbmcaddon.Addon('xbmc.addon').getAddonInfo('version')[:4])
 
 
 def addon_image(filename, custom=False):
@@ -60,7 +64,9 @@ def addon_image(filename, custom=False):
         return img
 
 
-def eod(handle=addon_handle, cache=True):
+def eod(handle=addon_handle, cache=True, content=None):
+    if content:
+        xbmcplugin.setContent(handle, content)
     if addon.getSetting('customview') == 'true':
         skin = xbmc.getSkinDir().lower()
         viewtype = 55 if 'estuary' in skin else 50
@@ -141,7 +147,7 @@ def addDownLink(name, url, mode, iconimage, desc='', stream=None, fav='add', noD
             width, height = get_resolution(quality)
     if dname:
         desc = name
-    liz = xbmcgui.ListItem(name)
+    liz = xbmcgui.ListItem(name, offscreen=True) if KODIVER >= 20.0 else xbmcgui.ListItem(name)
     
     # Explicitly set label and label2
     liz.setLabel(name)
@@ -150,90 +156,36 @@ def addDownLink(name, url, mode, iconimage, desc='', stream=None, fav='add', noD
     elif desc:
         liz.setLabel2(desc[:50] if len(desc) > 50 else desc)
     
-    # Build info_labels for both old and new Kodi versions
-    info_labels = {"Title": name}
-    if duration and addon.getSetting('duration_in_name') != 'true':
-        info_labels["Duration"] = secs
-    if desc:
-        info_labels["plot"] = desc
-        info_labels["plotoutline"] = desc
-    if year:
-        try:
-            info_labels["year"] = int(year)
-        except:
-            pass
-    if season is not None:
-        try:
-            info_labels["season"] = int(season)
-        except:
-            pass
-    if episode is not None:
-        try:
-            info_labels["episode"] = int(episode)
-        except:
-            pass
-    if show_title:
-        info_labels["tvshowtitle"] = show_title
-    if original_title:
-        info_labels["originaltitle"] = original_title
-    
-    # Always call setInfo for skin compatibility
-    liz.setInfo(type="Video", infoLabels=info_labels)
-    if width:
-        video_streaminfo = {'codec': 'h264', 'width': width, 'height': height}
-    else:
-        video_streaminfo = {'codec': 'h264'}
-    liz.addStreamInfo('video', video_streaminfo)
-    
-    # For Kodi 20+, also use VideoInfoTag API
-    if KODIVER > 19.8:
+    if KODIVER >= 20.0:
         vtag = liz.getVideoInfoTag()
-        # Set media type
         if media_type:
             vtag.setMediaType(media_type)
         elif episode is not None:
             vtag.setMediaType('episode')
         else:
             vtag.setMediaType('movie')
-        
-        # Set title and original title
         vtag.setTitle(name)
+        if episode_name:
+            vtag.setTitle(episode_name)
         if original_title:
             vtag.setOriginalTitle(original_title)
-        
-        # Set genres
-        if episode is not None:
-            vtag.setGenres(['TV Shows'])
-        else:
-            vtag.setGenres(['Movies'])
-        
-        # Set year
+        if show_title:
+            vtag.setTvShowTitle(show_title)
         if year:
             try:
                 vtag.setYear(int(year))
             except:
                 pass
-        
-        # Set season number
         if season is not None:
             try:
                 vtag.setSeason(int(season))
             except:
                 pass
-        
-        # Set episode number and name
         if episode is not None:
             try:
                 vtag.setEpisode(int(episode))
             except:
                 pass
-        if episode_name:
-            vtag.setTitle(episode_name)
-        
-        # Set show title for episodes
-        if show_title:
-            vtag.setTvShowTitle(show_title)
-        
         if duration and addon.getSetting('duration_in_name') != 'true':
             vtag.setDuration(secs)
         if desc:
@@ -243,6 +195,37 @@ def addDownLink(name, url, mode, iconimage, desc='', stream=None, fav='add', noD
             vtag.addVideoStream(xbmc.VideoStreamDetail(width=width, height=height, codec='h264'))
         else:
             vtag.addVideoStream(xbmc.VideoStreamDetail(codec='h264'))
+    else:
+        info_labels = {"title": name}
+        if duration and addon.getSetting('duration_in_name') != 'true':
+            info_labels["duration"] = secs
+        if desc:
+            info_labels["plot"] = desc
+            info_labels["plotoutline"] = desc
+        if year:
+            try:
+                info_labels["year"] = int(year)
+            except:
+                pass
+        if season is not None:
+            try:
+                info_labels["season"] = int(season)
+            except:
+                pass
+        if episode is not None:
+            try:
+                info_labels["episode"] = int(episode)
+            except:
+                pass
+        if show_title:
+            info_labels["tvshowtitle"] = show_title
+        if original_title:
+            info_labels["originaltitle"] = original_title
+        liz.setInfo(type="Video", infoLabels=info_labels)
+        if width:
+            liz.addStreamInfo('video', {'codec': 'h264', 'width': width, 'height': height})
+        else:
+            liz.addStreamInfo('video', {'codec': 'h264'})
     
     # Set properties for skin access
     liz.setProperty('Title', name)
@@ -384,7 +367,7 @@ def addDir(name, url, mode, iconimage=None, page=None, channel=None, section=Non
     ok = True
     if not iconimage:
         iconimage = aksvicon
-    liz = xbmcgui.ListItem(name)
+    liz = xbmcgui.ListItem(name, offscreen=True) if KODIVER >= 20.0 else xbmcgui.ListItem(name)
     
     # Explicitly set label and label2
     liz.setLabel(name)
@@ -411,38 +394,8 @@ def addDir(name, url, mode, iconimage=None, page=None, channel=None, section=Non
         'logo': iconimage
     }
     liz.setArt(art)
-    # Build info_labels for both old and new Kodi versions
-    info_labels = {"Title": name}
-    if desc:
-        info_labels["plot"] = desc
-        info_labels["plotoutline"] = desc
-    if year:
-        try:
-            info_labels["year"] = int(year)
-        except:
-            pass
-    if season is not None:
-        try:
-            info_labels["season"] = int(season)
-        except:
-            pass
-    if episode is not None:
-        try:
-            info_labels["episode"] = int(episode)
-        except:
-            pass
-    if show_title:
-        info_labels["tvshowtitle"] = show_title
-    if original_title:
-        info_labels["originaltitle"] = original_title
-    
-    # Always call setInfo for skin compatibility
-    liz.setInfo(type="Video", infoLabels=info_labels)
-    
-    # For Kodi 20+, also use VideoInfoTag API
-    if KODIVER > 19.8:
+    if KODIVER >= 20.0:
         vtag = liz.getVideoInfoTag()
-        # Set media type
         if media_type:
             vtag.setMediaType(media_type)
         elif season is not None:
@@ -451,40 +404,54 @@ def addDir(name, url, mode, iconimage=None, page=None, channel=None, section=Non
             vtag.setMediaType('episode')
         else:
             vtag.setMediaType('video')
-        
-        # Set title and original title
         vtag.setTitle(name)
         if original_title:
             vtag.setOriginalTitle(original_title)
-        
-        # Set year
         if year:
             try:
                 vtag.setYear(int(year))
             except:
                 pass
-        
-        # Set season number
         if season is not None:
             try:
                 vtag.setSeason(int(season))
             except:
                 pass
-        
-        # Set episode number
         if episode is not None:
             try:
                 vtag.setEpisode(int(episode))
             except:
                 pass
-        
-        # Set show title for episodes/seasons
         if show_title:
             vtag.setTvShowTitle(show_title)
-        
         if desc:
             vtag.setPlot(desc)
             vtag.setPlotOutline(desc)
+    else:
+        info_labels = {"title": name}
+        if desc:
+            info_labels["plot"] = desc
+            info_labels["plotoutline"] = desc
+        if year:
+            try:
+                info_labels["year"] = int(year)
+            except:
+                pass
+        if season is not None:
+            try:
+                info_labels["season"] = int(season)
+            except:
+                pass
+        if episode is not None:
+            try:
+                info_labels["episode"] = int(episode)
+            except:
+                pass
+        if show_title:
+            info_labels["tvshowtitle"] = show_title
+        if original_title:
+            info_labels["originaltitle"] = original_title
+        liz.setInfo(type="Video", infoLabels=info_labels)
     
     # Set properties for skin access
     liz.setProperty('Title', name)

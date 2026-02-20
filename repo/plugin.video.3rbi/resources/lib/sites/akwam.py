@@ -188,7 +188,7 @@ def _clean_title(title, prefix=None):
     name = re.sub(r'^[-\s:|]+|[-\s:|]+$', '', name)
     return name
 
-def _common_listing(url, next_mode, item_target_mode):
+def _common_listing(url, next_mode, item_target_mode, content='movies'):
     html = utils.getHtml(url)
     
     # Regex to capture individual entry blocks
@@ -284,15 +284,15 @@ def _common_listing(url, next_mode, item_target_mode):
         next_icon = addon_image(site.img_next)
         site.add_dir('Next Page', next_page.group(1), next_mode, next_icon)
 
-    utils.eod()
+    utils.eod(content=content)
 
 @site.register()
 def getMovies(url):
-    _common_listing(url, 'getMovies', 'getLinks')
+    _common_listing(url, 'getMovies', 'getLinks', content='movies')
 
 @site.register()
 def getTVShows(url):
-    _common_listing(url, 'getTVShows', 'getSeasons')
+    _common_listing(url, 'getTVShows', 'getSeasons', content='tvshows')
 
 @site.register()
 def getSeasons(url):
@@ -343,13 +343,13 @@ def getSeasons(url):
                 site.add_dir(name, s_url, 'getEpisodes', icon, desc=plot, fanart=icon, landscape=icon,
                            season=season_num, show_title=show_title, year=year, media_type='season')
             
-            utils.eod()
+            utils.eod(content='seasons')
             return
 
     # Fallback/Direct Listing: assuming it's a season-specific series entry
     utils.kodilog('AKSV: No seasons section found, trying to list episodes directly')
     getEpisodes(url, html, plot, show_title, year)
-    utils.eod()
+    utils.eod(content='seasons')
 
 @site.register()
 def getEpisodes(url, html=None, plot=None, show_title=None, year=None):
@@ -439,7 +439,7 @@ def getEpisodes(url, html=None, plot=None, show_title=None, year=None):
         if not entries:
             utils.notify("Error", "No episodes found", aksvicon)
     
-    utils.eod()
+    utils.eod(content='episodes')
 
 @site.register()
 def getLinks(url, name):
@@ -502,7 +502,7 @@ def getLinks(url, name):
                 site.add_download_link('Watch Video', w_url, 'PlayVid', '', plot,
                                      year=year, show_title=show_title, season=season_num, episode=episode_num,
                                      media_type=media_type, original_title=original_title, episode_name=episode_name)
-            utils.eod()
+            utils.eod(content='videos')
             return
 
     # Get settings for icon display and filtering
@@ -515,7 +515,7 @@ def getLinks(url, name):
         block_match = re.search(r'id="{}"(.*?)</div>\s*</div>'.format(tab_id), html, re.DOTALL)
         if block_match:
             block = block_match.group(1)
-            watch_url_match = re.search(r'class="link-btn link-show[^"]*"[^>]*href="([^"]+)"', block)
+            watch_url_match = re.search(r'href="(https?://go\.ak\.sv/watch/\d+)"', block)
             size_match = re.search(r'class="font-size-14[^"]*">([^<]+)<', block)
             
             if watch_url_match:
@@ -543,12 +543,15 @@ def getLinks(url, name):
         # One last fallback: just find all watch links
         watch_links = re.findall(r'href="(https?://go\.ak\.sv/watch/\d+)"', html)
         for i, w_url in enumerate(watch_links):
-            label = "AKSV | Unknown | N/A | {} #{}".format(name, i+1)
-            site.add_download_link(label, w_url, 'PlayVid', '', plot,
+            link_name = '{} #{}'.format(name, i + 1) if len(watch_links) > 1 else name
+            label, should_skip = utils.format_resolver_link(hoster_manager, w_url, 'AKSV', link_name)
+            if should_skip:
+                continue
+            site.add_download_link(label, w_url, 'PlayVid', site.image, plot,
                                  year=year, show_title=show_title, season=season_num, episode=episode_num,
                                  media_type=media_type, original_title=original_title, episode_name=episode_name)
 
-    utils.eod()
+    utils.eod(content='videos')
 
 @site.register()
 def PlayVid(url, name, download=None):

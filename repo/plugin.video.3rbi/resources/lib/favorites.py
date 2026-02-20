@@ -81,17 +81,38 @@ def Refresh_images():
 
 
 @url_dispatcher.register()
-def List(url=1):
-    page = int(url)
+def ListCategories():
+    basics.addDir('Favourite Movies', 'movies_1', 'favorites.List',
+                  basics.addon_image('professional-icon-pack/Movies.png'), list_avail=False)
+    basics.addDir('Favourite TV Shows', 'tvshows_1', 'favorites.List',
+                  basics.addon_image('professional-icon-pack/TVShows.png'), list_avail=False)
+    utils.eod(utils.addon_handle)
+
+
+@url_dispatcher.register()
+def List(url='all_1'):
+    url = str(url)
+    content_filter = 'all'
+    page = 1
+    if '_' in url:
+        parts = url.rsplit('_', 1)
+        if parts[0] in ('all', 'movies', 'tvshows'):
+            content_filter = parts[0]
+            try:
+                page = int(parts[1])
+            except:
+                page = 1
+    else:
+        try:
+            page = int(url)
+        except:
+            page = 1
+
     items_per_page = utils.addon.getSetting("item.limit")
     items_per_page = 1000000 if items_per_page == '0' else int(items_per_page)
     offset = (page - 1) * items_per_page
 
     favorder = utils.addon.getSetting("favorder") or 'date added'
-    if page == 1:
-        basics.addDir('Refresh images', '', 'favorites.Refresh_images', '', Folder=False)
-        basics.addDir('Sort by: {0}'.format(favorder), '', 'favorites.Favorder', '', Folder=False)
-
 
     sites_list = []
     for site_obj in SiteBase.get_sites():
@@ -132,17 +153,24 @@ ELSE mode END domain FROM favorites ORDER BY rowid;"""
                 basics.addDir('Next Page ({}/{})'.format(page + 1, pages), str(page + 1), 'favorites.List', '')
 
         else:
-            if basics.addon.getSetting('custom_sites') == 'true':
-                sql = """SELECT domain, name, url, mode, image, duration, quality
-                        FROM __favorites f WHERE substr(f.mode, 1, instr(f.mode, '.') - 1) NOT IN
-                        (SELECT 'custom_' || cs.name || '_by_' || cs.author FROM custom_sites cs WHERE IFNULL(cs.enabled, 1) != 1)
-                        ORDER BY {} LIMIT {} OFFSET {}""".format(orders[favorder], items_per_page, offset)
-                count_sql = """SELECT COUNT(*) FROM __favorites f WHERE substr(f.mode, 1, instr(f.mode, '.') - 1) NOT IN
-                           (SELECT 'custom_' || cs.name || '_by_' || cs.author FROM custom_sites cs WHERE IFNULL(cs.enabled, 1) != 1)"""
+            if content_filter == 'movies':
+                type_filter = " AND (f.mode LIKE '%Play%' OR f.mode LIKE '%Resolve%')"
+            elif content_filter == 'tvshows':
+                type_filter = " AND (f.mode NOT LIKE '%Play%' AND f.mode NOT LIKE '%Resolve%')"
             else:
+                type_filter = ''
+
+            if basics.addon.getSetting('custom_sites') == 'true':
+                base_where = "substr(f.mode, 1, instr(f.mode, '.') - 1) NOT IN (SELECT 'custom_' || cs.name || '_by_' || cs.author FROM custom_sites cs WHERE IFNULL(cs.enabled, 1) != 1)"
+                sql = """SELECT domain, name, url, mode, image, duration, quality
+                        FROM __favorites f WHERE {}{}
+                        ORDER BY {} LIMIT {} OFFSET {}""".format(base_where, type_filter, orders[favorder], items_per_page, offset)
+                count_sql = "SELECT COUNT(*) FROM __favorites f WHERE {}{}".format(base_where, type_filter)
+            else:
+                base_where = "mode NOT LIKE 'custom_%'"
                 sql = """SELECT domain, name, url, mode, image, duration, quality FROM __favorites f
-                        WHERE mode NOT LIKE 'custom_%' ORDER BY {} LIMIT {} OFFSET {}""".format(orders[favorder], items_per_page, offset)
-                count_sql = "SELECT COUNT(*) FROM __favorites f WHERE mode NOT LIKE 'custom_%'"
+                        WHERE {}{} ORDER BY {} LIMIT {} OFFSET {}""".format(base_where, type_filter, orders[favorder], items_per_page, offset)
+                count_sql = "SELECT COUNT(*) FROM __favorites f WHERE {}{}".format(base_where, type_filter)
 
             c.execute(sql)
             for (domain, name, url, mode, img, duration, quality) in c.fetchall():
@@ -164,7 +192,7 @@ ELSE mode END domain FROM favorites ORDER BY rowid;"""
             total_items = c.fetchone()[0]
             pages = (total_items - 1) // items_per_page + 1
             if total_items > offset + items_per_page:
-                basics.addDir('Next Page ({}/{})'.format(page + 1, pages), str(page + 1), 'favorites.List', '')
+                basics.addDir('Next Page ({}/{})'.format(page + 1, pages), '{}_{}'.format(content_filter, page + 1), 'favorites.List', '')
 
         conn.close()
         utils.eod(utils.addon_handle)

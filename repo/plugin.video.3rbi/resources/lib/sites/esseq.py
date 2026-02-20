@@ -99,7 +99,9 @@ def getTVShows(url):
     pattern = r'<a href="([^"]+)"[^>]*>.*?background-image:url\(([^\)]+)\).*?<div class="title">([^<]+)</div>'
     matches = re.findall(pattern, html, re.DOTALL)
     
-    utils.kodilog(f'{site.title}: Found {len(matches)} series')
+    utils.kodilog(f'{site.title}: Found {len(matches)} raw items')
+    
+    seen_titles = set()
     
     if matches:
         for series_url, image, title in matches:
@@ -114,13 +116,20 @@ def getTVShows(url):
                 year = year_match.group(1)
                 title = title.replace(year, '').strip()
             
+            # Strip episode suffix to get show title for deduplication
+            show_title = re.split(r'\s*(?:الحلقة|حلقة)\s*\d+', title)[0].strip()
+            show_title = re.sub(r'\s+', ' ', show_title).strip()
+            
+            if not show_title or show_title in seen_titles:
+                continue
+            seen_titles.add(show_title)
+            
             # Clean image URL
             full_image = image.strip()
             
-            if title:
-                # Series pages go directly to getEpisodes
-                site.add_dir(title, series_url, 'getEpisodes', full_image,
-                           year=year, media_type='tvshow')
+            # Series pages go directly to getEpisodes
+            site.add_dir(show_title, series_url, 'getEpisodes', full_image,
+                       year=year, media_type='tvshow')
     
     # Pagination
     next_match = re.search(r'<link[^>]+rel="next"[^>]+href="([^"]+)"', html)

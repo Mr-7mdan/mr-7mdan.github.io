@@ -56,19 +56,29 @@ def getTVShows(url):
     pattern = r'<a href="([^"]+)" title="([^"]+)"[^>]*>.*?<img[^>]*data-src="?([^" >]+)"?'
     matches = re.findall(pattern, html, re.DOTALL)
     
-    utils.kodilog(f'{site.title}: Found {len(matches)} series')
+    utils.kodilog(f'{site.title}: Found {len(matches)} raw items')
+    
+    seen_titles = set()
     
     for series_url, title, poster in matches:
         # Clean title - remove "قرمزي" suffix if present
         title = re.sub(r'\s+قرمزي\s*$', '', title).strip()
         title = re.sub(r'مشاهدة|مسلسل|مدبلجلة|مترجمة|اون لاين|HD|كاملة', '', title).strip()
-        title = re.sub(r'مترجم|مدبلج|حلقة|كامل', '', title).strip()
+        title = re.sub(r'مترجم|مدبلج|كامل', '', title).strip()
+        
+        # Strip episode suffix to get show title for deduplication
+        show_title = re.split(r'\s*(?:الحلقة|حلقة)\s*\d+', title)[0].strip()
+        show_title = re.sub(r'\s+', ' ', show_title).strip()
+        
+        if not show_title or show_title in seen_titles:
+            continue
+        seen_titles.add(show_title)
         
         # Remove dimension suffix to get hi-res image (e.g., -470x255.jpg -> .jpg)
         poster = re.sub(r'-\d+x\d+\.', '.', poster)
 
         site.add_dir(
-            title,
+            show_title,
             series_url,
             'getEpisodes',
             poster

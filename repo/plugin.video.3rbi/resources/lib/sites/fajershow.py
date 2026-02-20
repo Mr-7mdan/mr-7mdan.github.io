@@ -51,7 +51,7 @@ def search():
 def searchResults(url):
     html = utils.getHtml(url, headers={'User-Agent': utils.USER_AGENT})
     if not html:
-        utils.eod()
+        utils.eod(content='movies')
         return
 
     matches = _listing_pattern(html)
@@ -68,14 +68,14 @@ def searchResults(url):
     if next_match:
         site.add_dir('Next Page', next_match.group(1), 'searchResults', addon_image(site.img_next))
 
-    utils.eod()
+    utils.eod(content='movies')
 
 
 @site.register()
 def getMovies(url):
     html = utils.getHtml(url, headers={'User-Agent': utils.USER_AGENT})
     if not html:
-        utils.eod()
+        utils.eod(content='movies')
         return
 
     matches = _listing_pattern(html)
@@ -89,14 +89,14 @@ def getMovies(url):
     if next_match:
         site.add_dir('Next Page', next_match.group(1), 'getMovies', addon_image(site.img_next))
 
-    utils.eod()
+    utils.eod(content='movies')
 
 
 @site.register()
 def getTVShows(url):
     html = utils.getHtml(url, headers={'User-Agent': utils.USER_AGENT})
     if not html:
-        utils.eod()
+        utils.eod(content='tvshows')
         return
 
     matches = _listing_pattern(html)
@@ -110,14 +110,14 @@ def getTVShows(url):
     if next_match:
         site.add_dir('Next Page', next_match.group(1), 'getTVShows', addon_image(site.img_next))
 
-    utils.eod()
+    utils.eod(content='tvshows')
 
 
 @site.register()
 def getSeasons(url):
     html = utils.getHtml(url, headers={'User-Agent': utils.USER_AGENT})
     if not html:
-        utils.eod()
+        utils.eod(content='seasons')
         return
 
     title_match = re.search(r'<h1[^>]*>([^<]+)</h1>', html)
@@ -142,14 +142,14 @@ def getSeasons(url):
                     season=int(season_num), episode=int(ep_num),
                     show_title=show_title, year=year, media_type='episode')
 
-    utils.eod()
+    utils.eod(content='episodes')
 
 
 @site.register()
 def getLinks(url, name=''):
     html = utils.getHtml(url, headers={'User-Agent': utils.USER_AGENT})
     if not html:
-        utils.eod()
+        utils.eod(content='videos')
         return
 
     utils.kodilog('FajerShow getLinks: Extracting from {}'.format(url))
@@ -159,7 +159,7 @@ def getLinks(url, name=''):
 
     if not post_id_match:
         utils.kodilog('FajerShow getLinks: No postId found in page')
-        utils.eod()
+        utils.eod(content='videos')
         return
 
     post_id = post_id_match.group(1)
@@ -205,11 +205,13 @@ def getLinks(url, name=''):
 
         utils.kodilog('FajerShow getLinks: Server {}: {}'.format(num, iframe_url[:100]))
 
+        server_quality = 'Server {}'.format(num)
         label, should_skip = utils.format_resolver_link(
             hoster_manager,
             iframe_url,
             'FajerShow',
-            name if name else 'Video'
+            name if name else 'Video',
+            server_quality
         )
 
         if should_skip:
@@ -217,13 +219,13 @@ def getLinks(url, name=''):
             continue
 
         site.add_download_link(label, iframe_url, 'PlayVid', site.image, desc=name,
-                              fanart=site.image, landscape=site.image)
+                              quality=server_quality, fanart=site.image, landscape=site.image)
         found_links = True
 
     if not found_links:
         utils.kodilog('FajerShow getLinks: No links found for postId={}'.format(post_id))
 
-    utils.eod()
+    utils.eod(content='videos')
 
 
 @site.register()
