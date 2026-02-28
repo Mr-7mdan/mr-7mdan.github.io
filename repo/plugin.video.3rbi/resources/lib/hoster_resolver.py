@@ -55,6 +55,11 @@ class HosterManager:
                 if f.endswith(".py") and f != "__init__.py"
             ]
 
+            # Ensure Generic resolver is loaded last (it matches ALL URLs as fallback)
+            if 'generic' in hoster_files:
+                hoster_files.remove('generic')
+                hoster_files.append('generic')
+
             utils.kodilog(
                 "HosterManager: Found {} hoster modules".format(len(hoster_files))
             )
@@ -179,15 +184,24 @@ class HosterManager:
 
         # Check if URL is already a direct video file - skip resolution
         import re
+        from six.moves.urllib_parse import quote
 
         # Direct video extensions
         if re.search(r"\.(m3u8|mp4|avi|mkv|flv|ts)(\?|$)", url, re.IGNORECASE):
             utils.kodilog("HosterResolver: Found direct video URL (by extension)")
-            # Add verifypeer=false for HTTPS URLs to bypass SSL certificate checks
-            final_url = url
-            if url.startswith("https://"):
-                separator = "&" if "?" in url else "|"
-                final_url = url + separator + "verifypeer=false"
+            # URL encode spaces and special characters in path
+            final_url = quote(url, safe=':/?&=')
+            utils.kodilog("HosterResolver: Encoded URL length: {}".format(len(final_url)))
+            
+            # Build headers string for Kodi (format: URL|Header1=value1&Header2=value2)
+            headers_parts = []
+            headers_parts.append("verifypeer=false")  # Bypass SSL cert verification
+            headers_parts.append("User-Agent={}".format(utils.USER_AGENT))
+            
+            if final_url.startswith("https://") or final_url.startswith("http://"):
+                separator = "&" if "?" in final_url else "|"
+                final_url = final_url + separator + "&".join(headers_parts)
+            
             return {"url": final_url, "quality": "Unknown", "headers": {}}
 
         # Check for known video CDN domains (direct streams without file extension)
@@ -200,10 +214,12 @@ class HosterManager:
         ]
         if any(domain in url for domain in video_cdn_domains):
             utils.kodilog("HosterResolver: Found direct video URL (by CDN domain)")
-            final_url = url
-            if url.startswith("https://"):
-                separator = "&" if "?" in url else "|"
-                final_url = url + separator + "verifypeer=false"
+            # URL encode spaces and special characters in path
+            from six.moves.urllib_parse import quote
+            final_url = quote(url, safe=':/?&=')
+            if final_url.startswith("https://"):
+                separator = "&" if "?" in final_url else "|"
+                final_url = final_url + separator + "verifypeer=false"
             return {"url": final_url, "quality": "Unknown", "headers": {}}
 
         current_url = url
