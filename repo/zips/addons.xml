@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<addons><addon id="plugin.video.3rbi" name="3rbi" provider-name="3rbi" version="0.0.42">
+<addons><addon id="plugin.video.3rbi" name="3rbi" provider-name="3rbi" version="0.0.43">
     <requires>
         <import addon="script.module.six" />
         <import addon="script.module.kodi-six" />

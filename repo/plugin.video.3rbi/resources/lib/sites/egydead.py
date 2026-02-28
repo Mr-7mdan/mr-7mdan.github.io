@@ -43,7 +43,7 @@ def Main():
 
 @site.register()
 def search():
-    """Search for content via AJAX endpoint"""
+    """Search for content via regular page"""
     search_text = utils.get_search_input()
     if not search_text:
         utils.eod(content='tvshows')
@@ -51,25 +51,28 @@ def search():
     
     utils.kodilog(f'{site.title}: Searching for: {search_text}')
     
-    # EgyDead uses AJAX endpoint for search
-    search_url = site.url + '/wp-content/themes/egydeadc-taq/Ajax/live-search.php'
-    post_data = f'search={search_text}'
+    # Use regular search page (GET) instead of broken AJAX endpoint
+    search_url = site.url + '/?s=' + urllib_parse.quote_plus(search_text)
     
-    html = utils.getHtml(search_url, headers={'User-Agent': utils.USER_AGENT}, data=post_data, site_name=site.name)
+    html = utils.getHtml(search_url, headers={'User-Agent': utils.USER_AGENT}, site_name=site.name)
     
     if not html:
         utils.kodilog(f'{site.title}: No search results')
         utils.eod(content='tvshows')
         return
     
-    # Pattern for AJAX search results (liveItem)
-    pattern = r'<div class="liveItem">\s*<a href="([^"]+)">\s*<img src="([^"]+)">\s*<h3>([^<]+)</h3>'
+    # Use same pattern as getMovies - movieItem class
+    pattern = r'<li class="movieItem">\s*<a href="([^"]+)"[^>]*>.*?<img src="([^"]+)"[^>]*>.*?<h1 class="BottomTitle">([^<]+)</h1>'
     matches = re.findall(pattern, html, re.DOTALL)
     
     utils.kodilog(f'{site.title}: Found {len(matches)} search results')
     
     if matches:
         for result_url, image, title in matches:
+            # Skip episodes in search results (show series/movies only)
+            if '/episode/' in result_url:
+                continue
+            
             # Clean title
             title = title.strip()
             title = re.sub(r'مشاهدة|فيلم|مسلسل|انمي|مترجم|مترجمة|مدبلج|كامل|كاملة', '', title).strip()

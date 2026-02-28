@@ -58,73 +58,25 @@ def searchSeries():
         _performSearch(search_text, 'series')
 
 def _performSearch(search_text, content_type):
-    """Perform search using /find__posts/ AJAX endpoint"""
-    # Get csrf_token from a category page (token not present on home page)
-    token_url = site.url + 'category/foreign-movies-10/'
-    html = utils.getHtml(token_url, headers={'User-Agent': utils.USER_AGENT})
+    """Perform search using /find/?word= GET endpoint"""
+    # Use GET search endpoint (new format)
+    type_param = 'movies' if content_type == 'movies' else 'series'
+    search_url = site.url + f'find/?word={urllib_parse.quote_plus(search_text)}&type={type_param}'
     
-    # Pattern matches: 'csrf__token': "f76bb2e259" or "csrf__token": "f76bb2e259"
-    csrf_match = re.search(r'["\']csrf__token["\']\s*:\s*["\']([a-zA-Z0-9]+)["\']', html)
-    csrf_token = csrf_match.group(1) if csrf_match else ''
+    utils.kodilog(f'ArabSeed Search URL: {search_url}')
     
-    if not csrf_token:
-        utils.kodilog('ArabSeed Search: Failed to extract csrf_token from {}'.format(token_url))
-        utils.notify('ArabSeed', 'Search failed - no token')
+    html = utils.getHtml(search_url, headers={'User-Agent': utils.USER_AGENT})
+    
+    if not html:
+        utils.kodilog('ArabSeed Search: No HTML received')
         utils.eod(content='movies')
         return
     
-    # POST to search endpoint
-    search_url = site.url + 'find__posts/'
-    post_data = {
-        'search': search_text,
-        'search_type': '',
-        'csrf_token': csrf_token
-    }
-    
-    headers = {
-        'User-Agent': utils.USER_AGENT,
-        'Referer': site.url,
-        'X-Requested-With': 'XMLHttpRequest',
-        'Accept': 'application/json, text/javascript, */*; q=0.01'
-    }
-    
-    try:
-        # Debug
-        utils.kodilog('ArabSeed Search csrf_token: {}'.format(csrf_token))
-        utils.kodilog('ArabSeed Search URL: {}'.format(search_url))
-        utils.kodilog('ArabSeed Search data: {}'.format(post_data))
-        
-        response = utils.postHtml(search_url, post_data, headers)
-        
-        # Debug response
-        utils.kodilog('ArabSeed Search response type: {}'.format(type(response)))
-        utils.kodilog('ArabSeed Search response first 200 chars: {}'.format(response[:200] if response else 'EMPTY'))
-        
-        # Response is JSON with 'type' and 'html' keys
-        result = json.loads(response)
-        
-        utils.kodilog('ArabSeed Search result type: {}'.format(type(result)))
-        utils.kodilog('ArabSeed Search result keys: {}'.format(result.keys() if isinstance(result, dict) else 'NOT A DICT'))
-        
-        if isinstance(result, dict) and 'html' in result:
-            # Parse search results HTML - different structure than category listings
-            _parseSearchResults(result['html'], content_type)
-        else:
-            utils.kodilog('ArabSeed Search: Unexpected response format')
-    except Exception as e:
-        utils.kodilog('ArabSeed Search Error: {}'.format(str(e)))
-        import traceback
-        utils.kodilog('ArabSeed Search Traceback: {}'.format(traceback.format_exc()))
-        utils.notify('ArabSeed', 'Search failed')
-    
-    utils.eod(content='movies')
-
-def _parseSearchResults(html, content_type):
-    """Parse search results HTML - different structure than category listings"""
-    # Pattern for search results: <a class="search__item"> with <h3> title and data-src image
-    pattern = r'<a href="([^"]+)" class="search__item[^"]*">.*?data-src="([^"]+)".*?<h3>([^<]+)</h3>'
-    
+    # Parse search results - pattern: <a href="...">...<img src="...">...<h1>title</h1>
+    pattern = r'<a href="([^"]+)"[^>]*>.*?<img[^>]*src="([^"]+)"[^>]*>.*?<h1[^>]*>([^<]+)</h1>'
     entries = re.findall(pattern, html, re.DOTALL)
+    
+    utils.kodilog(f'ArabSeed Search: Found {len(entries)} results')
     
     for item_url, img, title in entries:
         # Clean title
@@ -148,6 +100,9 @@ def _parseSearchResults(html, content_type):
         else:
             site.add_dir(clean_title, item_url, 'getLinks', img, fanart=img,
                        year=year, media_type='movie', original_title=title)
+    
+    utils.eod(content='movies')
+
 
 @site.register()
 def getRecent(url):

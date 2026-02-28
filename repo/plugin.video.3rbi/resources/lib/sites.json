@@ -55,10 +55,18 @@
             "active": true,
             "url": "https://www.qrmzi.tv"
         },
+        "cimanow": {
+            "label": "CimaNow",
+            "active": true,
+            "url": "https://cimanow.cc"
+        },
         "faselhd": {
             "label": "FaselHD",
             "active": true,
-            "url": "https://faselhd.club"
+            "url": "https://faselhd.club",
+            "alt_urls": [
+                "https://web22812x.faselhdx.bid"
+            ]
         },
         "shahidmosalsalat": {
             "label": "Shahid Mosalsalat",
