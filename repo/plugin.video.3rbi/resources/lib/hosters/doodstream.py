@@ -11,7 +11,7 @@ class DoodstreamResolver:
     
     def __init__(self):
         self.name = 'Doodstream'
-        self.domains = ['doodstream.com', 'dood.la', 'dood.to', 'dood.watch', 'dood.pm', 'dood.wf', 'dood.cx']
+        self.domains = ['doodstream.com', 'dood.la', 'dood.to', 'dood.watch', 'dood.pm', 'dood.wf', 'dood.cx', 'dsvplay.com']
     
     def can_resolve(self, url):
         """Check if this resolver can handle the given URL"""

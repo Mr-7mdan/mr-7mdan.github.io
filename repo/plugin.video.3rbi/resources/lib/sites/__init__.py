@@ -6,7 +6,7 @@ import os
 _sites_json_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'sites.json')
 
 try:
-    with open(_sites_json_path, 'r') as f:
+    with open(_sites_json_path, 'r', encoding='utf-8') as f:
         _sites_config = json.load(f)
     
     # Get list of active sites

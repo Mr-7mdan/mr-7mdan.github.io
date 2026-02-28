@@ -46,7 +46,7 @@ def search():
     """Search for content via AJAX endpoint"""
     search_text = utils.get_search_input()
     if not search_text:
-        utils.eod()
+        utils.eod(content='tvshows')
         return
     
     utils.kodilog(f'{site.title}: Searching for: {search_text}')
@@ -59,7 +59,7 @@ def search():
     
     if not html:
         utils.kodilog(f'{site.title}: No search results')
-        utils.eod()
+        utils.eod(content='tvshows')
         return
     
     # Pattern for AJAX search results (liveItem)
@@ -97,7 +97,7 @@ def search():
     else:
         utils.notify(site.title, 'لا توجد نتائج', icon=site.image)
     
-    utils.eod()
+    utils.eod(content='tvshows')
 
 @site.register()
 def getMovies(url):
@@ -108,7 +108,7 @@ def getMovies(url):
     
     if not html:
         utils.kodilog(f'{site.title}: No HTML received')
-        utils.eod()
+        utils.eod(content='movies')
         return
     
     # Pattern for movieItem - works for movies, series, and search
@@ -154,7 +154,7 @@ def getMovies(url):
         next_url = next_match.group(1).rstrip('/')
         site.add_dir('Next Page', next_url, 'getMovies', addon_image(site.img_next))
     
-    utils.eod()
+    utils.eod(content='movies')
 
 @site.register()
 def getTVShows(url):
@@ -165,7 +165,7 @@ def getTVShows(url):
     
     if not html:
         utils.kodilog(f'{site.title}: No HTML received')
-        utils.eod()
+        utils.eod(content='tvshows')
         return
     
     pattern = r'<li class="movieItem">\s*<a href="([^"]+)"[^>]*>.*?<img src="([^"]+)"[^>]*>.*?<h1 class="BottomTitle">([^<]+)</h1>'
@@ -240,7 +240,7 @@ def getTVShows(url):
         next_url = next_match.group(1).rstrip('/')
         site.add_dir('Next Page', next_url, 'getTVShows', addon_image(site.img_next))
     
-    utils.eod()
+    utils.eod(content='tvshows')
 
 @site.register()
 def getSeasons(url, name=''):
@@ -250,7 +250,7 @@ def getSeasons(url, name=''):
     html = utils.getHtml(url, headers={'User-Agent': utils.USER_AGENT}, site_name=site.name)
     
     if not html:
-        utils.eod()
+        utils.eod(content='seasons')
         return
     
     # Extract main content only (before related-posts section)
@@ -288,7 +288,7 @@ def getSeasons(url, name=''):
                 site.add_dir(season_title, season_url, 'getEpisodes', full_image,
                            year=year, media_type='season')
     
-    utils.eod()
+    utils.eod(content='seasons')
 
 @site.register()
 def getEpisodes(url, name=''):
@@ -298,7 +298,7 @@ def getEpisodes(url, name=''):
     html = utils.getHtml(url, headers={'User-Agent': utils.USER_AGENT}, site_name=site.name)
     
     if not html:
-        utils.eod()
+        utils.eod(content='episodes')
         return
     
     # Extract episodes-list section only (before seasons-list)
@@ -306,7 +306,7 @@ def getEpisodes(url, name=''):
     
     if not episodes_section:
         utils.kodilog(f'{site.title}: No episodes-list section found')
-        utils.eod()
+        utils.eod(content='episodes')
         return
     
     # Pattern for episodes (simple <li><a> structure in episodes-list)
@@ -340,7 +340,7 @@ def getEpisodes(url, name=''):
         next_url = next_match.group(1).rstrip('/')
         site.add_dir('Next Page', next_url, 'getEpisodes', addon_image(site.img_next))
     
-    utils.eod()
+    utils.eod(content='episodes')
 
 @site.register()
 def getLinks(url, name=''):
@@ -352,7 +352,7 @@ def getLinks(url, name=''):
     
     if not html:
         utils.notify(site.title, 'لم يتم تحميل الصفحة', icon=site.image)
-        utils.eod()
+        utils.eod(content='videos')
         return
     
     hoster_manager = get_hoster_manager()
@@ -394,7 +394,7 @@ def getLinks(url, name=''):
     if not all_servers:
         utils.notify(site.title, 'لم يتم العثور على روابط', icon=site.image)
     
-    utils.eod()
+    utils.eod(content='videos')
 
 @site.register()
 def PlayVid(url, name=''):

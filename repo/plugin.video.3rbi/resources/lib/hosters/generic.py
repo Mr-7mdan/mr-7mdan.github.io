@@ -17,6 +17,13 @@ class GenericResolver(HosterResolver):
         # This resolver matches ANY domain - it's a fallback
         self.domains = ['*']
     
+    def can_resolve(self, url):
+        """
+        Generic resolver can handle any URL - always returns True
+        Used as fallback when no specific resolver matches
+        """
+        return True
+    
     def matches(self, url):
         """
         Generic resolver always returns False for matches()
@@ -127,10 +134,15 @@ class GenericResolver(HosterResolver):
             # Pattern 7: Generic m3u8/mp4 URL search (less reliable, last resort)
             if not video_url:
                 # Look for full URLs with m3u8 or mp4
-                match = re.search(r'https?://[^\s"\'<>]+\.(?:m3u8|mp4)(?:\?[^\s"\'<>]*)?', html, re.IGNORECASE)
-                if match:
-                    video_url = match.group(0)
+                # Skip placeholder URLs with {series}, {episode}, etc.
+                matches = re.findall(r'https?://[^\s"\'<>]+\.(?:m3u8|mp4)(?:\?[^\s"\'<>]*)?', html, re.IGNORECASE)
+                for match in matches:
+                    # Skip placeholder URLs
+                    if '{' in match or '}' in match:
+                        continue
+                    video_url = match
                     utils.kodilog('Generic Resolver: Found generic video URL')
+                    break
             
             if not video_url:
                 utils.kodilog('Generic Resolver: No video source found')

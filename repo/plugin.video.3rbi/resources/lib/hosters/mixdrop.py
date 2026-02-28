@@ -10,7 +10,7 @@ class MixdropResolver:
     
     def __init__(self):
         self.name = 'Mixdrop'
-        self.domains = ['mixdrop.sn', 'mixdrop.net', 'mixdrop.to', 'mixdrop.co', 'mixdrop.ch', 'mixdrop.bz']
+        self.domains = ['mixdrop.sn', 'mixdrop.net', 'mixdrop.to', 'mixdrop.co', 'mixdrop.ch', 'mixdrop.bz', 'm1xdrop.bz']
     
     def can_resolve(self, url):
         """Check if this resolver can handle the given URL"""

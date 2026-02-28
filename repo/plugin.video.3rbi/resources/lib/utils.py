@@ -735,10 +735,13 @@ def _getHtml(url, referer='', headers=None, NoCookie=None, data=None, error='ret
                             except:
                                 notify(i18n('oh_oh'), i18n('site_down'))
                                 if 'return' in error:
-                                    # Give up
                                     return ''
                                 else:
                                     raise
+                        else:
+                            # TLS1.2 failed but not retrying TLS1.1 - return result
+                            return result
+                    # TLS1.2 succeeded, response is set - continue to process below
                 elif any(x == e.code for x in [403, 429, 503]) and any(x in result for x in ['__cf_chl_f_tk', '__cf_chl_jschl_tk__=', '/cdn-cgi/challenge-platform/']):
                     if addon.getSetting('fs_enable') == 'true':
                         notify('Flaresolverr', 'Cloudflare detected, retrying with Flaresolverr.')
@@ -746,6 +749,9 @@ def _getHtml(url, referer='', headers=None, NoCookie=None, data=None, error='ret
                     else:
                         notify(i18n('oh_oh'), 'This site has a Cloudflare Challenge.')
                         raise
+                else:
+                    # Cloudflare server but not a challenge - return result
+                    return result
             elif 400 < e.code < 500:
                 if not e.code == 403:
                     notify(i18n('oh_oh'), i18n('not_exist'))
@@ -763,11 +769,11 @@ def _getHtml(url, referer='', headers=None, NoCookie=None, data=None, error='ret
     except Exception as e:
         if 'SSL23_GET_SERVER_HELLO' in str(e):
             notify(i18n('oh_oh'), i18n('python_old'))
-            raise
         else:
             notify(i18n('oh_oh'), i18n('site_down'))
-            raise
-        return None
+        if 'return' in error:
+            return ''
+        raise
 
     cencoding = response.info().get('Content-Encoding', '')
     if cencoding.lower() == 'gzip':

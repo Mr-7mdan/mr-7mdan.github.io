@@ -97,7 +97,7 @@ def getMovies(url):
     utils.kodilog(f'{site.title}: Getting movies from: {url}')
     html = utils.getHtml(url, headers=_HEADERS, site_name=site.name)
     if not html:
-        utils.eod()
+        utils.eod(content='movies')
         return
 
     matches = _parse_listing(html)
@@ -117,7 +117,7 @@ def getMovies(url):
     if next_url:
         site.add_dir('Next Page', next_url, 'getMovies', addon_image(site.img_next))
 
-    utils.eod()
+    utils.eod(content='movies')
 
 
 @site.register()
@@ -126,7 +126,7 @@ def getTVShows(url):
     utils.kodilog(f'{site.title}: Getting TV shows from: {url}')
     html = utils.getHtml(url, headers=_HEADERS, site_name=site.name)
     if not html:
-        utils.eod()
+        utils.eod(content='tvshows')
         return
 
     matches = _parse_listing(html)
@@ -154,7 +154,7 @@ def getTVShows(url):
     if next_url:
         site.add_dir('Next Page', next_url, 'getTVShows', addon_image(site.img_next))
 
-    utils.eod()
+    utils.eod(content='tvshows')
 
 
 @site.register()
@@ -168,13 +168,13 @@ def getEpisodes(url):
 
     html = utils.getHtml(url, headers=_HEADERS, site_name=site.name)
     if not html:
-        utils.eod()
+        utils.eod(content='episodes')
         return
 
     # Extract show title from page title
     title_match = re.search(r'<title>([^<]+)</title>', html)
     if not title_match:
-        utils.eod()
+        utils.eod(content='episodes')
         return
 
     raw_title = title_match.group(1).replace(' - دكتنا TV', '').strip()
@@ -188,7 +188,7 @@ def getEpisodes(url):
         utils.kodilog(f'{site.title}: Found show category: {category_url}')
         html = utils.getHtml(category_url, headers=_HEADERS, site_name=site.name)
         if not html:
-            utils.eod()
+            utils.eod(content='episodes')
             return
     else:
         utils.kodilog(f'{site.title}: No dedicated category for "{show_title}", listing available episodes')
@@ -217,7 +217,7 @@ def getEpisodes(url):
         if next_url:
             site.add_dir('Next Page', next_url, 'getEpisodes', addon_image(site.img_next))
 
-    utils.eod()
+    utils.eod(content='episodes')
 
 
 @site.register()
@@ -228,14 +228,14 @@ def getLinks(url):
     html = utils.getHtml(url, headers=_HEADERS, site_name=site.name)
     if not html:
         utils.notify('Daktna', 'Failed to load page', icon=site.image)
-        utils.eod()
+        utils.eod(content='videos')
         return
 
     # Extract the iframe embed URL
     embed_match = re.search(r'<iframe[^>]+src="(https://video\.daktna\.tv/embed\.php\?vid=[^"]+)"', html)
     if not embed_match:
         utils.notify('Daktna', 'No video source found', icon=site.image)
-        utils.eod()
+        utils.eod(content='videos')
         return
 
     embed_url = embed_match.group(1)
@@ -253,7 +253,7 @@ def getLinks(url):
     else:
         site.add_download_link('Daktna Player', embed_url, 'PlayVid', site.image, desc=title)
 
-    utils.eod()
+    utils.eod(content='videos')
 
 
 @site.register()

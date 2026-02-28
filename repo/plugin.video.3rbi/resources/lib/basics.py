@@ -68,13 +68,24 @@ def eod(handle=addon_handle, cache=True, content=None):
     if content:
         xbmcplugin.setContent(handle, content)
     if addon.getSetting('customview') == 'true':
-        skin = xbmc.getSkinDir().lower()
-        viewtype = 55 if 'estuary' in skin else 50
-        setview = addon.getSetting('setview')
-        if ';' in setview:
-            currentskin, viewno = setview.split(';')
-            if currentskin == skin:
-                viewtype = viewno
+        # Get view mode based on content type
+        view_map = {
+            'movies': 'view_movies',
+            'tvshows': 'view_tvshows',
+            'seasons': 'view_seasons',
+            'episodes': 'view_episodes',
+            'videos': 'view_videos'
+        }
+        
+        # Get the appropriate setting, default to 55 if not found
+        setting_id = view_map.get(content, 'view_movies')
+        viewtype = addon.getSetting(setting_id) or '55'
+        
+        # Fallback to skin-based default if setting is empty
+        if not viewtype:
+            skin = xbmc.getSkinDir().lower()
+            viewtype = '55' if 'estuary' in skin else '50'
+        
         xbmc.executebuiltin("Container.SetViewMode(%s)" % str(viewtype))
     xbmcplugin.endOfDirectory(handle, cacheToDisc=cache)
 
@@ -364,6 +375,7 @@ def addDir(name, url, mode, iconimage=None, page=None, channel=None, section=Non
          + "&section=" + str(section)
          + "&keyword=" + urllib_parse.quote_plus(keyword)
          + "&name=" + urllib_parse.quote_plus(name))
+    xbmc.log(f'@@@@3rbi: addDir storing URL for "{name}": {url} -> encoded: {u[:200]}', xbmc.LOGINFO)
     ok = True
     if not iconimage:
         iconimage = aksvicon

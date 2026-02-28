@@ -21,7 +21,7 @@ GITHUB_BASE_URL = 'https://raw.githubusercontent.com/Mr-7mdan/mr-7mdan.github.io
 def load_sites_config():
     """Load sites.json configuration"""
     try:
-        with open(SITES_JSON_PATH, 'r') as f:
+        with open(SITES_JSON_PATH, 'r', encoding='utf-8') as f:
             return json.load(f)
     except Exception as e:
         utils.kodilog('Site Manager: Failed to load sites.json: {}'.format(str(e)))
@@ -31,7 +31,7 @@ def load_sites_config():
 def save_sites_config(config):
     """Save sites.json configuration"""
     try:
-        with open(SITES_JSON_PATH, 'w') as f:
+        with open(SITES_JSON_PATH, 'w', encoding='utf-8') as f:
             json.dump(config, f, indent=4, ensure_ascii=False)
         return True
     except Exception as e:

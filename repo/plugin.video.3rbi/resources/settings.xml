@@ -2,7 +2,12 @@
     <category label="30051">
         <setting id="sortwxf" type="enum" lvalues="30012|30013|30014" label="30011" default="0"/>
         <setting id="sortxt" type="enum" lvalues="30022|30023|30024|30025" label="30021" default="0"/>
-        <setting id="customview" label="30008" type="bool" default="false" />
+        <setting id="customview" label="30008" type="bool" default="true" />
+        <setting id="view_movies" label="View: Movies" type="number" default="55" enable="eq(-1,true)" />
+        <setting id="view_tvshows" label="View: TV Shows" type="number" default="55" enable="eq(-2,true)" />
+        <setting id="view_seasons" label="View: Seasons" type="number" default="50" enable="eq(-3,true)" />
+        <setting id="view_episodes" label="View: Episodes" type="number" default="55" enable="eq(-4,true)" />
+        <setting id="view_videos" label="View: Video Links" type="number" default="50" enable="eq(-5,true)" />
         <setting id="m3u8_use_ia" label="30016" type="bool" default="false" />
         <setting id="paradisehill" label="30004" type="bool" default="false" />
         <setting id="posterfanart" label="30005" type="bool" default="false" />

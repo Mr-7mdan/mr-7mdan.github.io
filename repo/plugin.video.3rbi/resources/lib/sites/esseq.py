@@ -31,7 +31,7 @@ def search():
     """Search for content"""
     search_text = utils.get_search_input()
     if not search_text:
-        utils.eod()
+        utils.eod(content='tvshows')
         return
     
     utils.kodilog(f'{site.title}: Searching for: {search_text}')
@@ -47,7 +47,7 @@ def getMovies(url):
     html = utils.getHtml(url, headers={'User-Agent': utils.USER_AGENT}, site_name=site.name)
     
     if not html:
-        utils.eod()
+        utils.eod(content='movies')
         return
     
     # Esseq uses background-image in style attribute
@@ -82,7 +82,7 @@ def getMovies(url):
         next_url = next_match.group(1)
         site.add_dir('Next Page', next_url, 'getMovies', addon_image(site.img_next))
     
-    utils.eod()
+    utils.eod(content='movies')
 
 @site.register()
 def getTVShows(url):
@@ -92,7 +92,7 @@ def getTVShows(url):
     html = utils.getHtml(url, headers={'User-Agent': utils.USER_AGENT}, site_name=site.name)
     
     if not html:
-        utils.eod()
+        utils.eod(content='tvshows')
         return
     
     # Same pattern as movies
@@ -137,7 +137,7 @@ def getTVShows(url):
         next_url = next_match.group(1)
         site.add_dir('Next Page', next_url, 'getTVShows', addon_image(site.img_next))
     
-    utils.eod()
+    utils.eod(content='tvshows')
 
 @site.register()
 def getEpisodes(url, name=''):
@@ -147,7 +147,7 @@ def getEpisodes(url, name=''):
     html = utils.getHtml(url, headers={'User-Agent': utils.USER_AGENT}, site_name=site.name)
     
     if not html:
-        utils.eod()
+        utils.eod(content='episodes')
         return
     
     # Episodes use same pattern
@@ -184,7 +184,7 @@ def getEpisodes(url, name=''):
         next_url = next_match.group(1)
         site.add_dir('Next Page', next_url, 'getEpisodes', addon_image(site.img_next))
     
-    utils.eod()
+    utils.eod(content='episodes')
 
 @site.register()
 def getLinks(url, name=''):
@@ -195,7 +195,7 @@ def getLinks(url, name=''):
     
     if not html:
         utils.notify(site.title, 'لم يتم تحميل الصفحة', icon=site.image)
-        utils.eod()
+        utils.eod(content='videos')
         return
     
     # Find the watch URL with base64 encoded JSON
@@ -203,7 +203,7 @@ def getLinks(url, name=''):
     
     if not watch_url_match:
         utils.notify(site.title, 'لم يتم العثور على روابط المشاهدة', icon=site.image)
-        utils.eod()
+        utils.eod(content='videos')
         return
     
     # Decode base64 JSON
@@ -271,7 +271,7 @@ def getLinks(url, name=''):
         utils.kodilog(f'{site.title}: Error decoding watch data: {e}')
         utils.notify(site.title, 'خطأ في فك تشفير البيانات', icon=site.image)
     
-    utils.eod()
+    utils.eod(content='videos')
 
 @site.register()
 def PlayVid(url, name=''):

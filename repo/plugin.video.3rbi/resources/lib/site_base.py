@@ -38,7 +38,7 @@ class SiteBase(URL_Dispatcher):
                 )
             
             try:
-                with open(cls._sites_json_path, 'r') as f:
+                with open(cls._sites_json_path, 'r', encoding='utf-8') as f:
                     cls._sites_config = json.load(f)
             except Exception as e:
                 import xbmc
@@ -71,7 +71,7 @@ class SiteBase(URL_Dispatcher):
                 config['sites'][site_name]['url'] = new_url
                 
                 # Write back to sites.json
-                with open(cls._sites_json_path, 'w') as f:
+                with open(cls._sites_json_path, 'w', encoding='utf-8') as f:
                     json.dump(config, f, indent=4, ensure_ascii=False)
                 
                 # Update cached config

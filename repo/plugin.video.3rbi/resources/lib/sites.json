@@ -13,7 +13,7 @@
         "asia2tv": {
             "label": "Asia2TV",
             "active": true,
-            "url": "https://v.asia2tv.co/"
+            "url": "https://asia2tv.co/"
         },
         "cima4u": {
             "label": "Cima4u",
@@ -59,6 +59,36 @@
             "label": "FaselHD",
             "active": true,
             "url": "https://faselhd.club"
+        },
+        "shahidmosalsalat": {
+            "label": "Shahid Mosalsalat",
+            "active": true,
+            "url": "https://v5.shahidmosalsalat.business/",
+            "alt_urls": [
+                "https://t.shahidmosalsalat.me/",
+                "https://w.shahidmosalsalat.me/",
+                "https://shahidmosalsalat.business/"
+            ]
+        },
+        "viola": {
+            "label": "VioLa",
+            "active": true,
+            "url": "https://vio-la.com"
+        },
+        "larozza": {
+            "label": "Larozza",
+            "active": true,
+            "url": "https://larozza.xyz"
+        },
+        "shhid4u": {
+            "label": "Shahid4U",
+            "active": false,
+            "url": "https://shhid4u.net"
+        },
+        "egydrama": {
+            "label": "EgyDrama",
+            "active": true,
+            "url": "https://v.egydrama.com"
         }
     }
 }

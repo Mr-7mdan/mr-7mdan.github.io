@@ -41,7 +41,7 @@ def search():
             search_url = f'{site.url}/search?q={utils.quote_plus(query)}'
             getMovies(search_url)
     else:
-        utils.eod()
+        utils.eod(content='tvshows')
 
 
 @site.register()
@@ -54,7 +54,7 @@ def getMovies(url):
     
     if not html:
         utils.kodilog(f'{site.title}: No HTML received')
-        utils.eod()
+        utils.eod(content='movies')
         return
     
     # Find the start of synchronous-page-content
@@ -62,7 +62,7 @@ def getMovies(url):
     
     if idx < 0:
         utils.kodilog(f'{site.title}: No synchronous-page-content found')
-        utils.eod()
+        utils.eod(content='movies')
         return
     
     # Extract from this point forward (HTML may be truncated, so don't rely on closing tag)
@@ -88,7 +88,7 @@ def getMovies(url):
         # Use addDownLink for playable video items
         basics.addDownLink(title, full_url, 'shoofmax.PlayVid', DEFAULT_POSTER)
     
-    utils.eod()
+    utils.eod(content='movies')
 
 
 @site.register()
@@ -101,7 +101,7 @@ def getTVShows(url):
     
     if not html:
         utils.kodilog(f'{site.title}: No HTML received')
-        utils.eod()
+        utils.eod(content='tvshows')
         return
     
     # Find the start of synchronous-page-content
@@ -109,7 +109,7 @@ def getTVShows(url):
     
     if idx < 0:
         utils.kodilog(f'{site.title}: No synchronous-page-content found')
-        utils.eod()
+        utils.eod(content='tvshows')
         return
     
     # Extract from this point forward (HTML may be truncated, so don't rely on closing tag)
@@ -136,7 +136,7 @@ def getTVShows(url):
             DEFAULT_POSTER
         )
     
-    utils.eod()
+    utils.eod(content='tvshows')
 
 
 @site.register()
@@ -149,7 +149,7 @@ def getEpisodes(url):
     
     if not html:
         utils.kodilog(f'{site.title}: No HTML received')
-        utils.eod()
+        utils.eod(content='episodes')
         return
     
     # Extract series title from page
@@ -164,7 +164,7 @@ def getEpisodes(url):
     
     if not selector:
         utils.kodilog(f'{site.title}: No episode selector found')
-        utils.eod()
+        utils.eod(content='episodes')
         return
     
     # Extract episode options
@@ -180,7 +180,7 @@ def getEpisodes(url):
         # Use addDownLink for playable video items
         basics.addDownLink(ep_title, ep_url, 'shoofmax.PlayVid', DEFAULT_POSTER)
     
-    utils.eod()
+    utils.eod(content='episodes')
 
 
 @site.register()

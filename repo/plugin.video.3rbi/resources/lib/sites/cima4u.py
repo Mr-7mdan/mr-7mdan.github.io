@@ -60,7 +60,7 @@ def getMovies(url):
     
     if not html:
         utils.kodilog('Cima4u: No HTML received')
-        utils.eod()
+        utils.eod(content='movies')
         return
     
     # Try pattern 1: Regular listings with data-image
@@ -113,7 +113,7 @@ def getMovies(url):
         next_url = next_match.group(1)
         site.add_dir('Next Page', next_url, 'getMovies', addon_image(site.img_next))
     
-    utils.eod()
+    utils.eod(content='movies')
 
 @site.register()
 def getSeries(url):
@@ -205,7 +205,7 @@ def getEpisodes(url, name=''):
         getLinks(url, name)
         return
     
-    utils.eod()
+    utils.eod(content='episodes')
 
 @site.register()
 def getLinks(url, name=''):
@@ -219,7 +219,7 @@ def getLinks(url, name=''):
     
     if not html:
         utils.notify('Cima4u', 'لم يتم تحميل الصفحة', icon=site.image)
-        utils.eod()
+        utils.eod(content='videos')
         return
     
     hoster_manager = get_hoster_manager()
@@ -249,7 +249,7 @@ def getLinks(url, name=''):
     if not servers:
         utils.notify('Cima4u', 'لم يتم العثور على روابط', icon=site.image)
     
-    utils.eod()
+    utils.eod(content='videos')
 
 @site.register()
 def PlayVid(url, name=''):

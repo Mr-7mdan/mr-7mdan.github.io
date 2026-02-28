@@ -23,7 +23,7 @@ def Main():
     
     site.add_dir('Turkish TV Shows', f'{site.url}/all-turkish-series/', 'getTVShows', get_category_icon('Turkish TV Shows'))
     site.add_dir('Search', '', 'search', get_category_icon('Search'))
-    utils.eod()
+    utils.eod(content='tvshows')
 
 
 @site.register()
@@ -36,7 +36,7 @@ def search():
         search_url = f'{site.url}/?s={search_text}'
         getTVShows(search_url)
     else:
-        utils.eod()
+        utils.eod(content='tvshows')
 
 
 @site.register()
@@ -49,7 +49,7 @@ def getTVShows(url):
     
     if not html:
         utils.kodilog(f'{site.title}: No HTML received')
-        utils.eod()
+        utils.eod(content='tvshows')
         return
     
     # Extract series from article blocks with poster images
@@ -94,7 +94,7 @@ def getTVShows(url):
             addon_image(site.img_next)
         )
     
-    utils.eod()
+    utils.eod(content='tvshows')
 
 
 @site.register()
@@ -107,7 +107,7 @@ def getEpisodes(url):
     
     if not html:
         utils.kodilog(f'{site.title}: No HTML received')
-        utils.eod()
+        utils.eod(content='episodes')
         return
     
     # Extract episode links with poster images
@@ -116,19 +116,36 @@ def getEpisodes(url):
     
     utils.kodilog(f'{site.title}: Found {len(matches)} episodes')
     
+    # Process and sort episodes by number
+    episodes = []
     for ep_url, ep_title, poster in matches:
         # Clean title - remove "قرمزي" suffix
         ep_title = re.sub(r'\s+قرمزي\s*$', '', ep_title).strip()
         ep_title = re.sub(r'مشاهدة|مسلسل|مدبلجلة|مترجمة|اون لاين|HD|كامل|كاملة', '', ep_title).strip()
         ep_title = re.sub(r'مترجم|مدبلج', '', ep_title).strip()
-        ep_title = re.sub(r'حلقة', 'Episode', ep_title).strip()
+        
+        # Extract episode number for sorting
+        ep_num_match = re.search(r'(?:الحلقة|حلقة|Episode)\s*(\d+)', ep_title, re.IGNORECASE)
+        ep_num = int(ep_num_match.group(1)) if ep_num_match else 0
+        
+        # Strip TV show name - keep only "Episode X"
+        # Remove everything before and including the episode number word
+        display_title = re.sub(r'.*?\s*(?:الحلقة|حلقة)\s*\d+', f'Episode {ep_num}', ep_title).strip()
+        display_title = re.sub(r'Episode\s+(\d+).*', r'Episode \1', display_title).strip()
+        
         # Remove dimension suffix to get hi-res image (e.g., -470x255.jpg -> .jpg)
         poster = re.sub(r'-\d+x\d+\.', '.', poster)
         
-        # Use site.add_dir to show server selection (not addDownLink which tries to play directly)
-        site.add_dir(ep_title, ep_url, 'PlayVid', poster, media_type='episode')
+        episodes.append((ep_num, display_title, ep_url, poster))
     
-    utils.eod()
+    # Sort by episode number (lowest to highest)
+    episodes.sort(key=lambda x: x[0])
+    
+    # Add sorted episodes
+    for ep_num, display_title, ep_url, poster in episodes:
+        site.add_dir(display_title, ep_url, 'PlayVid', poster, media_type='episode')
+    
+    utils.eod(content='episodes')
 
 
 @site.register()
@@ -184,7 +201,7 @@ def PlayVid(url, name=''):
     if not servers:
         utils.notify('Qrmzi', 'لم يتم العثور على سيرفرات', icon=site.image)
     
-    utils.eod()
+    utils.eod(content='videos')
 
 
 @site.register()

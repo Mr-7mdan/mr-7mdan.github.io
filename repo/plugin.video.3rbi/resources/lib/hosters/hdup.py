@@ -10,7 +10,7 @@ class HdupResolver:
     
     def __init__(self):
         self.name = 'Hdup'
-        self.domains = ['hdup.to', 'hdup.tv']
+        self.domains = ['hdup.to', 'hdup.tv', 'hdup20.com', 'hdup']
     
     def can_resolve(self, url):
         """Check if this resolver can handle the given URL"""

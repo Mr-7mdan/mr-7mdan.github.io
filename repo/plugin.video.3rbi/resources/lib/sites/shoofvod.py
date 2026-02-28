@@ -76,7 +76,7 @@ def getMovies(url):
         next_url = site.url + next_match.group(1)
         site.add_dir('Next Page', next_url, 'getMovies', addon_image(site.img_next))
     
-    utils.eod()
+    utils.eod(content='movies')
 
 @site.register()
 def getTVShows(url):
@@ -113,7 +113,7 @@ def getTVShows(url):
         next_url = site.url + next_match.group(1)
         site.add_dir('Next Page', next_url, 'getTVShows', addon_image(site.img_next))
     
-    utils.eod()
+    utils.eod(content='tvshows')
 
 @site.register()
 def getEpisodes(url):
@@ -168,7 +168,7 @@ def getEpisodes(url):
         utils.kodilog('ShoofVOD: No episodes pattern matched, trying direct playback')
         site.add_dir(show_title if show_title else 'Play', url, 'getLinks', site.image)
     
-    utils.eod()
+    utils.eod(content='episodes')
 
 @site.register()
 def getLinks(url, name=''):
@@ -239,7 +239,7 @@ def getLinks(url, name=''):
     if not iframe_sources:
         utils.notify('ShoofVOD', 'No video sources found', aksvicon)
     
-    utils.eod()
+    utils.eod(content='videos')
 
 @site.register()
 def PlayVid(url, name=''):

@@ -101,6 +101,9 @@ class URL_Dispatcher(object):
         mode: the string that the function was associated with
         queries: a dictionary of the parameters to be passed to the called function
         """
+        import xbmc
+        xbmc.log(f'@@@@3rbi: DISPATCH mode={mode}, url={queries.get("url", "NONE")}', xbmc.LOGINFO)
+        
         if mode not in cls.func_registry:
             message = 'Error: Attempt to invoke unregistered mode {}'.format(mode)
             raise Exception(message)
