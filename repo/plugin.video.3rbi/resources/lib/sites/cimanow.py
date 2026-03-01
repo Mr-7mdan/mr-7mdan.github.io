@@ -5,6 +5,7 @@ https://cimanow.cc/
 """
 
 import re
+from six.moves.urllib_parse import quote
 from resources.lib import utils
 from resources.lib import basics
 from resources.lib.basics import addon_image
@@ -57,7 +58,7 @@ def search():
     utils.kodilog(f'{site.title}: Searching for: {search_text}')
     
     # Regular search with GET
-    search_url = site.url + '/?s=' + utils.quote(search_text)
+    search_url = site.url + '/?s=' + quote(search_text)
     html = utils.getHtml(search_url, headers={'User-Agent': utils.USER_AGENT}, site_name=site.name)
     
     if not html:
@@ -65,29 +66,41 @@ def search():
         utils.eod(content='movies')
         return
     
-    # Search results have different structure: <a href="URL"> with <li aria-label="title">TITLE</li> and <img src="...">
-    # Pattern: <a href="URL">...<li aria-label="year">YEAR</li>...<li aria-label="title">TITLE</li>...<img src="IMAGE">
-    pattern = r'<a href="([^"]+)"[^>]*>.*?<li aria-label="year">([^<]*)</li>.*?<li aria-label="title">([^<]+)</li>.*?<img[^>]*src="([^"]+)"'
-    matches = re.findall(pattern, html, re.DOTALL | re.IGNORECASE)
+    # Parse search results using article structure (same as movies/tvshows)
+    articles = re.findall(r'<article[^>]*aria-label="post"[^>]*>(.*?)</article>', html, re.DOTALL)
     
-    utils.kodilog(f'{site.title}: Found {len(matches)} search results')
+    utils.kodilog(f'{site.title}: Found {len(articles)} search results')
     
-    if matches:
-        for result_url, year, title, image in matches:
-            # Clean title
-            title = title.strip()
-            title = re.sub(r'مشاهدة|فيلم|مسلسل|انمي|مترجم|مترجمة|مدبلج|كامل|كاملة|اون لاين|HD', '', title).strip()
-            
-            # Year already extracted from pattern
-            year = year.strip() if year else ''
-            
-            if title:
-                # Route based on URL type - series use /selary/ in URL
-                if '/selary/' in result_url or '/serie' in result_url or '/مسلسلات' in result_url:
-                    site.add_dir(title, result_url, 'getEpisodes', image, year=year, media_type='tvshow')
-                else:
-                    site.add_dir(title, result_url, 'getLinks', image, year=year, media_type='movie')
-    else:
+    for article in articles:
+        # Extract href
+        href_match = re.search(r'<a href="([^"]+)"', article)
+        result_url = href_match.group(1) if href_match else ''
+        
+        # Extract year
+        year_match = re.search(r'<li aria-label="year">([^<]+)</li>', article)
+        year = year_match.group(1).strip() if year_match else ''
+        
+        # Extract title (may contain <em> tags)
+        title_match = re.search(r'<li aria-label="title">\s*([^<]+)', article)
+        title = title_match.group(1).strip() if title_match else ''
+        
+        # Extract image data-src (search uses lazy loading)
+        img_match = re.search(r'data-src="([^"]+)"', article)
+        image = img_match.group(1) if img_match else ''
+        # Remove quality parameter
+        image = image.split('?')[0] if image else ''
+        
+        # Clean title
+        title = re.sub(r'مشاهدة|فيلم|مسلسل|انمي|مترجم|مترجمة|مدبلج|كامل|كاملة|اون لاين|HD', '', title).strip()
+        
+        if title and result_url:
+            # Route based on URL type
+            if '/selary/' in result_url or '/serie' in result_url or 'الحلقة' in article:
+                site.add_dir(title, result_url, 'getSeasons', image, year=year, media_type='tvshow')
+            else:
+                site.add_dir(title, result_url, 'getLinks', image, year=year, media_type='movie')
+    
+    if not articles:
         utils.notify(site.title, 'لا توجد نتائج', icon=site.image)
     
     utils.eod(content='movies')
@@ -126,6 +139,8 @@ def getMovies(url):
         # Extract image data-src
         img_match = re.search(r'data-src="([^"]+)"', article)
         image = img_match.group(1) if img_match else ''
+        # Remove quality parameter
+        image = image.split('?')[0] if image else ''
         
         # Clean title
         title = re.sub(r'مشاهدة|فيلم|مسلسل|انمي|مترجم|مترجمة|مدبلج|كامل|كاملة|اون لاين|HD', '', title).strip()
@@ -191,12 +206,14 @@ def getTVShows(url):
         # Extract image data-src
         img_match = re.search(r'data-src="([^"]+)"', article)
         image = img_match.group(1) if img_match else ''
+        # Remove quality parameter
+        image = image.split('?')[0] if image else ''
         
         # Clean title
         title = re.sub(r'مشاهدة|فيلم|مسلسل|انمي|مترجم|مترجمة|مدبلج|كامل|كاملة|اون لاين|HD', '', title).strip()
         
         if title and series_url:
-            site.add_dir(title, series_url, 'getEpisodes', image, year=year, media_type='tvshow')
+            site.add_dir(title, series_url, 'getSeasons', image, year=year, media_type='tvshow')
     
     # Pagination - look for /page/2/ link on first page, or increment page number
     current_page = 1
@@ -224,8 +241,51 @@ def getTVShows(url):
 
 
 @site.register()
+def getSeasons(url):
+    """Get seasons for a TV show"""
+    utils.kodilog(f'{site.title}: Getting seasons from: {url}')
+    
+    html = utils.getHtml(url, headers={'User-Agent': utils.USER_AGENT}, site_name=site.name)
+    
+    if not html:
+        utils.kodilog(f'{site.title}: No HTML received')
+        utils.eod(content='seasons')
+        return
+    
+    # Check for seasons section
+    seasons_section = re.search(r'<section aria-label="seasons">(.*?)</section>', html, re.DOTALL)
+    
+    if seasons_section:
+        # Extract season links
+        season_html = seasons_section.group(1)
+        season_links = re.findall(r'<a href="([^"]+)"[^>]*>([^<]+)<em>\(([^)]+)\)</em></a>', season_html)
+        
+        if season_links:
+            utils.kodilog(f'{site.title}: Found {len(season_links)} seasons')
+            
+            # Sort seasons by extracting season number from title
+            def get_season_number(season_tuple):
+                season_title = season_tuple[1]
+                # Try to extract number from season title (e.g., "الموسم 1", "ج1", "الجزء الأول")
+                num_match = re.search(r'(\d+)', season_title)
+                return int(num_match.group(1)) if num_match else 999
+            
+            season_links.sort(key=get_season_number)
+            
+            for season_url, season_title, ep_count in season_links:
+                season_title = season_title.strip()
+                site.add_dir(f'{season_title} ({ep_count})', season_url, 'getEpisodes', site.image, media_type='season')
+            utils.eod(content='seasons')
+            return
+    
+    # No seasons found - treat as single season, go directly to episodes
+    utils.kodilog(f'{site.title}: No seasons section, loading episodes directly')
+    getEpisodes(url)
+
+
+@site.register()
 def getEpisodes(url):
-    """Get episodes for a series"""
+    """Get episodes for a season"""
     utils.kodilog(f'{site.title}: Getting episodes from: {url}')
     
     html = utils.getHtml(url, headers={'User-Agent': utils.USER_AGENT}, site_name=site.name)
@@ -234,26 +294,6 @@ def getEpisodes(url):
         utils.kodilog(f'{site.title}: No HTML received')
         utils.eod(content='episodes')
         return
-    
-    # Check for seasons section first
-    seasons_section = re.search(r'<section aria-label="seasons">(.*?)</section>', html, re.DOTALL)
-    
-    if seasons_section:
-        # Extract season links
-        season_html = seasons_section.group(1)
-        season_links = re.findall(r'<a href="([^"]+)"[^>]*>([^<]+)<em>\(([^)]+)\)</em></a>', season_html)
-        
-        # If multiple seasons, show them as list
-        if len(season_links) > 1:
-            utils.kodilog(f'{site.title}: Found {len(season_links)} seasons')
-            for season_url, season_title, ep_count in season_links:
-                season_title = season_title.strip()
-                site.add_dir(f'{season_title} ({ep_count})', season_url, 'getEpisodes', site.image, media_type='season')
-            utils.eod(content='seasons')
-            return
-        
-        # Single season - continue to episodes
-        utils.kodilog(f'{site.title}: Single season found, loading episodes')
     
     # Episodes are in <ul id="eps"> with <li><a href="URL">...<em>EP_NUM</em></a></li>
     eps_section = re.search(r'<ul[^>]*id="eps"[^>]*>(.*?)</ul>', html, re.DOTALL)
@@ -265,16 +305,28 @@ def getEpisodes(url):
     
     eps_html = eps_section.group(1)
     
-    # Extract episode links: <a href="URL">...<em>NUMBER</em></a>
-    episodes = re.findall(r'<a[^>]*href="([^"]+)"[^>]*>.*?<em>(\d+)</em>', eps_html, re.DOTALL)
+    # Extract episode data: <a href="URL">...<img src="POSTER">...<em>NUMBER</em></a>
+    # Each episode has 2 img tags: logo (skip) and poster (capture)
+    episodes = re.findall(
+        r'<a[^>]*href="([^"]+)"[^>]*>.*?'  # Episode URL
+        r'<img[^>]*>.*?'  # First img (logo - skip)
+        r'<img[^>]*src="([^"]+)"[^>]*>.*?'  # Second img (poster - capture)
+        r'<em>(\d+)</em>',  # Episode number
+        eps_html, 
+        re.DOTALL
+    )
     
     utils.kodilog(f'{site.title}: Found {len(episodes)} episodes')
     
     if episodes:
         # Sort episodes by number (ascending - Episode 1, 2, 3...)
-        episodes.sort(key=lambda x: int(x[1]))
-        for ep_url, ep_num in episodes:
-            site.add_dir(f'الحلقة {ep_num}', ep_url, 'getLinks', site.image, episode=ep_num, media_type='episode')
+        episodes.sort(key=lambda x: int(x[2]))
+        for ep_url, ep_poster, ep_num in episodes:
+            # Upgrade to full-res poster by removing size suffix (e.g., -768x432)
+            ep_poster = re.sub(r'-\d+x\d+\.', '.', ep_poster)
+            # Remove quality parameter
+            ep_poster = ep_poster.split('?')[0] if ep_poster else ''
+            site.add_dir(f'الحلقة {ep_num}', ep_url, 'getLinks', ep_poster, episode=ep_num, media_type='episode')
     else:
         utils.kodilog(f'{site.title}: No episodes found, treating as direct link')
         getLinks(url)
