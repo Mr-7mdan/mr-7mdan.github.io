@@ -72,9 +72,13 @@ def _performSearch(search_text, content_type):
         utils.eod(content='movies')
         return
     
-    # Parse search results - pattern: <a href="...">...<img src="...">...<h1>title</h1>
-    pattern = r'<a href="([^"]+)"[^>]*>.*?<img[^>]*src="([^"]+)"[^>]*>.*?<h1[^>]*>([^<]+)</h1>'
+    # Parse search results - real structure uses series__box / movie__block containers
+    pattern = r'<(?:div class="series__box"|a[^>]+class="movie__block[^"]*")[^>]*>\s*<a href="([^"]+)"[^>]*>.*?(?:data-src|src)="([^"]+)"[^>]*alt="([^"]+)"'
     entries = re.findall(pattern, html, re.DOTALL)
+    if not entries:
+        # Fallback: any anchor wrapping an image with alt= inside a list item
+        pattern = r'<li[^>]*>\s*<(?:div[^>]*>\s*)?<a href="([^"]+)"[^>]*>\s*<[^>]*>\s*<img[^>]+(?:data-src|src)="([^"]+)"[^>]+alt="([^"]+)"'
+        entries = re.findall(pattern, html, re.DOTALL)
     
     utils.kodilog(f'ArabSeed Search: Found {len(entries)} results')
     

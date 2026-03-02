@@ -61,6 +61,9 @@ def getTVShows(url):
     seen_titles = set()
     
     for series_url, title, poster in matches:
+        # Skip non-series URLs (e.g. site homepage link)
+        if '/series/' not in series_url:
+            continue
         # Clean title - remove "قرمزي" suffix if present
         title = re.sub(r'\s+قرمزي\s*$', '', title).strip()
         title = re.sub(r'مشاهدة|مسلسل|مدبلجلة|مترجمة|اون لاين|HD|كاملة', '', title).strip()

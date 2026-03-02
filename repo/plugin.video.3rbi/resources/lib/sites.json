@@ -13,12 +13,12 @@
         "asia2tv": {
             "label": "Asia2TV",
             "active": true,
-            "url": "https://asia2tv.co/"
+            "url": "https://asia2tv.com"
         },
         "cima4u": {
             "label": "Cima4u",
             "active": true,
-            "url": "https://cima4u.info"
+            "url": "https://c4u.top"
         },
         "daktna": {
             "label": "Daktna",
@@ -38,7 +38,7 @@
         "egydead": {
             "label": "EgyDead",
             "active": true,
-            "url": "https://w.egydead.live"
+            "url": "https://egydead.motorcycles"
         },
         "esseq": {
             "label": "Esseq",
@@ -63,7 +63,7 @@
         "faselhd": {
             "label": "FaselHD",
             "active": true,
-            "url": "https://faselhd.club",
+            "url": "https://web320x.faselhdx.bid",
             "alt_urls": [
                 "https://web22812x.faselhdx.bid"
             ]
@@ -86,7 +86,7 @@
         "larozza": {
             "label": "Larozza",
             "active": true,
-            "url": "https://larozza.xyz"
+            "url": "https://larozza.monster"
         },
         "shhid4u": {
             "label": "Shahid4U",

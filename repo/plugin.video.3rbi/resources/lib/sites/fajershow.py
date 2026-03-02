@@ -30,9 +30,9 @@ def Main():
 
 
 def _listing_pattern(html):
-    """Extract items from .item-card listing pages"""
-    pattern = r'<a href="(https://fajer\.show/[^"]+)" class="item-card">\s*<div class="card-poster">\s*<img src="([^"]+)" alt="([^"]+)"[^>]*>.*?<h3>([^<]+)</h3>\s*<span class="year-badge">([^<]*)</span>'
-    return re.findall(pattern, html, re.DOTALL)
+    """Extract items from .item-card listing pages. year-badge is optional (absent in search results)."""
+    pattern = r'<a href="(https://fajer\.show/[^"]+)" class="item-card">\s*<div class="card-poster">\s*<img src="([^"]+)" alt="([^"]+)"[^>]*>.*?<h3>([^<]+)</h3>(?:\s*<span class="year-badge">([^<]*)</span>)?'
+    return [(url, img, alt, title, year or '') for url, img, alt, title, year in re.findall(pattern, html, re.DOTALL)]
 
 
 def _hi_res(img):

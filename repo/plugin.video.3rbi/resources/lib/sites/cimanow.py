@@ -19,30 +19,30 @@ site = SiteBase('cimanow', 'CimaNow', url=None, image='sites/cimanow.png')
 @site.register(default_mode=True)
 def Main():
     """Main menu"""
-    # Movies
-    site.add_dir('أفلام عربية', site.url + '/category/افلام-عربية/', 'getMovies', get_category_icon('Arabic Movies'))
-    site.add_dir('أفلام أجنبية', site.url + '/category/افلام-اجنبية/', 'getMovies', get_category_icon('English Movies'))
-    site.add_dir('أفلام تركية', site.url + '/category/افلام-تركية/', 'getMovies', get_category_icon('Turkish Movies'))
-    site.add_dir('أفلام هندية', site.url + '/category/افلام-هندية/', 'getMovies', get_category_icon('Indian Movies'))
-    site.add_dir('أفلام كرتون', site.url + '/category/افلام-انيميشن/', 'getMovies', get_category_icon('Cartoon Movies'))
+    # Movies - Using unified English category names for category browser
+    site.add_dir('Arabic Movies', site.url + '/category/افلام-عربية/', 'getMovies', get_category_icon('Arabic Movies'))
+    site.add_dir('English Movies', site.url + '/category/افلام-اجنبية/', 'getMovies', get_category_icon('English Movies'))
+    site.add_dir('Turkish Movies', site.url + '/category/افلام-تركية/', 'getMovies', get_category_icon('Turkish Movies'))
+    site.add_dir('Indian Movies', site.url + '/category/افلام-هندية/', 'getMovies', get_category_icon('Indian Movies'))
+    site.add_dir('Cartoon Movies', site.url + '/category/افلام-انيميشن/', 'getMovies', get_category_icon('Cartoon Movies'))
     
-    # TV Shows
-    site.add_dir('مسلسلات عربية', site.url + '/category/مسلسلات-عربية/', 'getTVShows', get_category_icon('Arabic TV Shows'))
-    site.add_dir('مسلسلات أجنبية', site.url + '/category/مسلسلات-اجنبية/', 'getTVShows', get_category_icon('English TV Shows'))
-    site.add_dir('مسلسلات تركية', site.url + '/category/مسلسلات-تركية/', 'getTVShows', get_category_icon('Turkish TV Shows'))
-    site.add_dir('مسلسلات كرتون', site.url + '/category/مسلسلات-انيميشن/', 'getTVShows', get_category_icon('Cartoon TV Shows'))
+    # TV Shows - Using unified English category names for category browser
+    site.add_dir('Arabic TV Shows', site.url + '/category/مسلسلات-عربية/', 'getTVShows', get_category_icon('Arabic TV Shows'))
+    site.add_dir('English TV Shows', site.url + '/category/مسلسلات-اجنبية/', 'getTVShows', get_category_icon('English TV Shows'))
+    site.add_dir('Turkish TV Shows', site.url + '/category/مسلسلات-تركية/', 'getTVShows', get_category_icon('Turkish TV Shows'))
+    site.add_dir('Cartoon TV Shows', site.url + '/category/مسلسلات-انيميشن/', 'getTVShows', get_category_icon('Cartoon TV Shows'))
     
-    # Other Categories
-    site.add_dir('برامج تلفزيونية', site.url + '/category/البرامج-التلفزيونية/', 'getTVShows', get_category_icon('TV Programs'))
-    site.add_dir('مسرحيات', site.url + '/category/مسرحيات/', 'getMovies', get_category_icon('Theater'))
+    # Other Categories - Using unified English category names for category browser
+    site.add_dir('TV Programs', site.url + '/category/البرامج-التلفزيونية/', 'getTVShows', get_category_icon('TV Programs'))
+    site.add_dir('Theater', site.url + '/category/مسرحيات/', 'getMovies', get_category_icon('Theater'))
     
-    # Ramadan
-    site.add_dir('مسلسلات رمضان 2026', site.url + '/category/رمضان-2026/', 'getTVShows', get_category_icon('Ramadan TV Shows'))
-    site.add_dir('مسلسلات رمضان 2025', site.url + '/category/رمضان-2025/', 'getTVShows', get_category_icon('Ramadan TV Shows'))
-    site.add_dir('مسلسلات رمضان 2024', site.url + '/category/رمضان-2024/', 'getTVShows', get_category_icon('Ramadan TV Shows'))
+    # Ramadan - Using unified English category names for category browser
+    site.add_dir('Ramadan TV Shows', site.url + '/category/رمضان-2026/', 'getTVShows', get_category_icon('Ramadan TV Shows'))
+    site.add_dir('Ramadan TV Shows', site.url + '/category/رمضان-2025/', 'getTVShows', get_category_icon('Ramadan TV Shows'))
+    site.add_dir('Ramadan TV Shows', site.url + '/category/رمضان-2024/', 'getTVShows', get_category_icon('Ramadan TV Shows'))
     
     # Search
-    site.add_dir('بحث', '', 'search', get_category_icon('Search'))
+    site.add_dir('Search', '', 'search', get_category_icon('Search'))
     
     utils.eod()
 

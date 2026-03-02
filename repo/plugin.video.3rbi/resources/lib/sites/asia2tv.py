@@ -39,6 +39,15 @@ def searchSeries():
         getTVShows(site.url + '?s=' + search_text)
 
 @site.register()
+def getMixed(url):
+    """Search both series and movies - used by global search with /search?s={q}"""
+    base = url.split('?')[0]
+    query_part = url.split('?', 1)[1] if '?' in url else ''
+    getTVShows(base + '?category=series&' + query_part)
+    getMovies(base + '?category=movies&' + query_part)
+
+
+@site.register()
 def getMovies(url):
     html = utils.getHtml(url, headers={'User-Agent': utils.USER_AGENT, 'Referer': site.url})
     

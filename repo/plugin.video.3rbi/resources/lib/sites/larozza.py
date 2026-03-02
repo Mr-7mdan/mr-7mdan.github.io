@@ -71,7 +71,7 @@ def getVideos(url):
         return
     
     # Pattern tested in terminal - works for both category and search pages
-    pattern = r'<li class="col-xs-6[^>]*>.*?<a href="(https://larozza\.xyz/video\.php\?vid=[^"]+)"[^>]+title="([^"]+)"[^>]*>.*?<img[^>]+data-echo="([^"]+)"'
+    pattern = r'<li class="col-xs-6[^>]*>.*?<a href="(https://larozza\.[^/]+/video\.php\?vid=[^"]+)"[^>]+title="([^"]+)"[^>]*>.*?<img[^>]+data-echo="([^"]+)"'
     matches = re.findall(pattern, html, re.DOTALL)
     
     utils.kodilog(f'{site.title}: Found {len(matches)} videos')

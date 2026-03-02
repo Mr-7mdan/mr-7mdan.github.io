@@ -81,7 +81,27 @@ def getTVShows(url, is_search=False):
     if not html:
         utils.eod(content='tvshows')
         return
-    
+
+    # Search results page: links are watch.php?vid= episode links with title= attribute
+    # Deduplicate by show name (strip episode markers) and emit one folder per show
+    if is_search:
+        ep_links = re.findall(r'href="(https?://[^"]+watch\.php\?vid=[^"]+)"[^>]+title="([^"]+)"', html)
+        utils.kodilog(f'{site.title}: Search found {len(ep_links)} episode links')
+        seen = {}
+        for ep_url, title in ep_links:
+            title = utils.cleantext(title)
+            show_name = re.sub(r'\s*ح\s*\d+\s*', ' ', title).strip()
+            show_name = re.sub(r'\s*م\s*\d+\s*', ' ', show_name).strip()
+            show_name = re.sub(r'\s+', ' ', show_name).strip()
+            if not show_name:
+                continue
+            if show_name not in seen:
+                seen[show_name] = ep_url
+        for show_name, ep_url in seen.items():
+            site.add_dir(show_name, ep_url, 'getEpisodes', site.image, media_type='tvshow')
+        utils.eod(content='tvshows')
+        return
+
     # Pattern 1: series-mini-icon (proper series with posters) - always include these
     series_pattern = r'<div class="series-mini-icon[^>]*>.*?<a href="([^"]+)"[^>]+title="([^"]+)"[^>]*>.*?<img[^>]+src="([^"]+)"'
     series_matches = re.findall(series_pattern, html, re.DOTALL)

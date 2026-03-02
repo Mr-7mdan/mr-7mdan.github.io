@@ -92,31 +92,31 @@ def getMovies(url, page=1):
     # Debug: log HTML length and check for show-card
     utils.kodilog(f'{site.title}: HTML length={len(html)}, show-card count={html.count("show-card")}')
     
-    # Pattern for show-card with background-image (handle any attribute order)
-    # Use non-greedy match for href and style attributes in any order
-    pattern = r'<a [^>]*href="([^"]+)"[^>]*class="show-card"[^>]*style="background-image:url\(([^)]+)\)'
+    # Pattern: show-card anchor + background-image (style may have space after colon)
+    pattern = r'<a\s[^>]*href="([^"]+)"[^>]*class="show-card"[^>]*style="background-image:\s*url\(([^)]+)\)[^>]*>([\s\S]*?)</a>'
     matches = re.findall(pattern, html, re.DOTALL)
-    
-    # If no matches, try class before href
     if not matches:
-        pattern = r'<a [^>]*class="show-card"[^>]*href="([^"]+)"[^>]*style="background-image:url\(([^)]+)\)'
+        pattern = r'<a\s[^>]*class="show-card"[^>]*href="([^"]+)"[^>]*style="background-image:\s*url\(([^)]+)\)[^>]*>([\s\S]*?)</a>'
         matches = re.findall(pattern, html, re.DOTALL)
     
     utils.kodilog(f'{site.title}: Found {len(matches)} items')
     
-    for item_url, image in matches:
+    for item_url, image, card_html in matches:
         # Only process film URLs
         if '/film/' not in item_url:
             continue
         
-        # Extract title from URL slug
-        slug = item_url.rstrip('/').split('/')[-1]
-        title = html_module.unescape(slug)
+        # Try to extract title from card content first, fall back to URL slug
+        title_m = re.search(r'<(?:h3|p)[^>]*class="[^"]*title[^"]*"[^>]*>([^<]+)<|<span[^>]*class="[^"]*title[^"]*"[^>]*>([^<]+)<', card_html)
+        if title_m:
+            title = (title_m.group(1) or title_m.group(2) or '').strip()
+        else:
+            slug = item_url.rstrip('/').split('/')[-1]
+            title = html_module.unescape(slug).replace('-', ' ').replace('_', ' ')
         
         # Clean title
         title = title.strip()
         title = re.sub(r'^فيلم\s+', '', title)
-        title = title.replace('-', ' ').replace('_', ' ')
         
         # Extract year if present
         year = ''
@@ -157,30 +157,31 @@ def getEpisodes(url, page=1):
         utils.eod(content='episodes')
         return
     
-    # Pattern for show-card with background-image (handle any attribute order)
-    pattern = r'<a [^>]*href="([^"]+)"[^>]*class="show-card"[^>]*style="background-image:url\(([^)]+)\)'
+    # Pattern: show-card anchor + background-image (style may have space after colon)
+    pattern = r'<a\s[^>]*href="([^"]+)"[^>]*class="show-card"[^>]*style="background-image:\s*url\(([^)]+)\)[^>]*>([\s\S]*?)</a>'
     matches = re.findall(pattern, html, re.DOTALL)
-    
-    # If no matches, try class before href
     if not matches:
-        pattern = r'<a [^>]*class="show-card"[^>]*href="([^"]+)"[^>]*style="background-image:url\(([^)]+)\)'
+        pattern = r'<a\s[^>]*class="show-card"[^>]*href="([^"]+)"[^>]*style="background-image:\s*url\(([^)]+)\)[^>]*>([\s\S]*?)</a>'
         matches = re.findall(pattern, html, re.DOTALL)
     
     utils.kodilog(f'{site.title}: Found {len(matches)} items')
     
-    for item_url, image in matches:
+    for item_url, image, card_html in matches:
         # Only process episode URLs
         if '/episode/' not in item_url:
             continue
         
-        # Extract title from URL slug
-        slug = item_url.rstrip('/').split('/')[-1]
-        title = html_module.unescape(slug)
+        # Try to extract title from card content first, fall back to URL slug
+        title_m = re.search(r'<(?:h3|p)[^>]*class="[^"]*title[^"]*"[^>]*>([^<]+)<|<span[^>]*class="[^"]*title[^"]*"[^>]*>([^<]+)<', card_html)
+        if title_m:
+            title = (title_m.group(1) or title_m.group(2) or '').strip()
+        else:
+            slug = item_url.rstrip('/').split('/')[-1]
+            title = html_module.unescape(slug).replace('-', ' ').replace('_', ' ')
         
         # Clean title
         title = title.strip()
         title = re.sub(r'^مسلسل\s+', '', title)
-        title = title.replace('-', ' ').replace('_', ' ')
         
         if title:
             site.add_dir(title, item_url, 'getLinks', image, media_type='episode')
@@ -214,13 +215,19 @@ def getMixed(url, page=1):
         utils.eod()
         return
     
-    # Pattern for show-card with background-image
-    pattern = r'<a href="([^"]+)" class="show-card"[^>]*style="background-image:url\(([^)]+)\)[^>]*>.*?<p class="title">([^<]+)</p>'
+    # Pattern for show-card with background-image (space after colon optional)
+    pattern = r'<a\s[^>]*href="([^"]+)"[^>]*class="show-card"[^>]*style="background-image:\s*url\(([^)]+)\)[^>]*>([\s\S]*?)</a>'
     matches = re.findall(pattern, html, re.DOTALL)
     
     utils.kodilog(f'{site.title}: Found {len(matches)} items')
     
-    for item_url, image, title in matches:
+    for item_url, image, card_html in matches:
+        title_m = re.search(r'<(?:h3|p)[^>]*class="[^"]*title[^"]*"[^>]*>([^<]+)<|<span[^>]*class="[^"]*title[^"]*"[^>]*>([^<]+)<', card_html)
+        if title_m:
+            title = (title_m.group(1) or title_m.group(2) or '').strip()
+        else:
+            slug = item_url.rstrip('/').split('/')[-1]
+            title = html_module.unescape(slug).replace('-', ' ')
         title = title.strip()
         
         # Route based on URL type
