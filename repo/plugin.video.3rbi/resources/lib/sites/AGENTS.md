@@ -31,6 +31,92 @@ cp resources/lib/sites/[sitename].py "/Users/mohammed/Library/Application Suppor
 tail -f ~/Library/Logs/kodi.log | grep "@@@@3rbi:"
 ```
 
+## Global Search Contract
+
+Every site module **must** satisfy this contract to work with `global_search.py`.
+
+### 1. Register in SEARCH_CONFIG (`global_search.py`)
+
+Add one entry to `SEARCH_CONFIG` at the top of `global_search.py`:
+
+```python
+'sitename': {'url': '{base}/?s={q}', 'func': 'getMovies'},
+```
+
+| Placeholder | Value |
+|---|---|
+| `{base}` | `site.url` (no trailing slash) |
+| `{q}` | URL-encoded query (`quote_plus`) |
+| `{q_raw}` | URL-path-encoded query (`quote`) |
+
+**Special cases:**
+- `'kwargs': {'is_search': True}` — pass extra kwarg to listing func
+- `'extra_args': ["'Search'", 'None']` — positional args after URL (akwam-style)
+- `'query_args': ['plain_query', 'content_type']` — func builds its own URL (arabseed-style)
+
+### 2. Listing function handles search HTML
+
+Search result pages often have **different HTML** than category pages. The listing function called by global search must handle both:
+
+```python
+@site.register()
+def getMovies(url):
+    html = utils.getHtml(url, headers={'User-Agent': utils.USER_AGENT}, site_name=site.name)
+
+    # Pattern 1: category page structure
+    pattern1 = r'<li class="MovieBlock">.*?href="([^"]+)".*?data-image="([^"]+)".*?<div class="Title">([^<]+)</div>'
+    matches = re.findall(pattern1, html, re.DOTALL)
+
+    # Pattern 2: search results may differ (background-image instead of data-image)
+    if not matches:
+        pattern2 = r'<li class="MovieBlock">.*?href="([^"]+)".*?background-image:\s*url\(([^)]+)\).*?<div class="Title">([^<]+)</div>'
+        matches = re.findall(pattern2, html, re.DOTALL)
+
+    utils.kodilog(f'{site.title}: Found {len(matches)} items')
+```
+
+**Key rules:**
+- Always log match count: `utils.kodilog(f'{site.title}: Found {len(matches)} items')`
+- Use `\s*` after CSS colon: `background-image:\s*url\(` — sites vary spacing
+- Filter junk URLs: only accept paths like `/series/`, `/film/`, `/episode/` — skip homepage links
+- Titles must have Arabic characters — the interceptor drops items with < 3 Arabic chars automatically
+
+### 3. Test search URL separately
+
+```bash
+Q="%D8%A7%D9%88%D8%B1%D9%87%D8%A7%D9%86"  # اورهان encoded
+curl -s -L "https://site.com/?s=$Q" -A "Mozilla/5.0" -o /tmp/search.html
+
+python3 -c "
+import re
+html = open('/tmp/search.html').read()
+print('has query:', 'اورهان' in html)
+print('size:', len(html))
+# test your pattern
+pattern = r'YOUR_PATTERN'
+m = re.findall(pattern, html, re.DOTALL)
+print('matches:', len(m), m[:2])
+"
+```
+
+**Common failure modes:**
+- Site returns **empty results** for the test query — use a more common word like `مسلسل` to verify the pattern works at all
+- Site **redirects to a different domain** — check final URL, update `sites.json`
+- Search endpoint **differs** from `?s=` — check site's search form `action=` attribute
+- Pattern has `background-image:url(` without `\s*` — site may use `background-image: url(` with space
+
+### 4. What the interceptor drops automatically
+
+The global search interceptor (`_make_intercept_addDir`) silently drops:
+- Pagination items: `الصفحة التالية`, `Next Page`, `Next `
+- Search/menu items: `بحث`, `Search`
+- Items with **no Arabic characters**
+- Items with **fewer than 3 Arabic characters** (navigation junk)
+
+So your listing function does **not** need to filter these manually for global search purposes.
+
+---
+
 ## Patterns & Conventions
 
 ### File Organization

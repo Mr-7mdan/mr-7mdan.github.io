@@ -20,8 +20,9 @@ def Main():
     from resources.lib.category_mapper import get_category_icon
 
     """Main menu"""
-    site.add_dir('Movies', site.url + '/category/filmler/', 'getMovies', get_category_icon('Movies'))
-    site.add_dir('Complete Series', site.url + '/category/arsiv/', 'getTVShows', get_category_icon('Complete Series'))
+    # Site now primarily shows latest episodes on homepage
+    site.add_dir('Latest Episodes', site.url + '/', 'getEpisodes', get_category_icon('Ramadan TV Shows'))
+    site.add_dir('Series', site.url + '/series/', 'getTVShows', get_category_icon('TV Shows'))
     site.add_dir('Search', '', 'search', get_category_icon('Search'))
     
     utils.eod()
@@ -50,14 +51,14 @@ def getMovies(url):
         utils.eod(content='movies')
         return
     
-    # Esseq uses background-image in style attribute
-    pattern = r'<a href="([^"]+)"[^>]*>.*?background-image:url\(([^\)]+)\).*?<div class="title">([^<]+)</div>'
+    # Esseq uses data-img attribute
+    pattern = r'<a href="([^"]+)" title="([^"]+)"[^>]*>.*?data-img="([^"]+)"'
     matches = re.findall(pattern, html, re.DOTALL)
     
     utils.kodilog(f'{site.title}: Found {len(matches)} items')
     
     if matches:
-        for movie_url, image, title in matches:
+        for movie_url, title, image in matches:
             # Clean title
             title = title.strip()
             title = re.sub(r'مشاهدة|فيلم|مترجم|مترجمة|اون لاين|HD|كامل|كاملة', '', title).strip()
@@ -96,7 +97,7 @@ def getTVShows(url):
         return
     
     # Same pattern as movies
-    pattern = r'<a href="([^"]+)"[^>]*>.*?background-image:url\(([^\)]+)\).*?<div class="title">([^<]+)</div>'
+    pattern = r'<a href="([^"]+)" title="([^"]+)"[^>]*>.*?data-img="([^"]+)"'
     matches = re.findall(pattern, html, re.DOTALL)
     
     utils.kodilog(f'{site.title}: Found {len(matches)} raw items')
@@ -104,7 +105,7 @@ def getTVShows(url):
     seen_titles = set()
     
     if matches:
-        for series_url, image, title in matches:
+        for series_url, title, image in matches:
             # Clean title
             title = title.strip()
             title = re.sub(r'مشاهدة|مسلسل|مترجم|مترجمة|اون لاين|HD|كامل|كاملة', '', title).strip()
@@ -151,13 +152,17 @@ def getEpisodes(url, name=''):
         return
     
     # Episodes use same pattern
-    pattern = r'<a href="(https://qeseh\.net/[^"]*episode[^"]+)"[^>]*>.*?background-image:url\(([^\)]+)\).*?<div class="title">([^<]+)</div>'
+    pattern = r'<a href="([^"]+)" title="([^"]+)"[^>]*>.*?data-img="([^"]+)"'
     matches = re.findall(pattern, html, re.DOTALL | re.IGNORECASE)
     
     utils.kodilog(f'{site.title}: Found {len(matches)} episodes')
     
     if matches:
-        for ep_url, ep_image, ep_title in matches:
+        for ep_url, ep_title, ep_image in matches:
+            # Skip non-episode links
+            if '/video/' not in ep_url:
+                continue
+                
             # Clean title
             ep_title = ep_title.strip()
             ep_title = re.sub(r'مشاهدة|مسلسل|مترجم|مترجمة|اون لاين|HD|كامل|كاملة', '', ep_title).strip()
@@ -191,85 +196,64 @@ def getLinks(url, name=''):
     """Extract video links from episode/movie page"""
     utils.kodilog(f'{site.title}: Getting links from: {url}')
     
-    html = utils.getHtml(url, headers={'User-Agent': utils.USER_AGENT}, site_name=site.name)
+    # Fetch downloads page
+    download_url = url + '?do=downloads' if '?do=' not in url else url
+    html = utils.getHtml(download_url, headers={'User-Agent': utils.USER_AGENT}, site_name=site.name)
     
     if not html:
         utils.notify(site.title, 'لم يتم تحميل الصفحة', icon=site.image)
         utils.eod(content='videos')
         return
     
-    # Find the watch URL with base64 encoded JSON
-    watch_url_match = re.search(r'https://qesen\.net/watch\?post=([^"\'&\s]+)', html)
+    # Extract video links from downloads page
+    hoster_manager = get_hoster_manager()
+    servers_added = 0
     
-    if not watch_url_match:
-        utils.notify(site.title, 'لم يتم العثور على روابط المشاهدة', icon=site.image)
-        utils.eod(content='videos')
-        return
+    # Pattern: Find external video host links
+    link_pattern = r'href="([^"]+(?:vidsp|ok\.ru|uqload|voe|dood|streamtape)[^"]+)"'
+    video_links = re.findall(link_pattern, html, re.IGNORECASE)
     
-    # Decode base64 JSON
-    encoded_data = watch_url_match.group(1)
+    utils.kodilog(f'{site.title}: Found {len(video_links)} potential video links')
     
-    try:
-        decoded_json = base64.b64decode(encoded_data).decode('utf-8')
-        data = json.loads(decoded_json)
-        
-        utils.kodilog(f'{site.title}: Decoded watch data')
-        
-        hoster_manager = get_hoster_manager()
-        servers_added = 0
-        
-        # Skip Dailymotion - blocked by Cloudflare
-        # Keep for reference if Cloudflare bypass is added later
-        
-        # Add servers from JSON
-        if 'servers' in data:
-            for server_info in data['servers']:
-                server_name = server_info.get('name', 'Unknown')
-                server_id = server_info.get('id', '')
-                
-                if not server_id:
-                    continue
-                
-                # Map server names to actual video hosts
-                server_url = None
-                
-                if server_name.lower() == 'ok':
-                    # OK.ru video platform - working with existing resolver
-                    server_url = f'https://ok.ru/videoembed/{server_id}'
-                elif server_name.lower() in ['arab hd', 'arabhd']:
-                    # Arab HD returns empty array - API broken, skip
-                    utils.kodilog(f'{site.title}: Skipping Arab HD (broken API)')
-                    continue
-                elif server_name.lower() == 'estream':
-                    # estream returns tracking pixel only - broken, skip
-                    utils.kodilog(f'{site.title}: Skipping estream (broken)')
-                    continue
-                else:
-                    # Unknown server - log and skip
-                    utils.kodilog(f'{site.title}: Unknown server type: {server_name}')
-                    continue
-                
-                if server_url:
-                    label, should_skip = utils.format_resolver_link(
-                        hoster_manager,
-                        server_url,
-                        site.title,
-                        name,
-                        quality=server_name
-                    )
-                    
-                    if not should_skip:
-                        basics.addDownLink(label, server_url, f'{site.name}.PlayVid', site.image)
-                        servers_added += 1
-        
-        utils.kodilog(f'{site.title}: Added {servers_added} servers')
-        
-        if servers_added == 0:
-            utils.notify(site.title, 'لم يتم العثور على روابط', icon=site.image)
+    if video_links:
+        for video_url in video_links:
+            video_url = video_url.strip()
+            
+            # Skip social media links
+            if any(x in video_url.lower() for x in ['facebook', 'twitter', 'instagram', 'youtube', 'google']):
+                continue
+            
+            # Extract server name from URL
+            server_name = 'Server'
+            if 'vidsp' in video_url:
+                server_name = 'VidSP'
+            elif 'ok.ru' in video_url:
+                server_name = 'OK.ru'
+            elif 'uqload' in video_url:
+                server_name = 'Uqload'
+            elif 'voe' in video_url:
+                server_name = 'Voe'
+            elif 'dood' in video_url:
+                server_name = 'Dood'
+            elif 'streamtape' in video_url:
+                server_name = 'Streamtape'
+            
+            label, should_skip = utils.format_resolver_link(
+                hoster_manager,
+                video_url,
+                site.title,
+                name,
+                quality=server_name
+            )
+            
+            if not should_skip:
+                basics.addDownLink(label, video_url, f'{site.name}.PlayVid', site.image)
+                servers_added += 1
     
-    except Exception as e:
-        utils.kodilog(f'{site.title}: Error decoding watch data: {e}')
-        utils.notify(site.title, 'خطأ في فك تشفير البيانات', icon=site.image)
+    utils.kodilog(f'{site.title}: Added {servers_added} servers')
+    
+    if servers_added == 0:
+        utils.notify(site.title, 'لم يتم العثور على روابط', icon=site.image)
     
     utils.eod(content='videos')
 
