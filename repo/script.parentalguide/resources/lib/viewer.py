@@ -269,7 +269,37 @@ class SummaryViewer(ParentalGuideViewer):
                 except Exception as e:
                     if "Non-Existent Control" not in str(e):
                         log(f"SummaryViewer: Error checking category position: {str(e)}")
-                
+
+                # Every ~2 seconds, check if new provider data has arrived
+                if check_count % 14 == 0:
+                    try:
+                        provider_list = self.getControl(4400)
+                        needs_rebuild = False
+                        for idx in range(provider_list.size()):
+                            item = provider_list.getListItem(idx)
+                            provider_key = item.getProperty('provider_key')
+                            current_status = w.getProperty(f"{provider_key}-Status")
+                            old_has_data = item.getProperty('has_data')
+                            new_has_data = str(current_status == "true")
+                            if new_has_data != old_has_data:
+                                needs_rebuild = True
+                                break
+
+                        if needs_rebuild:
+                            saved_pos = provider_list.getSelectedPosition()
+                            self._rebuildProviderList()
+                            if saved_pos >= 0:
+                                provider_list = self.getControl(4400)
+                                provider_list.selectItem(saved_pos)
+                                # Refresh categories for currently focused provider
+                                selected_item = provider_list.getSelectedItem()
+                                if selected_item and selected_item.getProperty('has_data') == "True":
+                                    self._rebuildCategoryListForProvider(selected_item.getProperty('provider_key'))
+                            log("SummaryViewer: Provider list refreshed - new data detected")
+                    except Exception as e:
+                        if "Non-Existent Control" not in str(e):
+                            log(f"SummaryViewer: Error checking for new data: {str(e)}")
+
                 time.sleep(0.15)  # Check every 150ms for responsive UI
             except Exception as e:
                 log(f"SummaryViewer: Monitoring thread error: {str(e)}")

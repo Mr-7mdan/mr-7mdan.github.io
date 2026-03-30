@@ -11,7 +11,8 @@ from resources.lib.settings import Settings
 from resources.lib.viewer import DetailViewer
 from resources.lib.viewer import SummaryViewer
 from resources.lib.settings import log
-from NudityCheck import getData, getIMDBID, API_BASE_URL
+from threading import Thread
+from NudityCheck import getData, getIMDBID, API_BASE_URL, CopyPropertiesToGlobal, db
 
 if sys.version_info >= (2, 7):
     import json
@@ -173,21 +174,72 @@ if __name__ == '__main__':
     movie_mpaa = xbmc.getInfoLabel("ListItem.MPAA")
     imdb_id = xbmc.getInfoLabel("ListItem.IMDBNumber")
     
+    # Look up IMDB ID if not available
+    if not imdb_id or imdb_id == '':
+        log("ParentalGuide: No IMDB ID found, looking up via OMDB")
+        try:
+            imdb_id = getIMDBID(videoName, movie_year)
+        except Exception as e:
+            log(f"ParentalGuide: OMDB lookup failed: {str(e)}")
+            imdb_id = None
+
     log(f"ParentalGuide: Movie info - Title: '{movie_title}', Year: '{movie_year}', MPAA: '{movie_mpaa}', IMDB: '{imdb_id}'")
-    
+
     # Set window properties so dialog can access them
     w = xbmcgui.Window(10000)
     w.setProperty("ParentalGuide.Dialog.Title", movie_title)
     w.setProperty("ParentalGuide.Dialog.Year", movie_year)
     w.setProperty("ParentalGuide.Dialog.MPAA", movie_mpaa)
-    
-    log(f"ParentalGuide: Properties set - verifying...")
-    log(f"ParentalGuide: Title prop: '{w.getProperty('ParentalGuide.Dialog.Title')}'")
-    log(f"ParentalGuide: Year prop: '{w.getProperty('ParentalGuide.Dialog.Year')}'")
-    log(f"ParentalGuide: MPAA prop: '{w.getProperty('ParentalGuide.Dialog.MPAA')}'")
-    
-    # Use SummaryViewer class to get custom functionality (onFocus, etc)
-    viewer = SummaryViewer("summary.xml", CWD, title=movie_title, details=None, imdb_id=imdb_id, video_name=videoName, movie_title=movie_title, movie_year=movie_year, movie_mpaa=movie_mpaa)
+
+    # Fetch data from all enabled providers BEFORE opening dialog
+    xbmc.executebuiltin("ActivateWindow(busydialog)")
+
+    providers = []
+    if ADDON.getSetting("IMDBProvider") == "true":
+        providers.append("IMDB")
+    if ADDON.getSetting("kidsInMindProvider") == "true":
+        providers.append("KidsInMind")
+    if ADDON.getSetting("movieGuideOrgProvider") == "true":
+        providers.append("MovieGuide")
+    if ADDON.getSetting("DoveFoundationProvider") == "true":
+        providers.append("DoveFoundation")
+    if ADDON.getSetting("ParentPreviewsProvider") == "true":
+        providers.append("ParentPreviews")
+    if ADDON.getSetting("CringMDBProvider") == "true":
+        providers.append("cring")
+    if ADDON.getSetting("RaisingChildrenProvider") == "true":
+        providers.append("RaisingChildren")
+    if ADDON.getSetting("CSMProvider") == "true":
+        providers.append("CSM")
+
+    threads = []
+    for i, provider in enumerate(providers):
+        t = Thread(target=getData, args=(videoName, imdb_id, None, 10000, provider, i))
+        t.start()
+        threads.append(t)
+
+    for t in threads:
+        t.join(timeout=15)
+
+    # Copy per-movie properties to global so skin and dialog can read them
+    if imdb_id and providers:
+        CopyPropertiesToGlobal(imdb_id, providers)
+
+    xbmc.executebuiltin("Dialog.Close(busydialog)")
+
+    # Get first available provider's cached data for initial display
+    first_details = None
+    for provider in providers:
+        if imdb_id:
+            key = imdb_id + "_" + provider.lower()
+        else:
+            key = videoName.replace(":", "").replace("-", "_").replace(" ", "_").lower() + "_" + provider.lower()
+        cached = db.get(key)
+        if cached and cached.get('review-items'):
+            first_details = cached
+            break
+
+    viewer = SummaryViewer("summary.xml", CWD, title=movie_title, details=first_details, imdb_id=imdb_id, video_name=videoName, movie_title=movie_title, movie_year=movie_year, movie_mpaa=movie_mpaa)
     viewer.doModal()
     del viewer
     
