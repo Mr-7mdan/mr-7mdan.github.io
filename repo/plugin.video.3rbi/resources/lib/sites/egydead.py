@@ -5,6 +5,7 @@ https://egydead.rip / https://w.egydead.live
 """
 
 import re
+import urllib.parse as urllib_parse
 from resources.lib import utils
 from resources.lib import basics
 from resources.lib.basics import addon_image
@@ -304,15 +305,15 @@ def getEpisodes(url, name=''):
         utils.eod(content='episodes')
         return
     
-    # Extract episodes-list section only (before seasons-list)
-    episodes_section = re.search(r'<div class="episodes-list">(.*?)</div>\s*(?:<div class="seasons-list">|$)', html, re.DOTALL | re.IGNORECASE)
-    
+    # Extract the EpsList block (episodes live inside episodes-list > EpsList)
+    episodes_section = re.search(r'<div class="EpsList">(.*?)</div>\s*</div>', html, re.DOTALL | re.IGNORECASE)
+
     if not episodes_section:
-        utils.kodilog(f'{site.title}: No episodes-list section found')
+        utils.kodilog(f'{site.title}: No EpsList section found')
         utils.eod(content='episodes')
         return
-    
-    # Pattern for episodes (simple <li><a> structure in episodes-list)
+
+    # Pattern for episodes (simple <li><a> structure in EpsList)
     pattern = r'<li>\s*<a href="([^"]+)"[^>]*>([^<]+)</a>\s*</li>'
     episodes = re.findall(pattern, episodes_section.group(1), re.DOTALL)
     

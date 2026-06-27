@@ -52,8 +52,10 @@ def getTVShows(url):
         utils.eod(content='tvshows')
         return
     
-    # Extract series from article blocks with poster images
-    pattern = r'<a href="([^"]+)" title="([^"]+)"[^>]*>.*?<img[^>]*data-src="?([^" >]+)"?'
+    # Extract series from article blocks with poster images.
+    # Require /series/ or /episode/ in the href so the site logo anchor
+    # (which would otherwise consume the next poster image via .*?) is skipped.
+    pattern = r'<a href="([^"]*/(?:series|episode)/[^"]+)" title="([^"]+)"[^>]*>.*?data-src="?([^" >]+)"?'
     matches = re.findall(pattern, html, re.DOTALL)
     
     utils.kodilog(f'{site.title}: Found {len(matches)} raw items')

@@ -8,6 +8,11 @@ import os
 
 site = SiteBase(name='akwam', title='Akwam', url=None, image='sites/AKSV.png')
 
+try:
+    utils.kodilog('AKSV-DBG: MODULE LOADED from {} | site.url={}'.format(__file__, site.url))
+except Exception:
+    pass
+
 @site.register(default_mode=True)
 def Main():
     from resources.lib.category_mapper import get_category_icon
@@ -443,7 +448,15 @@ def getEpisodes(url, html=None, plot=None, show_title=None, year=None):
 
 @site.register()
 def getLinks(url, name):
+    utils.kodilog('AKSV-DBG: getLinks ENTER url={}'.format(url))
     html = utils.getHtml(url)
+    utils.kodilog('AKSV-DBG: html_len={} empty={}'.format(len(html) if html else 0, not bool(html)))
+    if html:
+        _wl_probe = re.findall(r'href="(https?://[^"]+/watch/\d+/\d+/[^"]*)"', html)
+        _tab_probe = re.findall(r'<a href="#(tab-\d+)"[^>]*>([^<]+)</a>', html)
+        utils.kodilog('AKSV-DBG: page has {} watch-links, {} tabs, cf={}'.format(
+            len(_wl_probe), len(_tab_probe),
+            ('Just a moment' in html or '__cf_chl' in html or 'challenge-platform' in html)))
     plot = _get_plot(html)
     utils.kodilog('AKSV: Resolving qualities for {}'.format(name))
     
@@ -496,7 +509,8 @@ def getLinks(url, name):
     
     if not tabs:
         # Fallback to general watch links if no tabs
-        watch_links = re.findall(r'href="(https?://go\.ak\.sv/watch/\d+)"', html)
+        watch_links = re.findall(r'href="(https?://[^"]+/watch/\d+/\d+/[^"]*)"', html)
+        utils.kodilog('AKSV-DBG: NO TABS path, watch_links={}'.format(len(watch_links)))
         if watch_links:
             for w_url in watch_links:
                 site.add_download_link('Watch Video', w_url, 'PlayVid', '', plot,
@@ -508,16 +522,19 @@ def getLinks(url, name):
     # Get settings for icon display and filtering
     hoster_manager = get_hoster_manager()
     
+    utils.kodilog('AKSV-DBG: tabs={} -> entering tab loop'.format(tabs))
     found_links = False
     for tab_id, quality in tabs:
         # 2. Find the content block for this tab
         # Pattern: <div class="tab-content ..." id="tab-id"> ... 1.3 GB ... link-show ...
         block_match = re.search(r'id="{}"(.*?)</div>\s*</div>'.format(tab_id), html, re.DOTALL)
+        utils.kodilog('AKSV-DBG: tab={} block_found={}'.format(tab_id, bool(block_match)))
         if block_match:
             block = block_match.group(1)
-            watch_url_match = re.search(r'href="(https?://go\.ak\.sv/watch/\d+)"', block)
+            watch_url_match = re.search(r'href="(https?://[^"]+/watch/\d+/\d+/[^"]*)"', block)
             size_match = re.search(r'class="font-size-14[^"]*">([^<]+)<', block)
-            
+            utils.kodilog('AKSV-DBG: tab={} watch_in_block={}'.format(tab_id, bool(watch_url_match)))
+
             if watch_url_match:
                 watch_url = watch_url_match.group(1)
                 
@@ -529,7 +546,9 @@ def getLinks(url, name):
                     name,
                     quality
                 )
-                
+                utils.kodilog('AKSV-DBG: tab={} watch_url={} should_skip={} label={}'.format(
+                    tab_id, watch_url[:80], should_skip, label))
+
                 if should_skip:
                     utils.kodilog('AKSV: Filtered out: {}'.format(watch_url[:100]))
                     continue
@@ -539,9 +558,11 @@ def getLinks(url, name):
                                      media_type=media_type, original_title=original_title, episode_name=episode_name)
                 found_links = True
 
+    utils.kodilog('AKSV-DBG: after tab loop found_links={}'.format(found_links))
     if not found_links:
         # One last fallback: just find all watch links
-        watch_links = re.findall(r'href="(https?://go\.ak\.sv/watch/\d+)"', html)
+        watch_links = re.findall(r'href="(https?://[^"]+/watch/\d+/\d+/[^"]*)"', html)
+        utils.kodilog('AKSV-DBG: fallback watch_links={}'.format(len(watch_links)))
         for i, w_url in enumerate(watch_links):
             link_name = '{} #{}'.format(name, i + 1) if len(watch_links) > 1 else name
             label, should_skip = utils.format_resolver_link(hoster_manager, w_url, 'AKSV', link_name)

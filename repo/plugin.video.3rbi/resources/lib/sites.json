@@ -3,17 +3,24 @@
         "akwam": {
             "label": "Akwam",
             "active": true,
-            "url": "https://ak.sv/"
+            "url": "https://akwam.it/",
+            "alt_urls": [
+                "https://ak.sv/"
+            ]
         },
         "arabseed": {
             "label": "ArabSeed",
             "active": true,
-            "url": "https://a.asd.homes/"
+            "url": "https://a.asd.ink/",
+            "alt_urls": [
+                "https://a.asd.homes/"
+            ]
         },
         "asia2tv": {
             "label": "Asia2TV",
-            "active": true,
-            "url": "https://asia2tv.com"
+            "active": false,
+            "url": "https://asia2tv.com",
+            "_note": "2026-06: members-only. Guests are 302-redirected to /siteoff on every listing/watch page; no guest path or usable mirror exists. Cannot work without a login flow. Keep disabled."
         },
         "cima4u": {
             "label": "Cima4u",
@@ -38,7 +45,10 @@
         "egydead": {
             "label": "EgyDead",
             "active": true,
-            "url": "https://w.egydead.live"
+            "url": "https://tv9.egydead.live/",
+            "alt_urls": [
+                "https://w.egydead.live"
+            ]
         },
         "esseq": {
             "label": "Esseq",
@@ -65,7 +75,7 @@
             "active": true,
             "url": "https://faselhd.club",
             "alt_urls": [
-                "https://web22812x.faselhdx.bid"
+                "https://www.fasel-hd.cam"
             ]
         },
         "shahidmosalsalat": {
@@ -81,22 +91,65 @@
         "viola": {
             "label": "VioLa",
             "active": true,
-            "url": "https://vio-la.com"
+            "url": "https://hd.vio-la.com/",
+            "alt_urls": [
+                "https://vio-la.com"
+            ]
         },
         "larozza": {
             "label": "Larozza",
             "active": true,
-            "url": "https://larozza.xyz"
+            "url": "https://laroza.surf/",
+            "alt_urls": [
+                "https://laroza.casa/",
+                "https://larozza.xyz"
+            ]
         },
         "shhid4u": {
             "label": "Shahid4U",
-            "active": false,
-            "url": "https://shhid4u.net"
+            "active": true,
+            "url": "https://sh4u.cam",
+            "alt_urls": [
+                "https://shhid4u.net"
+            ]
         },
         "egydrama": {
             "label": "EgyDrama",
             "active": true,
-            "url": "https://v.egydrama.com"
+            "url": "https://egydrama.com/",
+            "alt_urls": [
+                "https://v.egydrama.com"
+            ]
+        },
+        "bestdrama": {
+            "label": "Best Drama",
+            "active": true,
+            "url": "https://best-drama.com"
+        },
+        "arabdrama": {
+            "label": "Arab Drama",
+            "active": true,
+            "url": "https://www.arab-drama.me"
+        },
+        "asiashow": {
+            "label": "AsiaShow",
+            "active": true,
+            "url": "https://asiashow.net"
+        },
+        "babdrama": {
+            "label": "BabDrama",
+            "active": true,
+            "url": "https://babdrama.com"
+        },
+        "asiatvdrama": {
+            "label": "AsiaTVDrama",
+            "active": true,
+            "url": "https://asiatvdrama.com"
+        },
+        "wecima": {
+            "label": "WeCima",
+            "active": true,
+            "url": "https://wecima.gold/"
         }
     }
 }

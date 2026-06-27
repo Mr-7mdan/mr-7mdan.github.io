@@ -1,0 +1,19 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Full square background with navy blue - no cropping -->
+  <rect x="0" y="0" width="1024" height="1024" fill="#1e3a5f"/>
+  
+  <!-- Large "3" in white - centered, extra bold -->
+  <text x="512" y="500" font-family="Arial Black, Arial, Helvetica, sans-serif" font-size="450" font-weight="900" fill="#FFFFFF" text-anchor="middle" dominant-baseline="middle">3</text>
+  
+  <!-- "RBI" text below in white -->
+  <text x="512" y="770" font-family="Arial Black, Arial, Helvetica, sans-serif" font-size="150" font-weight="900" fill="#FFFFFF" text-anchor="middle" letter-spacing="16">RBI</text>
+  
+  <!-- "ARABIC STREAMING" subtitle in golden yellow -->
+  <text x="512" y="900" font-family="Arial, Helvetica, sans-serif" font-size="54" font-weight="700" fill="#F5A623" text-anchor="middle" letter-spacing="6">ARABIC STREAMING</text>
+  
+  <!-- Crescent moon in golden yellow - top right, properly formed -->
+  <path d="M 690 160 A 35 35 0 1 1 690 220 A 25 25 0 1 0 690 160 Z" fill="#F5A623"/>
+  
+  <!-- Star in golden yellow - top right, more space from crescent -->
+  <path d="M 760 180 L 765 192 L 778 192 L 768 200 L 773 212 L 760 204 L 747 212 L 752 200 L 742 192 L 755 192 Z" fill="#F5A623"/>
+</svg>

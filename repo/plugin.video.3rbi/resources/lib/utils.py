@@ -685,9 +685,9 @@ def _getHtml(url, referer='', headers=None, NoCookie=None, data=None, error='ret
             ctx = ssl.create_default_context()
             ctx.check_hostname = False
             ctx.verify_mode = ssl.CERT_NONE
-            response = urlopen(req, timeout=5, context=ctx)
+            response = urlopen(req, timeout=15, context=ctx)
         else:
-            response = urlopen(req, timeout=5)
+            response = urlopen(req, timeout=15)
         
         # Check for redirects to new domain
         if site_name and response.geturl() != url:
@@ -713,7 +713,7 @@ def _getHtml(url, referer='', headers=None, NoCookie=None, data=None, error='ret
                     try:
                         if monitor.abortRequested():
                             return ''
-                        response = opener.open(req, timeout=5)
+                        response = opener.open(req, timeout=15)
                     except urllib_error.HTTPError as e:
                         if e.info().get('Content-Encoding', '').lower() == 'gzip':
                             buf = six.BytesIO(e.read())
@@ -731,7 +731,7 @@ def _getHtml(url, referer='', headers=None, NoCookie=None, data=None, error='ret
                             try:
                                 if monitor.abortRequested():
                                     return ''
-                                response = opener.open(req, timeout=5)
+                                response = opener.open(req, timeout=15)
                             except:
                                 notify(i18n('oh_oh'), i18n('site_down'))
                                 if 'return' in error:

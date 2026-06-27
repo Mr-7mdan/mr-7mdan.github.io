@@ -13,6 +13,7 @@ Strategy (like plugin.video.matrix):
 """
 
 import re
+import sys
 import threading
 import importlib
 import time
@@ -55,12 +56,77 @@ SEARCH_CONFIG = {
     'qrmzi':            {'url': '{base}/?s={q}',                    'func': 'getTVShows'},
     'fajershow':        {'url': '{base}?s={q}',                     'func': 'searchResults'},
     'shhid4u':          {'url': '{base}/?s={q}',                    'func': 'getMixed'},
+    # New Asian/Arabic drama sites (search-page markup verified live via probe harness)
+    'bestdrama':        {'url': '{base}/?s={q}',                    'func': 'getMovies'},
+    'babdrama':         {'url': '{base}/?s={q}',                    'func': 'getList'},
+    # asiashow search page is a plain <li><a> archive list (different markup from the
+    # etk-card listings) -> dedicated getSearch parser handles it
+    'asiashow':         {'url': '{base}/?s={q}',                    'func': 'getSearch'},
+    'asiatvdrama':      {'url': '{base}/?s={q}',                    'func': 'getTVShows'},
     # Special sites: listing func takes (url, mode, target_mode) or (keyword, content_type)
     'akwam':            {'url': '{base}/search?q={q}',              'func': '_common_listing',
                          'extra_args': ["'Search'", 'None']},
     'arabseed':         {'url': None,                               'func': '_performSearch',
                          'query_args': ['plain_query', 'content_type']},
+    # arabdrama search is a base64-JSON API (/api/search?q=). Like arabseed it uses
+    # url:None + a custom search func, but the func lives here (local_func) and drives
+    # arabdrama's own site instance so captured items flow through the interceptor.
+    'arabdrama':        {'url': None,                               'func': '_arabdrama_search',
+                         'local_func': True,
+                         'query_args': ['plain_query', 'content_type']},
+    'wecima':           {'url': '{base}/search/{q}/',               'func': 'getMovies'},
 }
+
+
+def _arabdrama_search(plain_query, content_type='series'):
+    """Custom global-search entry for arabdrama's JSON API (/api/search?q=).
+
+    Mirrors arabdrama.search() minus the keyboard dialog. Decodes the base64
+    JSON results and adds each drama via arabdrama's own site instance so the
+    items are captured by the global-search interceptor.
+    NOTE: arabdrama indexes/returns romanized (English) drama names, so the
+    Arabic-only interceptor will usually drop them - this mainly helps
+    English/romanized queries.
+    """
+    import base64
+    import json as _json
+    try:
+        from urllib.parse import quote
+    except ImportError:
+        from urllib import quote
+    from resources.lib.sites import arabdrama as _ad
+
+    site = _ad.site
+    api_url = site.url.rstrip('/') + '/api/search?q=' + quote(plain_query)
+    html = utils.getHtml(api_url, headers={'User-Agent': utils.USER_AGENT}, site_name=site.name)
+    if not html:
+        return
+
+    try:
+        data = _json.loads(html)
+    except Exception as e:
+        utils.kodilog('Global Search: arabdrama JSON parse failed: {}'.format(e))
+        return
+
+    results = []
+    for blob in data.get('SearchResaults', []) or []:
+        try:
+            results.append(_ad._b64json(blob))
+        except Exception:
+            continue
+
+    utils.kodilog('Global Search: arabdrama found {} results'.format(len(results)))
+
+    for it in results:
+        title = (it.get('drama_name') or '').strip()
+        drama_id = it.get('drama_id')
+        slug = it.get('drama_slug') or ''
+        if not title or drama_id is None or not slug:
+            continue
+        year = str(it.get('drama_release_date') or '').strip()
+        image = _ad._abs(it.get('drama_cover_image_url'))
+        watch_url = '{}/watch-{}/{}/1'.format(site.url, drama_id, slug)
+        site.add_dir(title, watch_url, 'getEpisodes', image, year=year, media_type='tvshow')
 
 
 # ── INTERCEPTORS ──────────────────────────────────────────────────────────────
@@ -187,7 +253,12 @@ def _search_site_worker(site_inst, cfg, plain_query, encoded_query, raw_query, r
     _thread_local.items = []
 
     try:
-        mod = importlib.import_module('resources.lib.sites.{}'.format(site_name))
+        # local_func entries (e.g. arabdrama) define their search func in THIS
+        # module rather than the site module.
+        if cfg.get('local_func'):
+            mod = sys.modules[__name__]
+        else:
+            mod = importlib.import_module('resources.lib.sites.{}'.format(site_name))
         func_name = cfg['func']
 
         if not hasattr(mod, func_name):

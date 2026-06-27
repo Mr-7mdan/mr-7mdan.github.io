@@ -28,6 +28,23 @@ def _get_dynamic_url():
     # Fallback to main4
     return site.url + 'main4/'
 
+# Arabic ordinal words used in season labels -> number
+_AR_ORDINALS = {
+    'الاول': 1, 'الأول': 1, 'الثاني': 2, 'الثالث': 3, 'الرابع': 4,
+    'الخامس': 5, 'السادس': 6, 'السابع': 7, 'الثامن': 8, 'التاسع': 9,
+    'العاشر': 10, 'الحادي عشر': 11, 'الثاني عشر': 12,
+}
+
+def _season_number(label, default):
+    """Derive a season number from an Arabic season label, else use default."""
+    digit = re.search(r'(\d+)', label)
+    if digit:
+        return int(digit.group(1))
+    for word, num in _AR_ORDINALS.items():
+        if word in label:
+            return num
+    return default
+
 @site.register(default_mode=True)
 def Main():
     from resources.lib.category_mapper import get_category_icon
@@ -72,17 +89,18 @@ def _performSearch(search_text, content_type):
         utils.eod(content='movies')
         return
     
-    # Parse search results - real structure uses series__box / movie__block containers
-    pattern = r'<(?:div class="series__box"|a[^>]+class="movie__block[^"]*")[^>]*>\s*<a href="([^"]+)"[^>]*>.*?(?:data-src|src)="([^"]+)"[^>]*alt="([^"]+)"'
+    # Parse search results - movie__block (movies) and series__box (series)
+    # both share: <a href="URL" title="TITLE">...<img ... data-src="IMG">
+    pattern = r'<a href="([^"]+)"\s+title="([^"]+)"[^>]*>\s*<div[^>]*>\s*<img[^>]+data-src="([^"]+)"'
     entries = re.findall(pattern, html, re.DOTALL)
     if not entries:
-        # Fallback: any anchor wrapping an image with alt= inside a list item
-        pattern = r'<li[^>]*>\s*<(?:div[^>]*>\s*)?<a href="([^"]+)"[^>]*>\s*<[^>]*>\s*<img[^>]+(?:data-src|src)="([^"]+)"[^>]+alt="([^"]+)"'
+        # Fallback: tolerate src= instead of data-src=
+        pattern = r'<a href="([^"]+)"\s+title="([^"]+)"[^>]*>\s*<div[^>]*>\s*<img[^>]+(?:data-)?src="([^"]+)"'
         entries = re.findall(pattern, html, re.DOTALL)
-    
+
     utils.kodilog(f'ArabSeed Search: Found {len(entries)} results')
-    
-    for item_url, img, title in entries:
+
+    for item_url, title, img in entries:
         # Clean title
         clean_title = utils.cleantext(title)
         clean_title = re.sub(r'(مشاهدة|مسلسل|انمي|مترجمة|مترجم|برنامج|فيلم|مدبلج|كاملة|اونلاين|HD)', '', clean_title)
@@ -195,21 +213,23 @@ def getSeasons(url):
             year = year_match.group(1)
             show_title = show_title.replace(year, '').strip()
     
-    # Look for seasons - ArabSeed lists seasons with links
-    # Pattern: season links or episode listings
-    season_pattern = r'<a[^>]+href="([^"]+)"[^>]*>.*?(?:الموسم|Season)\s*(\d+)'
-    seasons = re.findall(season_pattern, html, re.IGNORECASE)
-    
+    # Look for seasons - ArabSeed lists them as <a class="season__btn"> buttons
+    # whose label is an Arabic ordinal (الموسم الاول/الثاني/...), not a digit.
+    season_pattern = r'<a href="([^"]+)"\s+class="season__btn[^"]*"\s*>(?:\s*<i[^>]*></i>)?\s*([^<]+)</a>'
+    seasons = re.findall(season_pattern, html, re.DOTALL)
+
     if seasons:
         # Has explicit seasons
         seen_seasons = set()
-        for season_url, season_num in seasons:
-            if season_num not in seen_seasons:
-                seen_seasons.add(season_num)
-                season_title = '{} - الموسم {}'.format(show_title, season_num)
-                site.add_dir(season_title, season_url, 'getEpisodes', site.image,
-                           season=int(season_num), show_title=show_title, year=year,
-                           media_type='season')
+        for idx, (season_url, label) in enumerate(seasons):
+            if season_url in seen_seasons:
+                continue
+            seen_seasons.add(season_url)
+            season_num = _season_number(label, idx + 1)
+            season_title = '{} - الموسم {}'.format(show_title, season_num)
+            site.add_dir(season_title, season_url, 'getEpisodes', site.image,
+                       season=season_num, show_title=show_title, year=year,
+                       media_type='season')
     else:
         # No explicit seasons, look for episodes directly
         getEpisodes(url, show_title=show_title, year=year)
@@ -218,7 +238,7 @@ def getSeasons(url):
     utils.eod(content='seasons')
 
 @site.register()
-def getEpisodes(url, show_title=None, year=None):
+def getEpisodes(url, show_title=None, year=None, season=None):
     html = utils.getHtml(url)
     if not html:
         utils.eod(content='episodes')
@@ -238,20 +258,29 @@ def getEpisodes(url, show_title=None, year=None):
             year = year_match.group(1)
             show_title = show_title.replace(year, '').strip()
     
-    # Pattern for episodes
-    ep_pattern = r'<a[^>]+href="([^"]+)"[^>]*>.*?(?:الحلقة|Episode|حلقة)\s*(\d+)'
-    episodes = re.findall(ep_pattern, html, re.IGNORECASE)
-    
+    # Episodes live in the episodes__list grid; each item carries its number in
+    # <div class="epi__num">الحلقة<b>N</b></div>. Scope to that container to avoid
+    # catching the site-wide "latest episodes" widget.
+    container = re.search(r'class="episodes__list.*?</ul>', html, re.DOTALL)
+    scope = container.group(0) if container else html
+    ep_pattern = r'<a href="([^"]+)"[^>]*>.*?<div class="epi__num">[^<]*<b>(\d+)</b>'
+    episodes = re.findall(ep_pattern, scope, re.DOTALL)
+
     if episodes:
+        seen_eps = set()
         for ep_url, ep_num in episodes:
+            if ep_url in seen_eps:
+                continue
+            seen_eps.add(ep_url)
             episode_num = int(ep_num)
-            
-            # Try to extract season number from URL or title
-            season_num = None
-            season_match = re.search(r'(?:الموسم|season)[^\d]*(\d+)', ep_url, re.IGNORECASE)
-            if season_match:
-                season_num = int(season_match.group(1))
-            
+
+            # Season number: prefer one passed from getSeasons, else parse the URL
+            season_num = int(season) if season else None
+            if season_num is None:
+                season_match = re.search(r'(?:-s|الموسم|season)[^\d]*(\d+)', ep_url, re.IGNORECASE)
+                if season_match:
+                    season_num = int(season_match.group(1))
+
             # Build display title
             if show_title and season_num:
                 display_title = '{} S{}E{}'.format(show_title, str(season_num).zfill(2), str(episode_num).zfill(2))

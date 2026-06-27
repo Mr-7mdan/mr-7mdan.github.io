@@ -88,7 +88,7 @@ def search():
     search_text = utils.get_search_input()
     if search_text:
         import urllib.parse
-        getTVShows(site.url + '/search.php?q=' + urllib.parse.quote(search_text))
+        getTVShows(site.url + '/search.php?keywords=' + urllib.parse.quote(search_text))
 
 
 @site.register()

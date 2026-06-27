@@ -33,15 +33,51 @@ def Main():
 def search():
     """Search for content"""
     utils.kodilog(f'{site.title}: Search')
-    
+
     keyboard = utils.get_keyboard('')
-    if keyboard:
-        query = keyboard.getText()
-        if query:
-            search_url = f'{site.url}/search?q={utils.quote_plus(query)}'
-            getMovies(search_url)
-    else:
+    if not keyboard:
         utils.eod(content='tvshows')
+        return
+
+    query = keyboard.getText()
+    if not query:
+        utils.eod(content='tvshows')
+        return
+
+    search_url = f'{site.url}/search?q={utils.quote_plus(query)}'
+    utils.kodilog(f'{site.title}: Searching: {search_url}')
+
+    headers = {'User-Agent': utils.USER_AGENT}
+    html = utils.getHtml(search_url, headers=headers, site_name=site.name)
+
+    if not html:
+        utils.kodilog(f'{site.title}: No HTML received')
+        utils.eod(content='tvshows')
+        return
+
+    # Search results use "generic-item" cards (different markup than genre pages)
+    pattern = (
+        r'<a href="(/program/\d+)">\s*<div class="generic-item-inner">\s*'
+        r'<div class="generic-item-image" style="background-image: url\(([^)]+)\)">'
+        r'.*?<div class="generic-item-title">\s*<span>([^<]+)</span>\s*\(([^)]+)\)'
+    )
+    matches = re.findall(pattern, html, re.DOTALL)
+
+    utils.kodilog(f'{site.title}: Found {len(matches)} search results')
+
+    for program_url, img, title, item_type in matches:
+        title = title.strip()
+        img = img.strip() or DEFAULT_POSTER
+        full_url = f'{site.url}{program_url}'
+
+        if 'مسلسل' in item_type:
+            # Series -> list episodes
+            site.add_dir(title, full_url, 'getEpisodes', img)
+        else:
+            # Movie -> playable
+            basics.addDownLink(title, full_url, 'shoofmax.PlayVid', img)
+
+    utils.eod(content='tvshows')
 
 
 @site.register()

@@ -58,13 +58,26 @@ def _get_next_page(html):
 
 def _get_og_meta(html):
     title, year = None, None
+    raw = None
     og_t = re.search(r'property="og:title"\s+content="([^"]+)"', html)
     if og_t:
-        title, year = _clean_title(og_t.group(1))
+        raw = og_t.group(1)
+    else:
+        # The live site emits no og: tags; fall back to the <title> tag and
+        # strip the trailing site name ("... - فاصل إعلاني").
+        mt = re.search(r'<title>([^<]+)</title>', html)
+        if mt:
+            raw = re.split(r'\s*[-|]\s*فاصل', mt.group(1))[0]
+    if raw:
+        title, year = _clean_title(raw)
     img = None
     og_i = re.search(r'property="og:image"\s+content="([^"]+)"', html)
     if og_i:
         img = og_i.group(1)
+    else:
+        di = re.search(r'data-src="(https?://[^"?]+\.(?:jpg|jpeg|png|webp))', html)
+        if di:
+            img = di.group(1)
     return title, year, img
 
 
@@ -313,10 +326,10 @@ def getLinks(url, name=''):
                                    quality=sname, fanart=site.image, landscape=site.image)
             found = True
 
-    # --- Download links (after تحميل section) ---
-    dl_idx = html.find('تحميل')
+    # --- Download links (inside the downloadLinks container) ---
+    dl_idx = html.find('downloadLinks')
     if dl_idx > 0:
-        dl_block = html[dl_idx:dl_idx + 3000]
+        dl_block = html[dl_idx:dl_idx + 4000]
         dl_links = re.findall(r'<a href="(https?://[^"]+)"[^>]*>.*?<span>سيرفر</span>([^<]+)</a>', dl_block, re.DOTALL)
         utils.kodilog('FaselHD getLinks: {} download links'.format(len(dl_links)))
         for d_url, d_name in dl_links:

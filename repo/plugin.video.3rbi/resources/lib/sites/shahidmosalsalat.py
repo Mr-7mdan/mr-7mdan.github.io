@@ -58,11 +58,11 @@ def search():
     if search_text:
         search_url = site.url + '/search.php?keywords=' + urllib_parse.quote(search_text)
         # Search returns mixed results - use getTVShows which handles both
-        getTVShows(search_url, is_search=True)
+        getTVShows(search_url, is_search=True, search_text=search_text)
 
 
 @site.register()
-def getTVShows(url, is_search=False):
+def getTVShows(url, is_search=False, search_text=''):
     """Get TV shows listing
     
     Category pages show flattened episodes. We deduplicate by show name
@@ -89,6 +89,9 @@ def getTVShows(url, is_search=False):
         utils.kodilog(f'{site.title}: Search found {len(ep_links)} episode links')
         seen = {}
         for ep_url, title in ep_links:
+            # search.php returns the global footer; filter to the keyword
+            if search_text and search_text not in title:
+                continue
             title = utils.cleantext(title)
             show_name = re.sub(r'\s*ح\s*\d+\s*', ' ', title).strip()
             show_name = re.sub(r'\s*م\s*\d+\s*', ' ', show_name).strip()
@@ -122,23 +125,25 @@ def getTVShows(url, is_search=False):
     
     # Pattern 2: icon-link1 (flattened episodes) - filter by category to avoid duplicates
     # Only parse the main mosalsal-footer section, not recommended sections
-    footer_match = re.search(r'<div class="mosalsal-footer" id="mosalsal-footer">(.*?)</div>\s*</div>\s*<br', html, re.DOTALL)
-    if footer_match:
-        footer_html = footer_match.group(1)
-    else:
-        footer_html = html  # Fallback to full HTML
-    
-    # Extract episodes with posters from style attribute
-    # Pattern: icon-link1 with --bg-image in style attribute (flexible attribute order)
-    episode_pattern = r'<a href="([^"]+)" class="icon-link1[^"]*"[^>]*data-vid="([^"]+)"[^>]*data-categories="([^"]*)"[^>]*title="([^"]+)"[^>]*style="[^"]*--bg-image: url\(&quot;([^"]+?)&quot;\)[^"]*"[^>]*>([^<]+)</a>'
-    episode_matches = re.findall(episode_pattern, footer_html, re.DOTALL)
-    
-    utils.kodilog(f'{site.title}: Found {len(episode_matches)} episodes in footer')
-    
+    footer_match = re.search(r'<div class="mosalsal-footer" id="mosalsal-footer">(.*?)<div class="mosalsal-footer">', html, re.DOTALL)
+    footer_html = footer_match.group(1) if footer_match else html
+
+    # Each footer item is an icon-link1 anchor. Attribute order varies and most
+    # items no longer carry a poster, so parse attributes individually.
+    footer_anchors = re.findall(r'<a href="([^"]+)" class="icon-link1"([^>]*)>([^<]*)</a>', footer_html, re.DOTALL)
+
+    utils.kodilog(f'{site.title}: Found {len(footer_anchors)} episodes in footer')
+
     # Deduplicate by show name, filtering by category
     seen_shows = {}
-    
-    for ep_url, vid, categories, title, poster_url, text in episode_matches:
+
+    for ep_url, attrs, text in footer_anchors:
+        cat_m = re.search(r'data-categories="([^"]*)"', attrs)
+        categories = cat_m.group(1) if cat_m else ''
+        title_m = re.search(r'title="([^"]+)"', attrs)
+        title = title_m.group(1) if title_m else text
+        poster_m = re.search(r'--bg-image:\s*url\((?:&quot;|["\'])?([^"\'()]+?)(?:&quot;|["\'])?\)', attrs)
+        poster_url = poster_m.group(1) if poster_m else ''
         # Filter by category if we have one
         if current_cat and categories:
             # Check if current category is in the data-categories
@@ -287,27 +292,39 @@ def getEpisodes(url):
         show_title = re.sub(r'مسلسل|مترجم|مشاهدة|حلقة|الحلقة', '', show_title).strip()
         show_title = re.sub(r'\s*ح\d+\s*', ' ', show_title).strip()
     
-    # Extract all episodes
-    episode_pattern = r'<a href="([^"]+)" class="icon-link1"[^>]+data-vid="([^"]+)"[^>]+title="([^"]+)"[^>]*>([^<]+)</a>'
-    episode_matches = re.findall(episode_pattern, html, re.DOTALL)
-    
+    # Series episodes live in the seasons list as single-quoted anchors:
+    #   <a ... title='مسلسل ... الحلقة N' href='watch.php?vid=XXXX'>
+    episode_matches = re.findall(
+        r"<a[^>]*title='([^']+)'[^>]*href='(watch\.php\?vid=[^']+)'", html)
+
     utils.kodilog(f'{site.title}: Found {len(episode_matches)} episodes')
-    
-    for ep_url, vid, title, text in episode_matches:
-        # Extract episode number
-        ep_num_match = re.search(r'ح(\d+)', text) or re.search(r'ح(\d+)', title)
+
+    seen = set()
+    for title, ep_url in episode_matches:
+        if ep_url in seen:
+            continue
+        seen.add(ep_url)
+
+        if not ep_url.startswith('http'):
+            ep_url = site.url.rstrip('/') + '/' + ep_url
+
+        # Extract episode number (الحلقة N or حN)
+        ep_num_match = re.search(r'الحلقة\s*(\d+)', title) or re.search(r'ح\s*(\d+)', title)
         ep_num = ep_num_match.group(1) if ep_num_match else ''
-        
-        # Build display title
+
         if ep_num:
             display_title = f'{show_title} - حلقة {ep_num}' if show_title else f'حلقة {ep_num}'
         else:
-            display_title = utils.cleantext(title) if title else text.strip()
-        
+            display_title = utils.cleantext(title)
+
         # Each episode goes directly to getLinks
-        site.add_dir(display_title, ep_url, 'getLinks', site.image, 
+        site.add_dir(display_title, ep_url, 'getLinks', site.image,
                     episode=ep_num, media_type='episode')
-    
+
+    # Fallback: a standalone item (e.g. a film) with no season list -> play directly
+    if not episode_matches:
+        site.add_dir(show_title or 'مشاهدة', url, 'getLinks', site.image, media_type='episode')
+
     utils.eod(content='episodes')
 
 

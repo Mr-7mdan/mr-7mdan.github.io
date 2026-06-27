@@ -31,8 +31,9 @@ def Main():
 
 def _listing_pattern(html):
     """Extract items from .item-card listing pages. year-badge is optional (absent in search results)."""
-    pattern = r'<a href="(https://fajer\.show/[^"]+)" class="item-card">\s*<div class="card-poster">\s*<img src="([^"]+)" alt="([^"]+)"[^>]*>.*?<h3>([^<]+)</h3>(?:\s*<span class="year-badge">([^<]*)</span>)?'
-    return [(url, img, alt, title, year or '') for url, img, alt, title, year in re.findall(pattern, html, re.DOTALL)]
+    pattern = r'<a href="(https?://[^"]+)" class="item-card">\s*<div class="card-poster">\s*<img src="([^"]+)" alt="([^"]+)"[^>]*>.*?<h3>([^<]+)</h3>(?:\s*<span class="year-badge">([^<]*)</span>)?'
+    return [(url.replace('show.alfajertv.com', 'fajer.show'), img, alt, title, year or '')
+            for url, img, alt, title, year in re.findall(pattern, html, re.DOTALL)]
 
 
 def _hi_res(img):
@@ -130,8 +131,9 @@ def getSeasons(url):
 
     # Episodes are embedded directly in the HTML as .episode-card elements
     # Format: <span class="episode-number">SxE</span>
-    ep_pattern = r'<a href="(https://fajer\.show/episodes/[^"]+)" class="episode-card">.*?<img src="([^"]+)".*?<span class="episode-number">(\d+)x(\d+)</span>.*?<h4>([^<]+)</h4>'
-    episodes = re.findall(ep_pattern, html, re.DOTALL)
+    ep_pattern = r'<a href="(https?://[^"]+/episodes/[^"]+)" class="episode-card">.*?<img src="([^"]+)".*?<span class="episode-number">(\d+)x(\d+)</span>.*?<h4>([^<]+)</h4>'
+    episodes = [(u.replace('show.alfajertv.com', 'fajer.show'), i, s, e, t)
+                for u, i, s, e, t in re.findall(ep_pattern, html, re.DOTALL)]
 
     utils.kodilog('FajerShow getSeasons: Found {} episodes for {}'.format(len(episodes), show_title))
 

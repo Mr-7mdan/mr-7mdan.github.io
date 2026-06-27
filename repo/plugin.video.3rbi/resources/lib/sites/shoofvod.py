@@ -71,7 +71,7 @@ def getMovies(url):
                     year=year, media_type='movie', original_title=title)
     
     # Check for next page
-    next_match = re.search(r'<a href="([^"]+)" title="التالي">', html)
+    next_match = re.search(r'<a href="([^"]+)">التالي</a>', html)
     if next_match:
         next_url = site.url + next_match.group(1)
         site.add_dir('Next Page', next_url, 'getMovies', addon_image(site.img_next))
@@ -108,7 +108,7 @@ def getTVShows(url):
                     year=year, media_type='tvshow', original_title=title)
     
     # Check for next page
-    next_match = re.search(r'<a href="([^"]+)" title="التالي">', html)
+    next_match = re.search(r'<a href="([^"]+)">التالي</a>', html)
     if next_match:
         next_url = site.url + next_match.group(1)
         site.add_dir('Next Page', next_url, 'getTVShows', addon_image(site.img_next))
@@ -133,36 +133,42 @@ def getEpisodes(url):
             year = year_match.group(1)
             show_title = show_title.replace(year, '').strip()
     
-    # Pattern for episodes
-    # ShoofVOD lists episodes in a different format
-    pattern = r'<a href="([^"]+)" class="fullEpisode">.+?<span class="title">([^<]+)</span>'
-    
+    # Pattern for episodes — same card layout as listing pages
+    # Format: <div class="...item"> <a href="/vidpage_X"><img src=".."><div class="title"><h4>..الحلقة 10</h4>
+    pattern = r'<div class="col-md-3 col-sm-4 col-xs-4 col-xxs-6 item">.+?<a href="([^"]+)">.+?<img src="([^"]+)" class.+?<div class="title"><h4>([^<]+)</h4></div>'
+
     entries = re.findall(pattern, html, re.DOTALL)
-    
+
     if entries:
-        for ep_url, ep_title in entries:
+        for ep_url, ep_img, ep_title in entries:
             # Clean episode title
             clean_title = utils.cleantext(ep_title)
             clean_title = re.sub(r'(مشاهدة|الحلقة|حلقة)', '', clean_title)
             clean_title = clean_title.replace('-', ' ').strip()
-            
+
             # Try to extract episode number
             episode_num = None
             ep_match = re.search(r'(\d+)', clean_title)
             if ep_match:
                 episode_num = int(ep_match.group(1))
-            
+
             # Build display title
             if show_title and episode_num:
                 display_title = '{} E{}'.format(show_title, str(episode_num).zfill(2))
             else:
                 display_title = clean_title if clean_title else ep_title
-            
+
             full_url = site.url + ep_url
-            
-            site.add_dir(display_title, full_url, 'getLinks', site.image,
+
+            site.add_dir(display_title, full_url, 'getLinks', ep_img, fanart=ep_img,
                        episode=episode_num, show_title=show_title, year=year,
                        media_type='episode')
+
+        # Check for next page (long-running shows paginate)
+        next_match = re.search(r'<a href="([^"]+)">التالي</a>', html)
+        if next_match:
+            next_url = site.url + next_match.group(1)
+            site.add_dir('Next Page', next_url, 'getEpisodes', addon_image(site.img_next))
     else:
         # No episodes found, might be a movie or single video
         utils.kodilog('ShoofVOD: No episodes pattern matched, trying direct playback')

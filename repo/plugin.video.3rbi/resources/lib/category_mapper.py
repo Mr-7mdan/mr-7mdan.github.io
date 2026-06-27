@@ -73,6 +73,18 @@ CATEGORY_ICONS = {
     'Chinese TV Shows': 'professional-icon-pack/Chinese.png',
     'Japanese TV Shows': 'professional-icon-pack/Japanese.png',
     'Thai TV Shows': 'professional-icon-pack/Thai.png',
+    'Taiwanese TV Shows': 'professional-icon-pack/Chinese.png',
+    'Filipino TV Shows': 'professional-icon-pack/TVShowsAsian.png',
+    'Indonesian TV Shows': 'professional-icon-pack/TVShowsAsian.png',
+    'Asian Variety Shows': 'professional-icon-pack/Programs.png',
+
+    # Asian Movies (sub-regions)
+    'Korean Movies': 'professional-icon-pack/MoviesKorean.png',
+    'Japanese Movies': 'professional-icon-pack/Japanese.png',
+    'Chinese Movies': 'professional-icon-pack/Chinese.png',
+    'Thai Movies': 'professional-icon-pack/Thai.png',
+    'Taiwanese Movies': 'professional-icon-pack/Chinese.png',
+    'Most Viewed': 'professional-icon-pack/Genres.png',
     'Latin TV Shows': 'professional-icon-pack/MoviesLatin.png',
     'Cartoon TV Shows': 'professional-icon-pack/Cartoon.png',
     'Netflix TV Shows': 'professional-icon-pack/TVShows.png',
@@ -83,7 +95,27 @@ CATEGORY_ICONS = {
     'WWE': 'professional-icon-pack/WWE.png',
     'Theater': 'professional-icon-pack/Theater.png',
     'Recently Added': 'professional-icon-pack/News.png',
-    
+
+    # Movie genres (losmovies etc.) -> generic Genres icon
+    'Action': 'professional-icon-pack/Genres.png',
+    'Adventure': 'professional-icon-pack/Genres.png',
+    'Animation': 'professional-icon-pack/MoviesAnime.png',
+    'Comedy': 'professional-icon-pack/Genres.png',
+    'Crime': 'professional-icon-pack/Genres.png',
+    'Documentary': 'professional-icon-pack/MoviesDocumentary.png',
+    'Drama': 'professional-icon-pack/Genres.png',
+    'Family': 'professional-icon-pack/Genres.png',
+    'Fantasy': 'professional-icon-pack/Genres.png',
+    'History': 'professional-icon-pack/Genres.png',
+    'Horror': 'professional-icon-pack/Genres.png',
+    'Music': 'professional-icon-pack/Genres.png',
+    'Mystery': 'professional-icon-pack/Genres.png',
+    'Romance': 'professional-icon-pack/Genres.png',
+    'Sci-Fi': 'professional-icon-pack/Genres.png',
+    'Thriller': 'professional-icon-pack/Genres.png',
+    'War': 'professional-icon-pack/Genres.png',
+    'Western': 'professional-icon-pack/Genres.png',
+
     # Generic
     'Movies': 'professional-icon-pack/Movies.png',
     'TV Shows': 'professional-icon-pack/TVShows.png',

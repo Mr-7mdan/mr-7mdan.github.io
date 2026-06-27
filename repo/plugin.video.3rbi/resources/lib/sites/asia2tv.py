@@ -13,17 +13,24 @@ site = SiteBase('asia2tv', 'Asia2TV', url=None, image='sites/asia2tv.png')
 
 @site.register(default_mode=True)
 def Main():
-    from resources.lib.category_mapper import get_category_icon
-    
-    site.add_dir('Search', site.url, 'searchMovies', get_category_icon('Search'))
-    site.add_dir('Search', site.url, 'searchSeries', get_category_icon('Search'))
-    site.add_dir('Asian Movies', site.url + 'category/asian-movies/', 'getMovies', get_category_icon('Asian Movies'))
-    site.add_dir('Asian TV Shows', site.url + 'category/asian-drama/', 'getTVShows', get_category_icon('Asian TV Shows'))
-    site.add_dir('Korean TV Shows', site.url + 'category/asian-drama/korean/', 'getTVShows', get_category_icon('Korean TV Shows'))
-    site.add_dir('Chinese TV Shows', site.url + 'category/asian-drama/chinese-taiwanese/', 'getTVShows', get_category_icon('Chinese TV Shows'))
-    site.add_dir('Japanese TV Shows', site.url + 'category/asian-drama/japanese/', 'getTVShows', get_category_icon('Japanese TV Shows'))
-    site.add_dir('Thai TV Shows', site.url + 'category/asian-drama/thai/', 'getTVShows', get_category_icon('Thai TV Shows'))
-    site.add_dir('TV Programs', site.url + 'category/asian-drama/kshow/', 'getTVShows', get_category_icon('TV Programs'))
+    # NOTE (2026-06, re-verified): asia2tv.com is fully members-only. Every listing
+    # and detail/watch page (/movies, /series, /serie/*, /movie/*, /episode/*)
+    # 302-redirects guests to /siteoff — a "الموقع تحت الصيانة" maintenance stub that
+    # states "يجب عليك تسجيل الدخول لمشاهدة أعمال الموقع ... لا يمكنك مشاهدة الأعمال كزائر"
+    # ("you must log in; you cannot watch as a guest"). The homepage (200, ~336 KB) is
+    # the ONLY guest-visible page, but the card links on it all lead to /siteoff, so
+    # there is no guest-reachable watch page and getLinks can never find embeds.
+    #
+    # No guest-usable mirror exists either: www.asia2tv.com is the same gated site;
+    # asia2tv.co / astv.co are landing pages that just link back to asia2tv.com;
+    # asia2tv.net is an anti-adblock JS redirect; asia2tv.cc is an unrelated login page;
+    # .tv/.org/.me/.io and m./old. subdomains do not resolve.
+    #
+    # Until a login flow is added, browsing is impossible. Recommend sites.json
+    # active:false. We surface a single explanatory item instead of an empty/broken list.
+    utils.notify('Asia2TV', 'Members-only site - login required to watch', icon=site.image)
+    site.add_dir('Asia2TV is members-only (login required) - no guest access',
+                 site.url, 'Main', site.image)
     utils.eod()
 
 @site.register()
@@ -51,8 +58,8 @@ def getMixed(url):
 def getMovies(url):
     html = utils.getHtml(url, headers={'User-Agent': utils.USER_AGENT, 'Referer': site.url})
     
-    # Pattern for movie entries - title is in img alt attribute
-    pattern = r'<div class="postmovie-photo">\s*<a href="([^"]+)">.*?<img[^>]+data-src="([^"]+)"[^>]*alt="([^"]+)"'
+    # Pattern for movie entries (modern-card grid) - title is in img alt attribute
+    pattern = r'<div class="modern-card">\s*<a href="([^"]+)">.*?<img[^>]+data-src="([^"]+)"[^>]*alt="([^"]+)"'
     
     entries = re.findall(pattern, html, re.DOTALL)
     
@@ -93,8 +100,8 @@ def getMovies(url):
 def getTVShows(url):
     html = utils.getHtml(url, headers={'User-Agent': utils.USER_AGENT, 'Referer': site.url})
     
-    # Pattern for TV show entries - title is in img alt attribute
-    pattern = r'<div class="postmovie-photo">\s*<a href="([^"]+)">.*?<img[^>]+data-src="([^"]+)"[^>]*alt="([^"]+)"'
+    # Pattern for TV show entries (modern-card grid) - title is in img alt attribute
+    pattern = r'<div class="modern-card">\s*<a href="([^"]+)">.*?<img[^>]+data-src="([^"]+)"[^>]*alt="([^"]+)"'
     
     entries = re.findall(pattern, html, re.DOTALL)
     

@@ -128,7 +128,7 @@ def getMovies(url):
         utils.eod(content='movies')
         return
 
-    pattern = r'<a href="(https?://vio-la\.com/watch\.php\?vid=[^"]+)" title="([^"]+)"[^>]*>.*?data-echo="([^"]+)"'
+    pattern = r'<a href="(https?://[^"]*?/watch\.php\?vid=[^"]+)" title="([^"]+)"[^>]*>.*?data-echo="([^"]+)"'
     matches = re.findall(pattern, html, re.DOTALL)
 
     seen = set()
@@ -204,7 +204,7 @@ def getLinks(url, name=""):
     hoster_manager = get_hoster_manager()
 
     iframe_match = re.search(
-        r'<iframe[^>]+src="(https?://vio-la\.com/embed\.php\?vid=[^"]+)"', html
+        r'<iframe[^>]+src="(https?://[^"]*?/embed\.php\?vid=[^"]+)"', html
     )
 
     links_found = False

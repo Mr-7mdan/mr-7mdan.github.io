@@ -339,11 +339,12 @@ def getEpisodes(url):
 def getLinks(url, name=''):
     """Extract video links from page"""
     import base64
-    
-    # Ensure URL ends with /watching/
-    if not url.endswith('/watching/'):
-        url = url.rstrip('/') + '/watching/'
-    
+
+    # NOTE (2026-06): cimanow removed the /watching/ watch page — that path now
+    # 301s to the homepage shell (~20KB) and yields no servers. The content page
+    # itself (the URL passed in) holds the #watch player, so fetch it directly.
+    url = url.rstrip('/') + '/'
+
     utils.kodilog(f'{site.title}: Getting links from: {url}')
     
     html = utils.getHtml(url, headers={'User-Agent': utils.USER_AGENT}, site_name=site.name)
@@ -392,6 +393,10 @@ def getLinks(url, name=''):
     for iframe_url in iframes:
         if iframe_url.startswith('//'):
             iframe_url = 'https:' + iframe_url
+        # Skip the YouTube trailer — it is NOT a watch source, only a preview.
+        if re.search(r'(youtube\.com|youtu\.be)', iframe_url):
+            utils.kodilog(f'{site.title}: skipping trailer iframe {iframe_url}')
+            continue
         if iframe_url.startswith('http'):
             found_servers = True
             hoster_name = iframe_url.split('/')[2] if '/' in iframe_url else 'Embed'

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 EgyDrama Site Module
-https://v.egydrama.com/
+https://egydrama.com/
 """
 
 import re
@@ -366,7 +366,7 @@ def getLinks(url, name=''):
     
     # Fetch embed page to get actual iframes
     if uniq_id:
-        embed_url = f'https://v.egydrama.com/embed.php?vid={uniq_id}'
+        embed_url = site.url.rstrip('/') + f'/embed.php?vid={uniq_id}'
         utils.kodilog(f'{site.title}: Fetching embed: {embed_url}')
         
         embed_html = utils.getHtml(embed_url, headers={'User-Agent': utils.USER_AGENT})

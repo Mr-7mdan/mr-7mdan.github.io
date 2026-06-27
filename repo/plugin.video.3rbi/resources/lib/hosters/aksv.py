@@ -12,7 +12,7 @@ from resources.lib.hoster_resolver import HosterResolver
 class AKSVResolver(HosterResolver):
     def __init__(self):
         self.name = "AKSV"
-        self.domains = ['go.ak.sv', 'ak.sv']
+        self.domains = ['go.ak.sv', 'ak.sv', 'akwam.it']
     
     def resolve(self, url):
         """
@@ -32,9 +32,9 @@ class AKSVResolver(HosterResolver):
             
             # Find redirect to actual watch page
             # Example: href="https://ak.sv/watch/170172/10704/the-confession"
-            final_link_match = re.search(r'href="(https?://ak\.sv/watch/[^"]+)"', html)
-            
-            if final_link_match:
+            final_link_match = re.search(r'href="(https?://[^"]+/watch/\d+/\d+/[^"]*)"', html)
+
+            if final_link_match and final_link_match.group(1).rstrip('/') != url.rstrip('/'):
                 final_url = final_link_match.group(1)
                 utils.kodilog('AKSV Resolver: Following redirect to: {}'.format(final_url[:100]))
                 final_html = utils.getHtml(final_url)
@@ -75,8 +75,12 @@ class AKSVResolver(HosterResolver):
             quality = '{}p'.format(size) if size and size.isdigit() else 'HD'
             
             # AKSV requires User-Agent and SSL verification bypass
+            # downet.net CDN requires a Referer from the watch host
+            from six.moves.urllib_parse import urlparse
+            p = urlparse(url)
             headers = {
                 'User-Agent': utils.USER_AGENT,
+                'Referer': '{}://{}/'.format(p.scheme or 'https', p.netloc),
                 'verifypeer': 'false'  # Bypass SSL cert verification
             }
             

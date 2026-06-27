@@ -33,6 +33,8 @@ from resources.lib.site_base import SiteBase
 from resources.lib.sites import *  # noqa
 from resources.lib import category_browser  # noqa
 from resources.lib import live_tv  # noqa
+from resources.lib import global_search  # noqa
+from resources.lib import site_manager  # noqa  (registers site_manager.* dispatch modes)
 
 socket.setdefaulttimeout(60)
 
@@ -64,9 +66,11 @@ def INDEX():
                            basics.addon_image('professional-icon-pack/All.png'), '', list_avail=False)
     url_dispatcher.add_dir('Browse by Category', '', 'category_browser.show_categories',
                            basics.addon_image('professional-icon-pack/Genres.png'), '', list_avail=False)
+    url_dispatcher.add_dir('Global Search', '', 'global_search.show_menu',
+                           basics.addon_image('professional-icon-pack/Search.png'), '', list_avail=False)
     url_dispatcher.add_dir('Live TV', '', 'live_tv.Main',
                            basics.addon_image('professional-icon-pack/LiveTV.png'), '', list_avail=False)
-    url_dispatcher.add_dir('{}'.format(utils.i18n('fav_videos')), '1', 'favorites.List',
+    url_dispatcher.add_dir('{}'.format(utils.i18n('fav_videos')), '', 'favorites.ListCategories',
                            basics.addon_image('professional-icon-pack/Favs.png'), '', list_avail=False)
     url_dispatcher.add_dir('Play a Link', '', 'PlayTestLink',
                            basics.addon_image('professional-icon-pack/PlayLink.png'), '', Folder=False, list_avail=False)
@@ -145,8 +149,8 @@ def PlayTestLink():
     from resources.lib.hoster_resolver import HosterManager
     from kodi_six import xbmcgui
     
-    keyboard = xbmcgui.Dialog()
-    url = keyboard.input('Enter video URL to test:', type=xbmcgui.INPUT_ALPHANUM)
+    dialog = xbmcgui.Dialog()
+    url = dialog.input('Enter video URL to test:', type=xbmcgui.INPUT_ALPHANUM)
     
     if not url:
         return
@@ -168,14 +172,20 @@ def PlayTestLink():
         return
     
     utils.kodilog('PlayTestLink: Resolved to: {}'.format(video_url[:100]))
+    utils.kodilog('PlayTestLink: Full URL length: {}'.format(len(video_url)))
     
     if headers:
         header_str = '|' + '&'.join(['{}={}'.format(k, v) for k, v in headers.items()])
         video_url = video_url + header_str
+        utils.kodilog('PlayTestLink: Added headers, new length: {}'.format(len(video_url)))
     
+    # Use xbmc.Player().play() for direct playback (works outside plugin URL context)
+    import xbmc
     listitem = xbmcgui.ListItem(path=video_url)
     listitem.setProperty('IsPlayable', 'true')
-    xbmcplugin.setResolvedUrl(basics.addon_handle, True, listitem)
+    utils.kodilog('PlayTestLink: Playing via xbmc.Player()')
+    player = xbmc.Player()
+    player.play(video_url, listitem)
 
 
 def change():

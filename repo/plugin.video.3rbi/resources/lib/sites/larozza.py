@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Larozza Site Module
-https://larozza.xyz/
+https://laroza.surf/  (entry domain laroza.casa redirects here)
 """
 
 import re
@@ -69,9 +69,29 @@ def getVideos(url):
         utils.kodilog(f'{site.title}: No HTML received')
         utils.eod(content='videos')
         return
-    
-    # Pattern tested in terminal - works for both category and search pages
-    pattern = r'<li class="col-xs-6[^>]*>.*?<a href="(https://larozza\.[^/]+/video\.php\?vid=[^"]+)"[^>]+title="([^"]+)"[^>]*>.*?<img[^>]+data-echo="([^"]+)"'
+
+    # Category pages serve a meta-refresh stub when the numeric category id is
+    # stale (the site silently bumps e.g. cat=...33 -> ...35). Follow it so we
+    # land on the real listing instead of scoring 0 matches.
+    for _ in range(4):
+        if html and len(html) < 2000:
+            refresh = re.search(r'Refresh"\s+CONTENT="0;\s*URL=([^"]+)"', html, re.IGNORECASE)
+            if refresh:
+                url = refresh.group(1)
+                utils.kodilog(f'{site.title}: Following meta-refresh to: {url}')
+                html = utils.getHtml(url, headers=headers, site_name=site.name)
+                continue
+        break
+
+    if not html:
+        utils.kodilog(f'{site.title}: No HTML after redirect')
+        utils.eod(content='videos')
+        return
+
+    # Pattern tested against live HTML (laroza.surf) - works for category and
+    # search pages. Domain-agnostic so it survives domain rotation; image lives
+    # in data-echo (lazy-load), real src is a base64 placeholder.
+    pattern = r'<li class="col-xs-6[^>]*>.*?<a href="(https?://[^"]+/video\.php\?vid=[^"]+)"[^>]+title="([^"]+)"[^>]*>.*?<img[^>]+data-echo="([^"]+)"'
     matches = re.findall(pattern, html, re.DOTALL)
     
     utils.kodilog(f'{site.title}: Found {len(matches)} videos')
