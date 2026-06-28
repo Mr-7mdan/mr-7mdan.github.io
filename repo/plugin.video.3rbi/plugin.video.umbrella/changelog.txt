@@ -1,3 +1,0 @@
-[B]Update - v6.7.52 - Nov 4th, 2025[/B]
---[Fix] Fixed alldebrid cloud scraper not working.
---[Fix] Fixed issue with items found in one cloud scraper showing as duplicates for every provider enabled.
