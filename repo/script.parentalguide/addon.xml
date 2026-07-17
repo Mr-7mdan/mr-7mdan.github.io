@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="script.parentalguide" name="ParentalGuide" version="2.85" provider-name="Mr-Hamdan">
+<addon id="script.parentalguide" name="ParentalGuide" version="3.1.0" provider-name="Mr-7mdan">
 	<requires>
 		<import addon="xbmc.python" version="3.0.0"/>
 		<import addon="script.module.beautifulsoup4" version="4.9.3"/>
@@ -20,6 +20,14 @@
 			<visible>String.IsEmpty(Window(videos).Property("ParentalGuideHideContextMenu")) + [Container.Content(movies) | Container.Content(tvshows) | [String.IsEqual(ListItem.dbtype,movie) | String.IsEqual(ListItem.dbtype,tvshow)]]</visible>
 		</item>
 	</extension>
+	<extension point="kodi.context.item">
+		<menu id="kodi.core.main">
+			<item library="addon.py">
+				<label>32038</label>
+				<visible>String.IsEqual(ListItem.dbtype,movie) | String.IsEqual(ListItem.dbtype,tvshow)</visible>
+			</item>
+		</menu>
+	</extension>
 <!-- 	<extension point="xbmc.python.pluginsource" library="plugin.py">
 	  <provides>text</provides>
 	</extension> -->
@@ -36,5 +44,8 @@
 			<banner>resources/banner.png</banner>
 			<logo>resources/logo.png</logo>
 		</assets>
+	</extension>
+	<extension point="xbmc.python.pluginsource" library="addon.py">
+		<provides>video</provides>
 	</extension>
 </addon>

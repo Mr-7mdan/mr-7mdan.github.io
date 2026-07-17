@@ -18,7 +18,6 @@ from resources.lib.utils import logger as logx
 logger = logging.getLogger(__name__)
 ADDON = xbmcaddon.Addon(id='script.parentalguide')
 
-
 class SqliteCache:
     """
         SqliteCache
@@ -44,9 +43,10 @@ class SqliteCache:
     _get_sql = 'SELECT val, exp FROM entries WHERE key = ?'
     _get_sql_exp = 'SELECT exp FROM entries WHERE key = ?'
     _del_sql = 'DELETE FROM entries WHERE key = ?'
+    #_set_sql = 'REPLACE INTO entries (key, TITLE, exp) VALUES (?, ?, ?)'
     _set_sql = 'REPLACE INTO entries (key, val, exp) VALUES (?, ?, ?)'
     _add_sql = 'INSERT INTO entries (key, val, exp) VALUES (?, ?, ?)'
-    _clear_sql = 'DELETE * FROM entries'
+    _clear_sql = 'DELETE FROM entries'
 
     # other properties
     connection = None
@@ -54,9 +54,7 @@ class SqliteCache:
     def __init__(self):
         ADDON = xbmcaddon.Addon(id='script.parentalguide')
         temp_dir = xbmcvfs.translatePath('special://temp')
-        temp_dir = ADDON.getAddonInfo('path')
-        logger.info('temp dir is ' + temp_dir)
-        cache_dir = os.path.join(temp_dir, 'cache', ADDON.getAddonInfo('id'))
+        cache_dir = os.path.join(temp_dir, 'script.ParentalGuide.cache', ADDON.getAddonInfo('id'))
         if not xbmcvfs.exists(cache_dir):
             xbmcvfs.mkdir(cache_dir)
         logger.info('the cache dir is ' + cache_dir)
@@ -91,40 +89,12 @@ class SqliteCache:
         # return the connection
         return self.connection
 
-    # def get(self, key):
-
-        # """ Retreive a value from the Cache """
-
-        # return_value = None
-        # key = key.lower()
-        # # get a connection to run the lookup query with
-        # with self._get_conn() as conn:
-            
-            # # loop the response rows looking for a result
-            # # that is not expired
-            # for row in conn.execute(self._get_sql, (key,)):
-                # #return_value = loads(row[0])
-                
-                # expire = loads(row[1])
-                
-                # #xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ('expiry of {k}'.format(k=key), expire , ADDON.getAddonInfo('icon')))
-                
-                # if expire == 0 or expire > time():
-                    # return_value = loads(row[0])
-                    # # TODO: Delete the value that is expired?
-                # # else:
-                    # # self.delete(key)
-                # break
-
-        # return return_value
-
     def get(self, key):
 
         """ Retreive a value from the Cache """
 
         return_value = None
         key = key.lower()
-        
         # get a connection to run the lookup query with
         with self._get_conn() as conn:
             
@@ -135,19 +105,17 @@ class SqliteCache:
                 
                 expire = loads(row[1])
                 
-                #xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ('expiry of {k} {kk}'.format(k=key, kk=provider), expire , ADDON.getAddonInfo('icon')))
+                #xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ('expiry of {k}'.format(k=key), expire , ADDON.getAddonInfo('icon')))
                 
                 if expire == 0 or expire > time():
                     return_value = loads(row[0])
-                    #xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ('Cach for %s' % key, return_value , ADDON.getAddonInfo('icon')))
                     # TODO: Delete the value that is expired?
-                else:
-                    self.delete(key)
-                    return_value = None
+                # else:
+                    # self.delete(key)
                 break
 
         return return_value
-        
+
     def get_exp(self, key):
         return_value = None
         key = key.lower()
@@ -184,18 +152,13 @@ class SqliteCache:
 
         val = PickleBuffer(dumps(show_info))
         expire = PickleBuffer(dumps(expire))
-       
-        if show_info["id"]:
-            key = show_info["id"].lower()+"_"+show_info["provider"].lower()
-        else:
-            key = show_info["title"].replace(":","").replace("-","_").replace(" ","_").lower()+"_"+show_info["provider"].lower()
+        key = show_info["provider"].lower() + "_" + show_info["title"].replace(":","").replace("-","_").replace(" ","_").lower()
 
         # write the updated value to the db
         with self._get_conn() as conn:
             try:
                 conn.execute(self._set_sql, (key, val, expire))
                 logx.info("Sucessfully Updated results to cache for [%s] [%s]" % (show_info["title"], show_info["provider"]))
-
             except:
                 logx.info("Failed to update results to cache for [%s] [%s]" % (show_info["title"], show_info["provider"]))
     
@@ -217,12 +180,7 @@ class SqliteCache:
 
         val = PickleBuffer(dumps(show_info))
         expire2 = PickleBuffer(dumps(expire))
-        
-        if show_info["id"]:
-            key = show_info["id"].lower()+"_"+show_info["provider"].lower()
-        else:
-            key = show_info["title"].replace(":","").replace("-","_").replace(" ","_").lower()+"_"+show_info["provider"].lower()
-            
+        key = show_info["provider"].lower() + "_" + show_info["title"].replace(":","").replace("-","_").replace(" ","_").lower()
         
         #data = PickleBuffer(dumps(value))
 
@@ -234,6 +192,7 @@ class SqliteCache:
             try:
 
                 conn.execute(self._add_sql, (key, val, expire2))
+                logx.info("Sucessfully Added results to cache for [%s] [%s]" % (show_info["title"], show_info["provider"]))
 
             except sqlite3.IntegrityError:
 
@@ -250,8 +209,7 @@ class SqliteCache:
 
         with self._get_conn() as conn:
             conn.execute(self._clear_sql, )
-            logx.info('Cache cleared sucessfully')
-        
+
     def __del__(self):
 
         """ Cleans up the object by destroying the sqlite connection """
@@ -262,7 +220,7 @@ class SqliteCache:
 
 # allow this module to be used to clear the cache
 if __name__ == '__main__':
-    logger.info('ParentalGuide Cache Initiated')
+
     # check args
     if len(sys.argv) != 3 or sys.argv[1] != 'clear':
         print('[!] Error: You have to specify the clear with `python %s clear <path to cache.sqlite>`' % sys.argv[0])

@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window type="dialog">
+    <defaultcontrol always="true">8001</defaultcontrol>
+    <coordinates>
+        <origin x="0" y="0" />
+    </coordinates>
+    <controls>
+        <include>Defs_TMDbHelper_Loader</include>
+        <include content="Object_Overlay">
+            <param name="delay" value="300" />
+        </include>
+
+
+        <control type="group">
+            <include content="Animation_SlideIn_Dialog">
+                <param name="windowopen_delay" value="600" />
+            </include>
+            <include>Animation_FadeOut</include>
+            <include>Dimension_Context</include>
+            <include>Dialog_ContextMenu_Header</include>
+            <control type="group">
+
+                <!-- Menu -->
+                <control type="group">
+                    <right>0</right>
+                    <width>context_icon_w</width>
+
+                    <!-- Quick Nav -->
+                    <include content="Object_Control">
+                        <param name="control" value="grouplist" />
+                        <top>120</top>
+                        <height>80</height>
+                        <orientation>vertical</orientation>
+                    </include>
+                    <control type="list" id="4500">
+                            <top>10</top>
+                            <left>15</left>
+                            <height>450</height>
+                            <include>Animation_Left_Delay</include>
+                            <visible>true</visible>
+                            <autoscroll>false</autoscroll>
+                            <orientation>vertical</orientation>
+                            <pagecontrol>61</pagecontrol>
+                            <itemgap>0</itemgap>
+                            <onup>8000</onup>
+                            <onright>8000</onright>
+                            <onleft>8000</onleft>
+                            <animation effect="slide" end="context_slide_arrow_no" condition="$EXP[Exp_ContextMenu_HasIcon]">Conditional</animation>
+                            <content>
+                                <item>
+                                    <visible>!String.IsEmpty(Window(home).Property(ParentalGuide.1.Section))</visible>
+                                    <label>[B]$INFO[Window(home).Property(ParentalGuide.1.Section)][/B] - $INFO[Window(home).Property(ParentalGuide.Cat.Name.1)] ($INFO[Window(home).Property(ParentalGuide.MVotes.1)])</label>
+                                    <thumb>$INFO[Window(home).Property(ParentalGuide.Cat.1)]</thumb>
+                                    <info>$INFO[Window(home).Property(ParentalGuide.Cat.Name.1)]</info>
+                                    <onfocus>SetProperty(SelectedCat,1,Home)</onfocus>
+                                    <onclick>SetProperty(SelectedCat,1,Home)</onclick>
+                                    <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
+                                </item>
+                                <item>
+                                    <visible>!String.IsEmpty(Window(home).Property(ParentalGuide.2.Section))</visible>
+                                    <thumb>$INFO[Window(home).Property(ParentalGuide.Cat.2)]</thumb>
+                                    <label>[B]$INFO[Window(home).Property(ParentalGuide.2.Section)][/B] - $INFO[Window(home).Property(ParentalGuide.Cat.Name.2)] ($INFO[Window(home).Property(ParentalGuide.MVotes.2)])</label>
+                                    <onfocus>SetProperty(SelectedCat,2,Home)</onfocus>
+                                    <onclick>SetProperty(SelectedCat,2,Home)</onclick>
+                                    <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
+                                </item>
+                                <item>
+                                    <visible>!String.IsEmpty(Window(home).Property(ParentalGuide.3.Section))</visible>
+                                    <thumb>$INFO[Window(home).Property(ParentalGuide.Cat.3)]</thumb>
+                                    <label>[B]$INFO[Window(home).Property(ParentalGuide.3.Section)][/B] - $INFO[Window(home).Property(ParentalGuide.Cat.Name.3)] ($INFO[Window(home).Property(ParentalGuide.MVotes.3)])</label>
+                                    <onclick>SetProperty(SelectedCat,3,Home)</onclick>
+                                    <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
+                                </item>
+                                <item>
+                                    <visible>!String.IsEmpty(Window(home).Property(ParentalGuide.4.Section))</visible>
+                                    <thumb>$INFO[Window(home).Property(ParentalGuide.Cat.4)]</thumb>
+                                    <label>[B]$INFO[Window(home).Property(ParentalGuide.4.Section)][/B] - $INFO[Window(home).Property(ParentalGuide.Cat.Name.4)] ($INFO[Window(home).Property(ParentalGuide.MVotes.4)])</label>
+                                    <onclick>SetProperty(SelectedCat,4,Home)</onclick>
+                                    <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
+                                </item>
+                                <item>
+                                    <visible>!String.IsEmpty(Window(home).Property(ParentalGuide.5.Section))</visible>
+                                    <thumb>$INFO[Window(home).Property(ParentalGuide.Cat.5)]</thumb>
+                                    <label>[B]$INFO[Window(home).Property(ParentalGuide.5.Section)][/B] - $INFO[Window(home).Property(ParentalGuide.Cat.Name.5)] ($INFO[Window(home).Property(ParentalGuide.MVotes.5)])</label>
+                                    <onclick>SetProperty(SelectedCat,5,Home)</onclick>
+                                    <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
+                                </item>
+                                <item>
+                                    <visible>!String.IsEmpty(Window(home).Property(ParentalGuide.6.Section))</visible>
+                                    <thumb>$INFO[Window(home).Property(ParentalGuide.Cat.6)]</thumb>
+                                    <label>[B]$INFO[Window(home).Property(ParentalGuide.6.Section)][/B] - $INFO[Window(home).Property(ParentalGuide.Cat.Name.6)] ($INFO[Window(home).Property(ParentalGuide.MVotes.6)])</label>
+                                    <onclick>SetProperty(SelectedCat,6,Home)</onclick>
+                                    <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
+                                </item>
+                                <item>
+                                    <visible>!String.IsEmpty(Window(home).Property(ParentalGuide.7.Section))</visible>
+                                    <thumb>$INFO[Window(home).Property(ParentalGuide.Cat.7)]</thumb>
+                                    <label>[B]$INFO[Window(home).Property(ParentalGuide.7.Section)][/B] - $INFO[Window(home).Property(ParentalGuide.Cat.Name.7)] ($INFO[Window(home).Property(ParentalGuide.MVotes.7)])</label>
+                                    <onclick>SetProperty(SelectedCat,7,Home)</onclick>
+                                    <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
+                                </item>
+                                <item>
+                                    <visible>!String.IsEmpty(Window(home).Property(ParentalGuide.8.Section))</visible>
+                                    <thumb>$INFO[Window(home).Property(ParentalGuide.Cat.8)]</thumb>
+                                    <label>[B]$INFO[Window(home).Property(ParentalGuide.8.Section)][/B] - $INFO[Window(home).Property(ParentalGuide.Cat.Name.8)] ($INFO[Window(home).Property(ParentalGuide.MVotes.8)])</label>
+                                    <onclick>SetProperty(SelectedCat,8,Home)</onclick>
+                                    <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick>
+                                </item>
+                            </content>
+                            <itemlayout height="60" width="500">
+                                <control type="label" id="4560">
+                                        <description>Description</description>
+                                        <left>30</left>
+                                        <top>80</top>
+                                        <right>0</right>
+                                        <height>30</height>
+                                        <aligny>center</aligny>
+                                        <align>left</align>
+                                        <font>font_button</font>
+                                        <wrapmultiline>false</wrapmultiline>
+                                        <info>ListItem.Label</info>
+                                        <onfocus>setfocus(4510)</onfocus>
+                                        <!-- <action>setfocus(4510)</action> -->
+                                        <!-- <onfocus>SetProperty(SelectedCat,$INFO[Window(home).Property(ParentalGuide.1.Section)])</onfocus> -->
+                                        <!-- <onfocus>SendClick(6600)</onfocus> -->
+                                        <!-- <onclick>setfocus(6600)</onclick> -->
+                                        <!-- <onaction>SetProperty(SelectedCat,$INFO[Window(home).Property(ParentalGuide.1.Section)])</onaction> -->
+                                        <!-- <onclick>RunScript(special://home/addons/script.parentalguide/script.py)</onclick> -->
+                                        
+                                        <!-- <label>$INFO[ListItem.Label]</label> -->
+                                </control>
+                                <control type="image">
+                                        <!-- <posx>230</posx> -->
+                                        <left>5</left>
+                                        <top>80</top>
+                                        <width>15</width>
+                                        <height>30</height>
+                                        <aligny>center</aligny>
+                                        <align>left</align>
+                                        <aspectratio>keep</aspectratio>
+                                        <info>ListItem.Icon</info>
+                                </control>
+
+<!--                                 <control type="image">
+                                        <left>265</left>
+                                        <top>80</top>
+                                        <width>250</width>
+                                        <height>30</height>
+                                        <aligny>center</aligny>
+                                        <align>left</align>
+                                        <aspectratio>keep</aspectratio>
+                                        <info>ListItem.Icon</info>
+                                </control> -->
+                            </itemlayout>
+                            <focusedlayout height="60" width="500">
+                            
+                                <control type="label">
+                                        <description>Description</description>
+                                        <!-- <posx>0</posx> -->
+                                        <left>30</left>
+                                        <top>80</top>
+                                        <width>500</width>
+                                        <height>30</height>
+                                        <aligny>center</aligny>
+                                        <align>left</align>
+                                        <wrapmultiline>false</wrapmultiline>
+                                        <info>ListItem.Label</info>
+                                        <font>font_button</font>
+                                        <!-- <onclick>setfocus(6600)</onclick> -->
+                                        <onfocus>setfocus(4510)</onfocus>
+                                        <!-- <label>$INFO[ListItem.Label]</label> -->
+                                        <!-- <onclick>SetProperty(SelectedCat,$INFO[Window(home).Property(ParentalGuide.1.Section)])</onclick> -->
+                                        <!-- <onfocus>SetProperty(SelectedCat,$INFO[Window(home).Property(ParentalGuide.1.Section)])</onfocus> -->
+                                        <!-- <onfocus>RunScript(special://home/addons/script.parentalguide/script.py)</onfocus> -->
+                                </control>
+                                <control type="image">
+                                        <left>5</left>
+                                        <top>80</top>
+                                        <width>15</width>
+                                        <height>30</height>
+                                        <aligny>center</aligny>
+                                        <align>left</align>
+                                        <aspectratio>keep</aspectratio>
+                                        <info>ListItem.Icon</info>
+                                </control>
+                    
+                                <control type="button" id="4510">
+                                        <description>Hidden Btn</description>
+                                        <left>30</left>
+                                        <top>80</top>
+                                        <width>500</width>
+                                        <height>30</height>
+                                        <aligny>center</aligny>
+                                        <align>left</align>
+                                        <wrapmultiline>false</wrapmultiline>
+                                        <info>ListItem.Label</info>
+                                        <label>$INFO[ListItem.Label]</label>
+                                        <font>font_button</font>
+                                        <!-- <onfocus>SetProperty(SelectedCat,$INFO[Window(home).Property(ParentalGuide.1.Section)])</onfocus> -->
+                                        <!-- <action>RunScript(special://home/addons/script.parentalguide/script.py)</action> -->
+                                        <!-- <onfocus>RunScript(special://home/addons/script.parentalguide/script.py)</onfocus> -->
+                                        <!-- <onclick>setfocus(4550)</onclick> -->
+                                        <!-- <onfocus>SendClick(6600)</onfocus> -->
+                                </control>
+                                        <!-- <onfocus>RunScript(special://home/addons/script.parentalguide/script.py)</onfocus> -->
+<!--                                 <control type="image">
+                                      
+                                        <left>240</left>
+                                        <top>80</top>
+                                        <width>250</width>
+                                        <height>30</height>
+                                        <aligny>center</aligny>
+                                        <align>left</align>
+                                        <aspectratio>keep</aspectratio>
+                                        <info>ListItem.Icon</info>
+                                        
+                                </control> -->
+                            </focusedlayout>
+                    
+                        <include content="Dialog_Scrollbar">
+                            <right>0</right>
+                            <top>0</top>
+                            <onright>Close</onright>
+                            <onleft>Close</onleft>
+                            <showonepage>true</showonepage>
+                            <visible allowhiddenfocus="true">false</visible>
+                        </include>       
+                    </control>
+                    
+                    <!-- Main Menu -->
+                    <include content="Object_Control">
+                        <param name="control" value="grouplist" />
+                        <param name="id" value="996" />
+                        <top>200</top>
+                        <bottom>40</bottom>
+                        <orientation>vertical</orientation>
+                        <itemgap>0</itemgap>
+                        <onleft>Close</onleft>
+                        <onright>Close</onright>
+                        <onup>8000</onup>
+                        <ondown>SetFocus(1001)</ondown>
+                        <ondown>SetFocus(8000)</ondown>
+                    </include>
+                    <control type="image">
+                        <top>-24</top>
+                        <centerright>100%</centerright>
+                        <height>16</height>
+                        <width>16</width>
+                        <texture colordiffuse="$VAR[ColorSelected]" flipy="true">arrows/arrow-small.png</texture>
+                        <visible>Container(996).HasPrevious</visible>
+                        <animation effect="slide" end="context_slide_arrow_no" condition="!$EXP[Exp_ContextMenu_HasPoster] + !$EXP[Exp_ContextMenu_HasIcon]">Conditional</animation>
+                    </control>
+                    <control type="image">
+                        <bottom>-24</bottom>
+                        <centerright>100%</centerright>
+                        <height>16</height>
+                        <width>16</width>
+                        <texture colordiffuse="$VAR[ColorSelected]">arrows/arrow-small.png</texture>
+                        <visible>Container(996).HasNext</visible>
+                        <animation effect="slide" end="context_slide_arrow_no" condition="!$EXP[Exp_ContextMenu_HasPoster] + !$EXP[Exp_ContextMenu_HasIcon]">Conditional</animation>
+                    </control>
+                </control>
+            </control>
+        </control>
+
+        <include content="Dialog_Settings_Button">
+            <param name="id" value="1000" />
+            <param name="control" value="button" />
+            <width>context_icon_w</width>
+        </include>
+    </controls>
+</window>
