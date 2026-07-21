@@ -6,17 +6,14 @@ import xbmcgui
 import traceback
 from threading import Thread
 import re
-#import requests
-#import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor, wait
+import threading
+import queue
 
 # Import the common settings
 from resources.lib.settings import Settings
-from resources.lib.scraper import IMDBScraper
 from resources.lib.settings import log
-from resources.lib import cache
 from resources.lib.SQLiteCache import SqliteCache
-from resources.lib import imdb
 from resources.lib.settings import log
 from resources.lib.utils import logger
 import requests
@@ -29,7 +26,18 @@ db = SqliteCache()
 import json
 
 ADDON = xbmcaddon.Addon(id='script.parentalguide')
-CWD = ADDON.getAddonInfo('path')#.decode("utf-8")
+CWD = ADDON.getAddonInfo('path')
+
+# Add the API base URL
+API_BASE_URL = "https://pg-2.vercel.app/get_data"
+
+# Add db_lock for thread-safe database operations
+db_lock = threading.Lock()
+
+# Retry queue for failed API requests
+# Format: (timestamp, videoName, ID, Provider, wid, order)
+retry_queue = queue.Queue()
+RETRY_DELAY_SECONDS = 60  # 1 minute delay for retries
 
 def getIsTvShow():
     if xbmc.getCondVisibility("Container.Content(tvshows)"):
@@ -44,8 +52,9 @@ def getIsTvShow():
     return False
 
 def setProperty(PropertyName, PropertyVal, WindowID):
-    xbmcgui.Window(WindowID).setProperty(PropertyName, PropertyVal)
-    logger.info(PropertyName + " was set sucessfully")
+    # Force 10000 (Home) for global properties
+    xbmcgui.Window(10000).setProperty(PropertyName, PropertyVal)
+    # logger.debug(PropertyName + " was set sucessfully")
     
 def Notify(title, msg):
     xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % (title, msg , ADDON.getAddonInfo('icon')))
@@ -54,21 +63,6 @@ def CleanStr(txt):
     newtxt = txt.replace("<p>","").replace("</p>","").replace(";",".").replace("^","").replace("►\xa0","-").strip()
     return newtxt
 
-def IMDB_Scraper(videoName, IMDBID, session):
-    dataScraper = IMDBScraper.parentsguide(IMDBID, videoName)  
-    
-    return dataScraper
-    
-def ProvidersRouter(videoName,ID,Session, Provider):
-    # Fetch from the server-side aggregator instead of scraping provider sites.
-    from resources.lib.api_client import get_parental_guide, map_provider
-    try:
-        year = xbmc.getInfoLabel("ListItem.Year") or None
-    except Exception:
-        year = None
-    return get_parental_guide(imdb_id=ID, video_name=videoName,
-                              release_year=year, provider=map_provider(Provider))
-        
 def getData(videoName, ID, Session, wid, Provider, order):
     try:
         RYear = int(xbmc.getInfoLabel("ListItem.Year"))
@@ -78,6 +72,27 @@ def getData(videoName, ID, Session, wid, Provider, order):
     today = datetime.date.today()
     year = today.year
     
+    # Read cache duration settings from addon settings
+    try:
+        cache_current_year = int(ADDON.getSetting("cacheCurrentYear")) * 24 * 60 * 60
+    except:
+        cache_current_year = 7 * 24 * 60 * 60  # Default 7 days
+    
+    try:
+        cache_recent_items = int(ADDON.getSetting("cacheRecentItems")) * 24 * 60 * 60
+    except:
+        cache_recent_items = 210 * 24 * 60 * 60  # Default 210 days (30 weeks)
+    
+    try:
+        cache_older_items = int(ADDON.getSetting("cacheOlderItems")) * 24 * 60 * 60
+    except:
+        cache_older_items = 0  # Default permanent (0 = no expiry)
+    
+    try:
+        cache_missing_ratings = int(ADDON.getSetting("cacheMissingRatings")) * 24 * 60 * 60
+    except:
+        cache_missing_ratings = 3 * 24 * 60 * 60  # Default 3 days
+    
     try:
         if ID is not None:
             key = ID + "_" + Provider.lower()
@@ -86,164 +101,129 @@ def getData(videoName, ID, Session, wid, Provider, order):
             
         show_info = db.get(key)
     except:
-        logger.info("Failed to fetch from cache or cache not found")
+        # logger.debug("Failed to fetch from cache or cache not found")
         show_info = None
                 
     if show_info is None: ##if not in cache
-        logger.info('Loading from scratch, no cache found for [%s][%s]' % (videoName, Provider))
-        show_info = ProvidersRouter(videoName,ID,Session, Provider)   
+        # logger.debug('Loading from scratch, no cache found for [%s][%s]' % (videoName, Provider))
+        
+        # Check if there's a pending retry for this item
+        current_time = time.time()
+        retry_entry = check_retry_queue(key, current_time)
+        
+        if retry_entry:
+            # Still within retry delay, skip for now
+            # logger.debug(f"Retry scheduled for {videoName} [{Provider}] at {retry_entry['retry_time']}")
+            AddFurnitureProperties(None, Provider, wid, ID)
+            return None
+        
+        show_info, should_retry = callParentalGuideAPI(videoName, ID, Provider)   
         
         if show_info is None:
-            logger.info("No Results found for this movie (" + videoName + ") on [" + Provider + "]")
-            Xshow_info = {
-                        "id": ID,
-                        "title": videoName,
-                        "provider": Provider,
-                        "recommended-age": None,
-                        "review-items": None,
-                        "review-link": None
-                        }
-            logger.info("Trying to save blank data for this movie (" + videoName + ") on [" + Provider + "]")
-            db.set(Xshow_info, 1*24*60)
-            AddFurnitureProperties(Xshow_info, Provider, wid)
-        else:
-            logger.info('Finished loading new data for [%s][%s] \n' % (videoName, Provider)+ str(show_info))
-            # try:
-                #cache.cache_details(show_info)
-            AddXMLProperties(show_info,wid)
-            AddFurnitureProperties(show_info, Provider, wid)
-            
-            if year == RYear:
-                exp = 1*7*24*60*60
-            elif year - RYear > 2:
-                exp = 0
+            if should_retry:
+                # Schedule retry in 1 minute
+                schedule_retry(key, videoName, ID, Provider, wid, order, current_time)
+                # logger.debug(f"Scheduled retry for {videoName} [{Provider}] in {RETRY_DELAY_SECONDS} seconds due to failure/timeout")
             else:
-                exp = 30*7*24*60*60
+                # No data available, cache empty result
+                # logger.info("No Results found for this movie (" + videoName + ") on [" + Provider + "]")
+                Xshow_info = {
+                            "id": ID,
+                            "title": videoName,
+                            "provider": Provider,
+                            "recommended-age": None,
+                            "review-items": None,
+                            "review-link": None
+                            }
+                # logger.debug("Trying to save blank data for this movie (" + videoName + ") on [" + Provider + "]")
+                # Use cache_missing_ratings setting for items without ratings
+                safe_db_set(Xshow_info, cache_missing_ratings)
+            
+            AddFurnitureProperties(None, Provider, wid, ID)
+        else:
+            # logger.debug('Finished loading new data for [%s][%s]' % (videoName, Provider))
+            AddXMLProperties(show_info,wid)
+            AddFurnitureProperties(show_info, Provider, wid, ID)
+            
+            # Conditional caching based on release year using settings
+            if year == RYear:
+                exp = cache_current_year  # Current year items
+            elif year - RYear > 2:
+                exp = cache_older_items  # Older items (>2 years)
+            else:
+                exp = cache_recent_items  # Recent items (1-2 years)
                 
-            db.set(show_info, exp)
-            logger.info("Added New Data for "+videoName + "[" + Provider +"] to cache sucessfully" )
+            safe_db_set(show_info, exp)
+            # logger.debug("Added New Data for "+videoName + "[" + Provider +"] to cache with expiry: " + str(exp) + " seconds" )
     else:
-        logger.info("Loading from cache : Cache found for " +videoName + "[" + Provider +"]\n"+ str(show_info))
+        # logger.debug("Loading from cache for " +videoName + "[" + Provider +"]")
         AddXMLProperties(show_info,wid)
-        AddFurnitureProperties(show_info, Provider, wid)
-        logger.info("Data from cache for "+videoName + "[" + Provider +"] \n")
+        AddFurnitureProperties(show_info, Provider, wid, ID)
     return show_info
 
-#########################
-# New Functions
-#########################
-
-def prepURL(videoName,Provider):
-    #Notify(Provider)
-    if Provider == 'CSM':
-        movie_id = videoName.replace(":","").replace(" ","-")
-        url = "https://www.commonsensemedia.org" + "/movie-reviews/" + str(movie_id)
-    if Provider == 'MovieGuide':
-        moviename = videoName.replace(":","").replace(" ","-").strip().lower()
-        url = 'https://www.movieguide.org/reviews/' + moviename + '.html'
-    if Provider == 'KidsInMind':
-        videoName = videoName.replace(":", "%3A").replace(" ","+")
-        url = 'https://kids-in-mind.com/search-desktop.htm?fwp_keyword=' + videoName
-    if Provider == "RaisingChildren":
-        if videoName[0:3] in ["The","THE","the"]:
-            videoName = re.sub(".","",videoName, count=4)
-        moviename = videoName.replace(":","").replace(" ","-").strip().lower()
-        url = 'https://raisingchildren.net.au/guides/movie-reviews/' + moviename
-    if Provider == 'DoveFoundation':
-        url = 'https://dove.org/search/reviews/' + videoName.replace(":","%3A").replace(" ","+").replace("[","%5B").replace("]","%5").replace("(","%28").replace(")","%29")
-    
-    return url
-
-def CSMScraper(videoName,ID,Session):
-    CatsIDs = {
-        0: "Clean",
-        1: "Mild",
-        2: "Moderate",
-        3: "Moderate",
-        4: "Severe",
-        5: "Severe"
+def callParentalGuideAPI(videoName, ID, Provider, timeout=15):
+    """
+    Call the Parental Guide API and handle responses.
+    Returns: tuple (show_info, should_retry)
+        - show_info: dict with parental guide data or None
+        - should_retry: bool indicating if request should be retried later
+    """
+    params = {
+        "video_name": videoName,
+        "imdb_id": ID,
+        "provider": Provider.lower()
     }
-    NamesMap = {
-        "Positive Messages" :"Positive Messages",
-        "Positive Role Models" :"Positive Role Models",
-        "Diverse Representations" : "Diverse Representations",
-        "Violence & Scariness" : "Violence",
-        "Sex, Romance & Nudity" : "Sex & Nudity",
-        "Language" : "Language",
-        "Products & Purchases" : "Products & Purchases",
-        "Drinking, Drugs & Smoking" : "Smoking, Alchohol & Drugs",
-        "Educational Value":"Educational Value"
-        }
-    url = prepURL(videoName, 'CSM')
-    response = Session.get(url)
-
-    if '200' in str(response):
-        soup = BeautifulSoup(response.text, "html.parser")
-        
-        if soup is not None:
-            try:
-                Cats = soup.find("review-view-content-grid").find("div",{"class":"row"}).findAll("span",{"class":"rating__label"})
-                age = soup.find("div", {"class": "rating rating--inline rating--xlg"}).find("span", {"class":"rating__age"}).text.strip()
-                title = soup.find("div",{"class":"review-view-summary"}).div.h1.string
-                jsonData = soup.find('script',{"type":"application/ld+json"}).string
-                print(jsonData)
-                jsonload = json.loads(jsonData)
-                imdburl= jsonload["@graph"][0]["itemReviewed"]["sameAs"]
-                age2 = "age"+jsonload["@graph"][0]["typicalAgeRange"]
-                isFamilyFriendly = "age"+jsonload["@graph"][0]["isFamilyFriendly"]
-                datePublished = "age"+jsonload["@graph"][0]["datePublished"]
-                sPattern3 = "http.*imdb.*title.(.*?)\/"
-                imdbid = str(re.compile(sPattern3).findall(str(imdburl))).replace("[","").replace("]","").replace("'","")
-                Details = []
-                namePattern = re.compile(r'data-text="(.*\n*?)')
-                CatData = []
-                for cat in Cats:
-                    try:
-                        descparenttag = cat.parent.parent
-                        desc = re.findall(namePattern,  str(descparenttag))[0].strip().replace("&lt;","").replace("p&gt;","").replace("&lt;","").replace("/p&gt","").replace("/","").replace("&quot;","'")
-                        cparent = cat.parent
-                        subs = cparent.findAll("span",{"class":"rating__score"})
-                        for sub in subs:
-                            try:
-                                score = len(sub.findAll("i", {"class" : "icon-circle-solid active"}))
-                                #print(score)
-                                CatData = {
-                                "name" : NamesMap[cat.text],
-                                "score": str(score),
-                                "description": CleanStr(desc),
-                                "cat": CatsIDs[score],
-                                "votes": None
-                            }
-                            except:
-                                score = None
-                        Details.append(CatData)
-                    except:
-                        pass
-                Review = {
-                    "id": imdbid,
-                    "title": videoName,
-                    "provider": "CSM",
-                    "recommended-age": age,
-                    "review-items": Details,
-                    "review-link": url,
-                    "isFamilyFriendly": isFamilyFriendly,
-                    "review-date": datePublished
-                    }
-            except:
-                log("Parental Guide [CSM] : Problem connecting to provider")
-                Review = None
-        else:
-            log("Parental Guide [CSM] : Problem connecting to provider")
-            Review = None
-
-    else:
-        log("Parental Guide [CSM] : Problem connecting to provider")
-        Review = None
-    return Review
+    
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(API_BASE_URL, params=params, timeout=timeout)
+            response.raise_for_status()
+            data = response.json()
+            
+            # Check for failed status from API
+            status = data.get("status", "")
+            if status == "Failed":
+                # logger.error(f"API returned Failed status for {Provider} - {videoName}: {data}")
+                # Return None and indicate retry should be attempted
+                return (None, True)
+            
+            # Handle null values from API - convert None to empty array
+            review_items = data.get("review-items")
+            if review_items is None:
+                review_items = []
+            
+            # Check if we got actual data (not empty)
+            if not review_items and not data.get("recommended-age"):
+                # logger.debug(f"API returned no data for {Provider} - {videoName}")
+                return (None, False)  # No data, don't retry
+            
+            show_info = {
+                "id": data.get("id") or ID,
+                "title": data.get("title") or videoName,
+                "provider": Provider,
+                "recommended-age": data.get("recommended-age"),
+                "review-items": review_items,
+                "review-link": data.get("review-link")
+            }
+            return (show_info, False)  # Success, no retry needed
+            
+        except requests.Timeout as e:
+            # logger.error(f"Timeout calling ParentalGuide API for {Provider} (attempt {attempt+1}/{max_retries}): {str(e)}")
+            if attempt == max_retries - 1:
+                return (None, True)  # Timeout, should retry later
+            time.sleep(1)
+            
+        except requests.RequestException as e:
+            # logger.error(f"Error calling ParentalGuide API for {Provider} (attempt {attempt+1}/{max_retries}): {str(e)}")
+            if attempt == max_retries - 1:
+                return (None, True)  # Network error, should retry later
+            time.sleep(1)
 
 def getIMDBID(name,year):
     k = "da6c8b4d"
     url = "http://www.omdbapi.com/?t=" + name.strip() +"&y=" + year + "&apikey=" + k +"&plot=full&r=json"
+    # logger.debug(url)
     res = requests.get(url).content
     json_object = json.loads(res)
 
@@ -253,460 +233,6 @@ def getIMDBID(name,year):
         print("Couldn't find IMDB ID")
         result = None
     return result
-
-def getMGDesc(descs, s):
-    for i in range(0,len(descs)):
-        if str(s) in [descs[i].text.replace(":","").strip()]:
-            return CleanStr(descs[i].next_sibling.strip())
-    
-def MovieGuideScraper(videoName,ID,Session):
-    url = prepURL(videoName, 'MovieGuide')
-    
-    r = Session.get(url)
-
-    Cats = {
-        0: "None",
-        1: "Mild",
-        2: "Moderate",
-        3: "Severe"
-    }
-
-    NamesMap = {
-    "Dominant Worldview and Other Worldview Content/Elements:": "Dominant Worldview",
-    "Foul Language": "Language",
-    "Language": "Language",
-    "Violence" : "Violence",
-    "Nudity" : "Nudity",
-    "Sex": "Making Love",
-    "Alcohol Use" : "Smoking, Alchohol & Drugs",
-    "Smoking and/or Drug Use and Abuse" : "Smoking, & Alchohol & Drugs",
-    "Miscellaneous Immorality" : "Miscellaneous Immorality"
-    }
-
-    ReNamesMap = {
-        "Dominant Worldview": "Dominant Worldview and Other Worldview Content/Elements:",
-        "Language": "Foul Language",
-        "Violence": "Violence",
-        "Nudity": "Nudity",
-        "Sex": "Sex",
-        "Smoking, Alchohol & Drugs": "Alcohol Use",
-        "Miscellaneous Immorality" : "Miscellaneous Immorality"
-        }
-    
-    Details, CatData = [], []
-
-    if '200' in str(r):
-        Soup = BeautifulSoup(r.text, "html.parser")
-        descriptions = Soup.find("div",{"class":"movieguide_review_content"}).findAll("div",{"class":"movieguide_subheading"})
-        title = Soup.title.text.replace("- Movieguide | Movie Reviews for Christians","").strip()
-        #print(sSoup)
-        classifications = Soup.find("table", {"class":"movieguide_content_summary"})
-        matches = classifications.findAll("tr")
-        #print(matches)
-        for match in matches:
-            #print(match.text)
-            #if match.text.strip() in ["Nudity"]:
-            if match.text.replace("\n","").strip() != 'NoneLightModerateHeavy':
-                #print(match.text)
-                ele = match.findAll("div")
-                for i in range(0,4):
-                    sPattern =  "movieguide_circle_red"
-                    aMatches = re.compile(sPattern).findall(str(ele[i]))
-                    sPattern2 =  "movieguide_circle_green"
-                    bMatches = re.compile(sPattern2).findall(str(ele[i]))
-
-                    if aMatches or bMatches:
-                        CatData = {
-                        "name" : NamesMap[str(match.text.replace("\n","").strip())],
-                        "score": int(i),
-                        "description": getMGDesc(descriptions, match.text.replace("\n","").strip()),
-                        "cat": Cats[int(i)],
-                        "votes": None
-                        }
-                    #print(CatData)
-                Details.append(CatData)
-                    #print(Cats[i])
-                    #print("-------------------------------------------------------")
-
-        #print(Details)
-
-        Review = {
-            "id": ID,
-            "title": videoName,
-            "provider": "MovieGuide",
-            "recommended-age": None,
-            "review-items": Details,
-            "review-link": url
-        }
-
-        #logger.info(str(Review))
-    else:
-        Review = None
-    return Review
-
-def getDoveDesc(soup, s):
-    descs = soup.findAll("h5",{"class":"details-title"})
-    if descs not in [None,""]:
-        for i in range(0,len(descs)):
-            if str(s) in [descs[i].text.strip()]:
-                parent = descs[i].parent
-                text = parent.find("div",{"class":"details-body"}).p.string
-                text = CleanStr(text)
-            else:
-                text = "None"
-    else:
-        text = "None"
-    return text
-    
-def DoveFoundationScraper(videoName,ID,Session):
-    url = prepURL(videoName, 'DoveFoundation')
-    r = Session.get(url)
-    Cats = {
-        0: "None",
-        1: "Mild",
-        2: "Moderate",
-        3: "Moderate",
-        4: "Severe",
-        5: "Severe"
-    }
-    Details, CatData = [], []
-
-    if '200' in str(r):
-        sSoup = BeautifulSoup(r.text, "html.parser")
-        res = sSoup.find("div", {"class":"movie-cards search-cards"})
-        NoRes = re.compile("Nothing matches your search term").findall(str(res))
-
-        try:
-            resURL = res.find("a")["href"]
-            if len(NoRes) ==0:
-                ## Sraping 1st rewsult
-                response = Session.get(resURL)
-                soup = BeautifulSoup(response.text, "html.parser")
-                title = soup.title.text.replace("- Dove.org","").strip()
-                
-                checktitle = title.replace(":","").replace(" ","-")
-                checkvideoName = videoName.replace(":","").replace(" ","-")
-
-                if checktitle == checkvideoName:
-                    table = soup.find("div", {"class":"matrix-categories"})
-                    items = table.findAll("span",{"class":"item-text"})
-                    sections = table.findAll("span",{"class":"categories-item"})
-                    descs = soup.find("div",{"class": "main-content details-wrap"})
-                    for i in range(0,len(items)):
-                        try:
-                            IDs = sections[i]["class"][1].replace("categories-item--","").strip()
-                            CatData = {
-                                "name" : items[i].text.strip(),
-                                "score": IDs,
-                                "description": getDoveDesc(descs, items[i].text.strip()),
-                                "cat": Cats[int(IDs)],
-                                "votes": None
-                            }
-                        except:
-                            pass
-                        Details.append(CatData)
-                else:
-                    print("No results found")
-                    Details = None
-            else:
-                print("No results found")
-                Details = None
-            
-            if ID is None:
-                xID = title
-            else:
-                xID = ID
-                
-            Review = {
-                "id": xID,
-                "title": title,
-                "provider": "DoveFoundation",
-                "recommended-age": None,
-                "review-items": Details,
-                "review-link": resURL,
-            }
-        except:
-            Review = None
-    else:
-        Review = None
-    return Review
-
-def KidsInMindScraper(videoName,ID,Session):
-    url = prepURL(videoName, 'KidsInMind')
-    r = Session.get(url)
-    Cats = {
-        0: "None",
-        1: "Clean",
-        2: "Mild",
-        3: "Mild",
-        4: "Mild",
-        5: "Moderate",
-        6: "Moderate",
-        7: "Moderate",
-        8: "Severe",
-        9: "Severe",
-        10: "Severe",
-    }
-    NamesMap = {
-        "SEX/NUDITY" : "Sex & Nudity",
-        "VIOLENCE/GORE": "Violence",
-        "LANGUAGE":"Language",
-        "SUBSTANCE USE":"Smoking, Alchohol & Drugs",
-        "DISCUSSION TOPICS": "Discussion Topics",
-        "MESSAGE":"Message",
-    }
-    AcceptedNames = ['SEX/NUDITY','VIOLENCE/GORE','LANGUAGE','SUBSTANCE USE','DISCUSSION TOPICS','MESSAGE']
-    Details = []
-    CatData = []
-    sURLs = []
-    if '200' in str(r):
-        sSoup = BeautifulSoup(r.text, "html.parser")
-        res = sSoup.find("div", {"class":"facetwp-template"})
-        #resURL = res.find("a")["href"]
-        sResults = res.findAll("a")
-
-        for sRes in sResults:
-            if 'http' in sRes["href"]:
-                sURLs.append(sRes["href"])
-            
-        NoRes = re.compile("Nothing matches your search term").findall(str(res))
-
-        if len(NoRes) ==0:
-            for k in range(0,len(sURLs)):
-                ## Sraping 1st result
-                resURL = sURLs[k]
-                response = Session.get(resURL)
-                logger.info("KidsInMind trying .." + resURL)
-                soup = BeautifulSoup(response.text, "html.parser")
-                
-                sPattern3 = "href.*imdb.*title.(.*?)\/"
-                imdbid = str(re.compile(sPattern3).findall(str(soup)))
-                
-                if ID in imdbid:
-                    logger.info("KidsInMind Found a match in the seach results .." + resURL)
-                    try:    
-                        title = soup.find("div",{"class":"title"}).h1.text.split("|")[0].strip()
-                    except:
-                        title = videoName
-                    
-                    
-                    ratingstr = soup.title.string#.split("|")[0].split("-")[1].strip().split(".")[0] + "/10"
-                    sPattern =  "(\d)\.(\d)\.(\d)"
-                    aMatches = re.compile(sPattern).findall(ratingstr)
-                    
-                    try:
-                        NudeRating = round(int(aMatches[0][0])/2)
-                    except:
-                        NudeRating = 0
-                      
-                    #print(title)
-                    blocks = soup.findAll("div",{"class":"et_pb_text_inner"})
-                    #print(blocks)
-                    i=1
-                    for block in blocks:
-                        if block.p is not None and i <=7:
-                            #print("New Block ............")
-                            #print(block.p.text)
-                            items = block.findAll("h2")
-                            if len(items) < 1:
-                                items = block.findAll("span")
-                            #print(str(items))
-
-                            for item in items:
-                                #print("Processing : " + item.text + "from " + str(len(items)))
-                                xitem = item.text.replace(title,"").strip()
-                                itemtxt = ''.join((x for x in xitem if not x.isdigit())).strip()
-                                if itemtxt in AcceptedNames:
-                                    #print(xitem)
-                                    #print(itemtxt)
-
-                                    for x in xitem:
-                                        if x.isdigit():
-                                            ratetxt= int(''.join(x))
-                                        else:
-                                            ratetxt = 0
-                                    parent = item.parent
-                                    try:
-                                        desc = parent.p.text
-                                    except:
-                                        desc = parent.text
-
-                                    if block:
-                                        CatData = {
-                                                "name" : NamesMap[itemtxt],
-                                                "score": int(ratetxt)/2,
-                                                "description": desc,
-                                                "cat": Cats[ratetxt],
-                                                "votes": None
-                                            }
-                                        Details.append(CatData)
-                            #i = i +1
-                    #print(Details)
-
-                    Review = {
-                        "id": imdbid.replace("['","").replace("']",""),
-                        "title": videoName,
-                        "provider": "KidsInMind",
-                        "recommended-age": None,
-                        "review-items": Details,
-                        "review-link": resURL,
-                    }
-                    break
-                else:
-                    ## if not the same movie in this search result
-                    Review = None
-                    k = k + 1
-        else:
-            Review = None
-    else:
-        Review = None
-        
-    return Review
-  
-def RaisingChildrenScraper(videoName,ID,Session):
-    url = prepURL(videoName, 'RaisingChildren')
-    r = Session.get(url)
-
-    Cats = {
-        0: "None",
-        1: "Mild",
-        2: "Moderate",
-        3: "Severe"
-    }
-
-    NamesMap = {
-        "Sexual references": "Sex",
-        "Alcohol, drugs and other substances": "Smoking, Alchohol & Drugs",
-        "Nudity and sexual activity": "Nudity",
-        "Product placement" : "Products & Purchases",
-        "Coarse language": "Language",
-        "Ideas to discuss with your children":"Discuss with children"
-        }
-
-    Details, CatData = [], []
-
-    if '200' in str(r):
-        sSoup = BeautifulSoup(r.text, "html.parser")
-        title = sSoup.title.text.replace("| Raising Children Network","").strip()
-        
-        sPattern =  ".ageSuitability.:.(.*?).}"
-        aMatches = re.compile(sPattern).findall(str(sSoup))
-        age = "age " + aMatches[0]
-
-        sPattern2 =  "<div.id..sexual_references,_etc_.*.>\n*.*\n*.*\n*.*\n*.*\n*.*\n*.*\n*.*"
-        NewSoup = re.compile(sPattern2).findall(str(sSoup))
-
-        fsoup = BeautifulSoup(str(NewSoup), "html.parser")
-        items = fsoup.findAll("h2")
-
-        for item in items:
-            desc = item.nextSibling.text
-            try:
-                nextsib = item.nextSibling.nextSibling.text
-                desc = desc + "\n" + nextsib
-            except:
-                pass
-
-            CatData = {
-            "name" : NamesMap[item.text],
-            "score": "Unknown",
-            "description": CleanStr(desc),
-            "cat": "Unknown",
-            "votes": None
-            }
-            Details.append(CatData)
-
-        Review = {
-            "id": ID,
-            "title": videoName,
-            "provider": "RaisingChildren",
-            "recommended-age": age,
-            "review-items": Details,
-            "review-link": url,
-        }
-    else:
-        Review = None
-        logger.info("ParentalGuide [RaisingChildren] : Invalid Response")
-    return Review
-
-def ParentPreviewsScraper(videoName,ID,Session):
-    strName = videoName.replace(":", "").replace(" ","-")
-    url = 'https://parentpreviews.com/movie-reviews/' + strName
-    r = Session.get(url)
-    Cats = {
-        "A": "None",
-        "B": "Mild",
-        "C": "Moderate",
-        "D": "Severe"
-    }
-    
-    Scores = {
-        "A": 0,
-        "B": 1,
-        "C": 3,
-        "D": 4
-    }
-    
-    NamesMap = {
-        "Sexual Content" : "Sex & Nudity",
-        "Violence": "Violence",
-        "Profanity":"Language",
-        "Substance Use":"Smoking, Alchohol & Drugs"
-    }
-
-    Details, CatData, Reviews, cats = [] ,[], [] ,[]
-    Review = {}
-
-    namePattern = re.compile(r'<b>(.*?): ?<\/b>(.*?)[\n]')
-
-    if '200' in str(r):
-        Soup = BeautifulSoup(r.text, "html.parser")
-        res = Soup.find("a", {"href":"#content-details"})
-        if res is not None:
-            blocks = res.findAll("div",{"class":"criteria_row theme_field"})
-            DescSoup = Soup#.find("div",{"class":"post_text_area"})
-            Desc = re.findall(namePattern,  str(DescSoup))
-
-            for item in Desc:
-                Review.update({item[0] : item[1]})
-
-            for block in blocks:
-                score = block.find("span", {"class":"criteria_mark theme_accent_bg"}).text.replace("-","").replace("+","").strip()
-
-                try:
-                    if Review[block.span.text.strip()]:
-                        x = Review[block.span.text.strip()]
-                    else:
-                        x = ''
-                except:
-                    x = ''
-                    pass
-
-                CatData = {
-                    "name" : NamesMap[block.span.text],
-                    "score": Scores[block.find("span", {"class":"criteria_mark theme_accent_bg"}).text.replace("-","").replace("+","").strip()],
-                    "description": x.replace("<p>","").replace("<br/>","").replace("</br>","").replace("</p>","").replace("<b>","").replace("</b>","").replace("<p>","").strip(),
-                    "cat": Cats[score],
-                    "votes": None
-                    }
-
-                Details.append(CatData)
-
-            Review = {
-                "id": ID,
-                "title": videoName,
-                "provider": "ParentPreviews",
-                "recommended-age": '',
-                "review-items": Details,
-                "review-link": url,
-            }
-        else:
-            Review = None
-    else:
-        Review = None
-        logger.info("ParentalGuide [ParentPreviews] : Invalid Response")
-    return Review
-
 
 def AddXMLProperties(review, WindowID):    
     i = 0
@@ -725,83 +251,248 @@ def AddXMLProperties(review, WindowID):
         #WID.setProperty("PG.URL".format(i), review['review-link'])
         #WID.setProperty("PG.Provider".format(i), review['provider'])
 
-def AddFurnitureProperties(review, provider, WindowID):
+def AddFurnitureProperties(review, provider, WindowID, imdb_id=None):
+    """
+    Set parental guide properties with unique keys per movie ID to prevent race conditions.
+    Provider icons are global, but severity data is unique per movie.
+    
+    Args:
+        review: Review data from API or cache
+        provider: Provider name (IMDB, KidsInMind, etc.)
+        WindowID: Window ID (not used, keeping for compatibility)
+        imdb_id: IMDB ID for unique property keys
+    """
     Suffix = provider
-    WID = xbmcgui.Window(WindowID)
-    name = xbmc.getInfoLabel("ListItem.Title")
-    li = xbmcgui.ListItem(name)
-    #WID = li
-    #li.setProperty("PG","hi")
+    WID = xbmcgui.Window(10000) # Force Home window for furniture properties
     
-    #logger.info(li.getProperty("PG"))
-    #Notify("res",li.getProperty("PG"))
+    logger.debug(f"=== AddFurnitureProperties called for {provider} (IMDB: {imdb_id}) ===")
+    logger.debug(f"Review data: {review}")
     
-    #q = {"jsonrpc":"2.0","id":15,"method":"Files.GetDirectory","params":{"directory":"plugin://script.parentalguide/", "media":"video", "properties":["genre","director"],"additionalProperties":["tmdb_id"]}}
+    # Always set the provider icon (global - never changes)
+    WID.setProperty(f"{Suffix}-Icon", f"special://home/addons/script.parentalguide/resources/skins/Default/media/providers/{Suffix}.png")
     
-    #xbmc.executeJSONRPC('{"jsonrpc": "2.0", "method": "Files.GetDirectory", "params": {"directory": "plugin://script.parentalguide/", "media":"video", "properties":["genre", "director"], "additionalProperties":["PG", "HI2"]}, "id": 1}')
-    
-    #Notify("res",WID.getProperty("PG"))
-    WID.setProperty('CurrentItem',name)
-    WID.setProperty('CurrentId',xbmc.getInfoLabel("ListItem.IMDBNumber"))
-    
-    WID.setProperty('PGFurnitureTitle',"Ratings: ")
-    WID.setProperty('PGFurnitureIcon',"special://home/addons/script.parentalguide/resources/skins/Default/media/icons/icon.png")
-    
-    logger.info("Setting Property for %s" % provider)
-    #logger.info("Trying Property for %s" % review)
-    if review in [None,""," "]:
-        WID.setProperty(Suffix+'-NRate', " NA")
-        WID.setProperty(Suffix+'-NVotes', " NA")
-        WID.setProperty(Suffix+'-Age', " NA")
-        WID.setProperty(provider+'-NIcon', "special://home/addons/script.parentalguide/resources/skins/Default/media/tags/Unknown.png")
-        WID.clearProperty(provider+'-Status')
+    # If no IMDB ID, fall back to global properties (backward compatibility)
+    if not imdb_id or imdb_id == '':
+        property_prefix = Suffix
     else:
-        WID.setProperty(provider+'-Icon', "special://home/addons/script.parentalguide/resources/skins/Default/media/providers/" + provider + ".png")
-        WID.setProperty(provider+'-Status','true')
-        if review['review-items'] not in [None,""," "]:
-            if provider in ["CSM","RaisingChildren"]:
-                WID.setProperty(Suffix+'-Age', Suffix+ ":"+review['recommended-age'])
-                
-            if provider in ["KidsInMind","IMDB","RaisingChildren","MovieGuide","DoveFoundation","ParentPreviews"]:
-                for entry in review['review-items']:
-                    if entry['name'] in ["Nudity","Sex & Nudity"]:
-                        WID.setProperty(Suffix+'-toggle', "true")
-                        WID.setProperty(Suffix+'-NRate', " " + entry['cat'] + " (" + str(entry['score']) + "/5)")
-                        WID.setProperty(provider+'-NIcon', "special://home/addons/script.parentalguide/resources/skins/Default/media/tags/"+ entry['cat'] +".png")
-                        #"special://home/addons/script.parentalguide/resources/skins/Default/media/providers/" + provider + ".png")
-                        if provider == "IMDB":
-                            try:
-                                xMainVotes = [int(s) for s in re.findall(r'\b\d+\b', entry['votes'])]
-                                WID.setProperty(Suffix+'-NVotes', " " + (str(entry['cat']) + " (" + str(xMainVotes[0]) + "/" + str(xMainVotes[1]) + ")"))
-                            except:
-                                pass
-                            #logger.info("Property Name = " + Suffix+'-NVotes' + ", Val = " + WID.getProperty(Suffix+'-NVotes'))
-                            #Notify(Suffix+'-NVotes',WID.getProperty(Suffix+'-NVotes'))
-                    if WID.getProperty(Suffix+'-NRate') in [None,""]:      
-                        WID.setProperty(Suffix+'-NVotes', " NA")
-                        WID.setProperty(Suffix+'-NRate', " NA")
-                        WID.setProperty(Suffix+'-Age', " NA")
-                        WID.setProperty(provider+'-NIcon', "special://home/addons/script.parentalguide/resources/skins/Default/media/tags/Unknown.png")
+        property_prefix = f"{imdb_id}-{Suffix}"
+    
+    if review in [None, "", " "] or 'review-items' not in review or not review['review-items']:
+        # Don't set NA properties - just clear them so visibility conditions hide the indicators
+        WID.clearProperty(f"{property_prefix}-NRate")
+        WID.clearProperty(f"{property_prefix}-NVotes")
+        WID.clearProperty(f"{property_prefix}-Age")
+        WID.clearProperty(f"{property_prefix}-NIcon")
+        WID.setProperty(f"{property_prefix}-Status", 'false')
+    else:
+        WID.setProperty(f"{property_prefix}-Status", 'true')
+        
+        # Set recommended age if available (for CSM and similar providers)
+        if review.get('recommended-age'):
+            WID.setProperty(f"{property_prefix}-Age", review['recommended-age'])
         else:
-            WID.setProperty(Suffix+'-NRate', " NA")
-            WID.setProperty(Suffix+'-NVotes', " NA")
-            WID.setProperty(Suffix+'-Age', " NA")
-            WID.setProperty(provider+'-NIcon', "special://home/addons/script.parentalguide/resources/skins/Default/media/tags/Unknown.png")
-            WID.clearProperty(provider+'-Status')
+            WID.clearProperty(f"{property_prefix}-Age")
+        
+        found_nudity = False
+        for entry in review['review-items']:
+            if entry['name'] in ["Sex & Nudity", "Nudity"]:
+                found_nudity = True
+                WID.setProperty(f"{property_prefix}-toggle", "true")
+                
+                # Build the icon path
+                icon_path = f"special://home/addons/script.parentalguide/resources/skins/Default/media/providers/ribbon_mono/{Suffix}_{entry['cat']}.png"
+                
+                # DEBUG: Use xbmc.log to ensure it shows up
+                xbmc.log(f"PG_DEBUG: Setting icon for {Suffix}: cat={entry['cat']}, path={icon_path}", xbmc.LOGINFO)
+                
+                # Set NRate (movie-specific and global)
+                WID.setProperty(f"{property_prefix}-NRate", f" {entry['cat']}")
+                WID.setProperty(f"{Suffix}-NRate", f" {entry['cat']}")
+                
+                # Set NIcon (movie-specific and global)
+                WID.setProperty(f"{property_prefix}-NIcon", icon_path)
+                WID.setProperty(f"{Suffix}-NIcon", icon_path)
+                
+                xbmc.log(f"PG_DEBUG: Set {Suffix}-NIcon property to: {icon_path}", xbmc.LOGINFO)
+                
+                # Show notification to verify on screen
+                # xbmc.executebuiltin(f'Notification(PG Debug,{Suffix} icon: {entry["cat"]},3000)')
+                
+                try:
+                    if entry.get('votes'):
+                        xMainVotes = [int(s) for s in re.findall(r'\b\d+\b', entry['votes'])]
+                        if len(xMainVotes) >= 2:
+                            votesProp = f" {entry['cat']} ({xMainVotes[0]}/{xMainVotes[1]})"
+                        elif len(xMainVotes) == 1:
+                            votesProp = f" {entry['cat']} ({xMainVotes[0]})"
+                        else:
+                            votesProp = f" {entry['cat']} ({entry['votes']})"
+                    else:
+                        votesProp = f" {entry['cat']} (No votes)"
+                    
+                    # Set NVotes (movie-specific and global)
+                    WID.setProperty(f"{property_prefix}-NVotes", votesProp)
+                    WID.setProperty(f"{Suffix}-NVotes", votesProp)
+                except Exception as e:
+                    # logger.error(f"Error setting votes for {Suffix}: {str(e)}")
+                    WID.setProperty(f"{property_prefix}-NVotes", f" {entry['cat']} (Error parsing votes)")
+                
+                break
+        
+        # If no nudity section found, clear nudity-specific properties but keep Age
+        if not found_nudity:
+            WID.clearProperty(f"{property_prefix}-NRate")
+            WID.clearProperty(f"{property_prefix}-NVotes")
+            WID.clearProperty(f"{property_prefix}-NIcon")
     
-    if review['review-items'] == []:
-        WID.setProperty(Suffix+'-NRate', " NA")
-        WID.setProperty(Suffix+'-NVotes', " NA")
-        WID.setProperty(Suffix+'-Age', " NA")
-        WID.setProperty(provider+'-NIcon', "special://home/addons/script.parentalguide/resources/skins/Default/media/tags/Unknown.png")
-        WID.clearProperty(provider+'-Status')
+    # logger.debug(f"AddFurnitureProperties: Finished for provider {Suffix} with IMDB ID {imdb_id}")
+
+def ClearGlobalProperties(providers):
+    """
+    Clear all global parental guide properties for all providers.
+    Called when item changes to prevent stale data from showing.
     
+    Args:
+        providers: List of provider names to clear properties for
+    """
+    WID = xbmcgui.Window(10000)
+    
+    properties_to_clear = ['NRate', 'NVotes', 'Age', 'NIcon', 'Status', 'toggle']
+    
+    for provider in providers:
+        for prop in properties_to_clear:
+            global_prop_name = f"{provider}-{prop}"
+            WID.clearProperty(global_prop_name)
+    
+    # logger.debug(f"ClearGlobalProperties: Cleared properties for {len(providers)} providers")
+
+def CopyPropertiesToGlobal(imdb_id, providers):
+    """
+    Copy unique properties for a specific movie to global properties.
+    This allows the skin to read global properties while avoiding race conditions.
+    
+    Args:
+        imdb_id: IMDB ID of the focused movie
+        providers: List of provider names to copy properties for
+    """
+    WID = xbmcgui.Window(10000)
+    
+    for provider in providers:
+        if not imdb_id or imdb_id == '':
+            # No IMDB ID, properties are already global
+            continue
+            
+        property_prefix = f"{imdb_id}-{provider}"
+        
+        # Copy unique properties to global properties
+        # Provider icon is already global, so skip it
+        properties_to_copy = ['NRate', 'NVotes', 'Age', 'NIcon', 'Status', 'toggle']
+        
+        for prop in properties_to_copy:
+            unique_prop_name = f"{property_prefix}-{prop}"
+            global_prop_name = f"{provider}-{prop}"
+            
+            value = WID.getProperty(unique_prop_name)
+            if value:
+                WID.setProperty(global_prop_name, value)
+            else:
+                # Clear global property if unique property is empty
+                WID.clearProperty(global_prop_name)
+        
+        # logger.debug(f"CopyPropertiesToGlobal: Copied properties for {provider} (IMDB: {imdb_id})")
+
+# Replace the existing db.set() calls with:
+def safe_db_set(show_info, timeout):
+    with db_lock:
+        db.set(show_info, timeout)
+
+# Retry queue management
+retry_dict = {}  # key -> {retry_time, videoName, ID, Provider, wid, order}
+retry_dict_lock = threading.Lock()
+
+def schedule_retry(key, videoName, ID, Provider, wid, order, current_time):
+    """Schedule a retry for a failed API request after RETRY_DELAY_SECONDS."""
+    with retry_dict_lock:
+        retry_dict[key] = {
+            'retry_time': current_time + RETRY_DELAY_SECONDS,
+            'videoName': videoName,
+            'ID': ID,
+            'Provider': Provider,
+            'wid': wid,
+            'order': order
+        }
+    # logger.debug(f"Scheduled retry for {key} at {retry_dict[key]['retry_time']}")
+
+def check_retry_queue(key, current_time):
+    """Check if an item is in the retry queue and if retry time has passed."""
+    with retry_dict_lock:
+        if key in retry_dict:
+            retry_entry = retry_dict[key]
+            if current_time < retry_entry['retry_time']:
+                # Still waiting for retry time
+                return retry_entry
+            else:
+                # Retry time has passed, remove from queue and allow retry
+                del retry_dict[key]
+                # logger.debug(f"Retry time reached for {key}, attempting fetch")
+    return None
+
+def clean_old_retries(current_time, max_age=300):
+    """Remove retry entries older than max_age seconds to prevent memory leaks."""
+    with retry_dict_lock:
+        keys_to_remove = []
+        for key, entry in retry_dict.items():
+            if current_time - entry['retry_time'] > max_age:
+                keys_to_remove.append(key)
+        for key in keys_to_remove:
+            del retry_dict[key]
+            # logger.debug(f"Cleaned old retry entry for {key}")
+
+def process_retries():
+    """Background thread to process retry queue."""
+    while True:
+        current_time = time.time()
+        clean_old_retries(current_time)
+        
+        # Check for items ready to retry
+        with retry_dict_lock:
+            items_to_retry = []
+            for key, entry in list(retry_dict.items()):
+                if current_time >= entry['retry_time']:
+                    items_to_retry.append((key, entry))
+            
+            # Remove from queue
+            for key, _ in items_to_retry:
+                if key in retry_dict:
+                    del retry_dict[key]
+        
+        # Process retries
+        for key, entry in items_to_retry:
+            # logger.debug(f"Processing retry for {entry['videoName']} [{entry['Provider']}]")
+            try:
+                # Create a thread for the retry
+                retry_thread = Thread(
+                    target=getData,
+                    args=(entry['videoName'], entry['ID'], None, entry['wid'], entry['Provider'], entry['order'])
+                )
+                retry_thread.daemon = True
+                retry_thread.start()
+            except Exception as e:
+                logger.error(f"Error processing retry for {key}: {str(e)}")
+        
+        time.sleep(5)  # Check every 5 seconds
+
 #########################
 # Main
 #########################
 if __name__ == '__main__':
     logger.info("ParentalGuide: Started")
     starttime = time.time()
+    
+    # Start background retry processor
+    retry_processor = Thread(target=process_retries)
+    retry_processor.daemon = True
+    retry_processor.start()
     
     IMDBID = None
     IMDBID = xbmc.getInfoLabel("ListItem.IMDBNumber")
@@ -820,19 +511,19 @@ if __name__ == '__main__':
     # If we do not have the title yet, get the default title
     if videoName in [None, ""]:
         videoName = xbmc.getInfoLabel("ListItem.Title")
-        logger.info("ParentalGuide: Video Name detected %s" % videoName)
+        # logger.info("ParentalGuide: Video Name detected %s" % videoName)
     
     if IMDBID in [None, ""]:
-        logger.info("ParentalGuide: Video ID not found for %s, trying to loaded it from OMDB" % videoName)
+        # logger.info("ParentalGuide: Video ID not found for %s, trying to loaded it from OMDB" % videoName)
         IMDBID = getIMDBID(videoName,year)
         
     if IMDBID not in [None, ""]:
-        logger.info("ParentalGuide: Video ID detected %s" % IMDBID)
+        # logger.info("ParentalGuide: Video ID detected %s" % IMDBID)
         
         if ADDON.getSetting("IMDBProvider")== "true":
             order = order + 1 
             ProvidersList.append("IMDB")
-            Threads.append(Thread(target = getData(videoName, IMDBID, s, wid,"IMDB", order)))
+            Threads.append(Thread(target=getData, args=(videoName, IMDBID, s, wid, "IMDB", order)))
             Threads[order].start()
         
     if videoName not in [None, ""]:
@@ -840,32 +531,37 @@ if __name__ == '__main__':
         if ADDON.getSetting("kidsInMindProvider")== "true":
             order = order + 1 
             ProvidersList.append("KidsInMind")
-            Threads.append(Thread(target = getData(videoName, IMDBID, s, wid, "KidsInMind", order)))
+            Threads.append(Thread(target=getData, args=(videoName, IMDBID, s, wid, "KidsInMind", order)))
             Threads[order].start()
         if ADDON.getSetting("movieGuideOrgProvider")== "true":
             order = order +1 
             ProvidersList.append("MovieGuide")
-            Threads.append(Thread(target = getData(videoName, IMDBID, s, wid, "MovieGuide", order)))
+            Threads.append(Thread(target=getData, args=(videoName, IMDBID, s, wid, "MovieGuide", order)))
             Threads[order].start()
         if ADDON.getSetting("DoveFoundationProvider")== "true":
             order = order +1 
             ProvidersList.append("DoveFoundation")
-            Threads.append(Thread(target = getData(videoName, IMDBID, s, wid, "DoveFoundation", order)))
+            Threads.append(Thread(target=getData, args=(videoName, IMDBID, s, wid, "DoveFoundation", order)))
             Threads[order].start()
         if ADDON.getSetting("ParentPreviewsProvider")== "true":
             order = order +1 
-            ProvidersList.append("ParentPreviews")
-            Threads.append(Thread(target = getData(videoName, IMDBID, s, wid, "ParentPreviews", order)))
+            ProvidersList.append("ParentPeviews")
+            Threads.append(Thread(target=getData, args=(videoName, IMDBID, s, wid, "ParentPeviews", order)))
+            Threads[order].start()
+        if ADDON.getSetting("CringMDBProvider")== "true":
+            order = order +1 
+            ProvidersList.append("cring")
+            Threads.append(Thread(target=getData, args=(videoName, IMDBID, s, wid, "cring", order)))
             Threads[order].start()
         if ADDON.getSetting("RaisingChildrenProvider")== "true":
             order = order +1 
             ProvidersList.append("RaisingChildren")
-            Threads.append(Thread(target = getData(videoName, IMDBID, s, wid, "RaisingChildren", order)))
+            Threads.append(Thread(target=getData, args=(videoName, IMDBID, s, wid, "RaisingChildren", order)))
             Threads[order].start()
         if ADDON.getSetting("CSMProvider")== "true":
             order = order +1 
             ProvidersList.append("CSM")
-            Threads.append(Thread(target = getData(videoName, IMDBID, s, wid, "CSM", order)))
+            Threads.append(Thread(target=getData, args=(videoName, IMDBID, s, wid, "CSM", order)))
             Threads[order].start()
 
             
@@ -875,69 +571,19 @@ if __name__ == '__main__':
             
         
         #logger.info(Results)
-            
         
-        # with ThreadPoolExecutor(max_workers=100) as p:
-            # p.map(getData, [videoName]*(order-1), [IMDBID]*(order-1), [s]*(order-1), [wid]*(order-1), ProvidersList , [0,1,2,3,4,5,6])
-
-        logger.info("ParentalGuide Finished in {s}s".format(s=time.time()-starttime))
-        logger.info("InfoLabel: " + xbmc.getInfoLabel("ListItem.ParentalGuide"))
+        # Copy unique properties to global properties for the dialog
+        # This ensures the skin can display the parental guide indicators
+        if IMDBID and ProvidersList:
+            CopyPropertiesToGlobal(IMDBID, ProvidersList)
+            # logger.debug("ParentalGuide: Copied properties to global for dialog display")
+        
+        # Clean old retry entries
+        clean_old_retries(time.time())
+        
+        # logger.info("ParentalGuide: Finished in {s:.2f}s".format(s=time.time()-starttime))
     else:
-        log("ParentalGuide: Failed to detect selected video")
+        # log("ParentalGuide: Failed to detect selected video")
         xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ("ParentalGuide", "Failed to detect a video" , ADDON.getAddonInfo('icon')))
 
-    log("ParentalGuide: Ended")
-
-#########################
-# Main
-#########################
-# class ParentalGuideCore():
-    # @staticmethod
-    
-    # def __init__(self,videoName, IMDBID):
-        # logger.info("Initiaing ParentalGuideCore with %s %s" % (videoName, IMDBID))
-        # if IMDBID not in [None, ""]:
-            # log("ParentalGuide: Video detected %s" % IMDBID)
-            
-            # if ADDON.getSetting("IMDBProvider")== "true":
-                # order = order + 1 
-                # ProvidersList.append("IMDB")
-                # Threads.append(Thread(target = getData(videoName, IMDBID, s, wid,"IMDB", order)))
-                # Threads[order].start()
-            
-        # if videoName not in [None, ""]:
-
-            # if ADDON.getSetting("kidsInMindProvider")== "true":
-                # order = order + 1 
-                # ProvidersList.append("KidsInMind")
-                # Threads.append(Thread(target = getData(videoName, IMDBID, s, wid, "KidsInMind", order)))
-                # Threads[order].start()
-            # if ADDON.getSetting("movieGuideOrgProvider")== "true":
-                # order = order +1 
-                # ProvidersList.append("MovieGuide")
-                # Threads.append(Thread(target = getData(videoName, IMDBID, s, wid, "MovieGuide", order)))
-                # Threads[order].start()
-            # if ADDON.getSetting("DoveFoundationProvider")== "true":
-                # order = order +1 
-                # ProvidersList.append("DoveFoundation")
-                # Threads.append(Thread(target = getData(videoName, IMDBID, s, wid, "DoveFoundation", order)))
-                # Threads[order].start()
-            # if ADDON.getSetting("RaisingChildrenProvider")== "true":
-                # order = order +1 
-                # ProvidersList.append("RaisingChildren")
-                # Threads.append(Thread(target = getData(videoName, IMDBID, s, wid, "RaisingChildren", order)))
-                # Threads[order].start()
-            # if ADDON.getSetting("CSMProvider")== "true":
-                # order = order +1 
-                # ProvidersList.append("CSM")
-                # Threads.append(Thread(target = getData(videoName, IMDBID, s, wid, "CSM", order)))
-                # Threads[order].start()
-                
-            # # for i in range(0,len(Threads)):
-                # # Threads[i].start()
-                
-            # for i in range(0,len(Threads)):
-                # Threads[i].join()
-                
-            # logger.info(Threads[order].result())
-        # return Threads[order].result()
+    # log("ParentalGuide: Ended")

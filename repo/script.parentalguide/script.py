@@ -3,194 +3,119 @@ import xbmcgui
 import xbmcaddon
 import sys
 import xbmc
-import traceback
-# Import the common settings
-from resources.lib.settings import Settings
-from resources.lib.settings import log
-from resources.lib.NudityCheck import getData
+import html
+import re
 import requests
+from resources.lib.settings import Settings, log
+from NudityCheck import getData
 from resources.lib.viewer import SummaryViewer
 
 ADDON = xbmcaddon.Addon(id='script.parentalguide')
-CWD = ADDON.getAddonInfo('path')#.decode("utf-8")
-log("Viewer opened")
-
-###################################
-# Main of the ParentalGuide Service
-###################################
-
-ADDON = xbmcaddon.Addon(id='script.parentalguide')
-
-def getIsTvShow():
-    if xbmc.getCondVisibility("Container.Content(tvshows)"):
-        return True
-    if xbmc.getCondVisibility("Container.Content(Seasons)"):
-        return True
-    if xbmc.getCondVisibility("Container.Content(Episodes)"):
-        return True
-    if xbmc.getInfoLabel("container.folderpath") == "videodb://tvshows/titles/":
-        return True  # TvShowTitles
-
-    return False
+CWD = ADDON.getAddonInfo('path')
 
 def _setProperties(details):
-    i = 0
-    for entry in details:
-        if i < 9:
-                y = i + 1
-                sectionTag = "ParentalGuide.%s.Section" % y
-                ratingTag = "ParentalGuide.%s.Rating" % y
-                
-                xbmcgui.Window(10000).setProperty(sectionTag, str(details[i]['name']))
-                             
-                cattag = 'ParentalGuide.Cat.Name.%s' % y
-                xbmcgui.Window(10000).setProperty(cattag , str(details[i]['cat']))
-                
-                Description = ''
-                
-                Description = details[i]['description']
-                
-                if Description not in [None,""," "]:
-                    if i>0:
-                        PreviousDesc = details[i-1]['description']
-                        
-                        if PreviousDesc not in [None,""," "]: 
-                            Description = Description.replace(PreviousDesc,"")
-                        else:
-                            Description = ""
-                    BoldKeywords = ["bare breasts", "nipples ", "penis ", "Penis ", "dick ", "intercourse ", "making love", "sucking ", "blowjob ", "anal", "Blowjob ", "Anal", "sex scene", "buttock ", "rape ", "raping", "raped ", "sex scenes", "having sex", "nudity ", "nude", "naked", "boob", "breast"]                 
-                    for word in BoldKeywords:
-                        Description = Description.replace(word,"[B]" + word + "[/B]")
-                                    
-                DescProperty = "ParentalGuide.Desc.%s" % y
-                xbmcgui.Window(10000).setProperty(DescProperty, str(Description))
-                
-                DescSumProperty = "ParentalGuide.Desc.Summary"
-                xbmcgui.Window(10000).setProperty(DescSumProperty, str(details[0]['description']))
-                
-                #self.setProperty(DescProperty, details[i]['description'])
-                
-                SectionVotesProperty = "ParentalGuide.Votes.%s" % y
-                xbmcgui.Window(10000).setProperty(SectionVotesProperty, str(details[i]['votes']))
-                #self.setProperty(DescProperty, details[i]['description'])
-                
-                try:
-                    MainVotes = [int(s) for s in re.findall(r'\b\d+\b', details[i]['votes'])]
-                    MainVotesProperty = ("ParentalGuide.MVotes.%s") % y
-                    xbmcgui.Window(10000).setProperty(MainVotesProperty, (str(MainVotes[0]) + "/" + str(MainVotes[1])) )
-                except:
-                    pass
-                    
-                CatRating = ("ParentalGuide.Cat.%s") % y
-                xbmcgui.Window(10000).setProperty(CatRating, "tags/" + str(details[i]['cat']) + ".png")
-                
-                # xbmcgui.Window(10000).listitem.setProperty('action', 'RunScript(script.ShowInfo)')
-                # listitem.setProperty('action', 'RunScript(script.ShowInfo)')
-                
-                # if "Sex" in details[i]['name']:
-                    # xbmcgui.Window(10000).setProperty("Nvotes", (str(MainVotes[0]) + "/" + str(MainVotes[1])))
-                    # xbmcgui.Window(10000).setProperty("Nicon", "tags/" + str(details[i]['cat']) + ".png")
-                
-                
-        i = i + 1
-    xbmcgui.Window(10000).setProperty("ParentalGuide.title", 'Summary Title')
-
+    w = xbmcgui.Window(10000)
+    log(f"ParentalGuide: Setting properties for {len(details)} items")
+    for i, entry in enumerate(details):
+        if i >= 10: break
+        y = i + 1
+        w.setProperty(f"ParentalGuide.{y}.Section", str(entry.get('name', '')))
+        w.setProperty(f"ParentalGuide.Cat.Name.{y}", str(entry.get('cat', 'N/A')))
+        
+        desc = html.unescape(str(entry.get('description', 'No description available.')))
+        w.setProperty(f"ParentalGuide.Desc.{y}", desc)
+        
+        votes_str = str(entry.get('votes', ''))
+        w.setProperty(f"ParentalGuide.Votes.{y}", votes_str)
+        try:
+            nums = [int(s) for s in re.findall(r'\b\d+\b', votes_str)]
+            val = f"{nums[0]}/{nums[1]}" if len(nums) >= 2 else (f"{nums[0]}" if len(nums) == 1 else "N/A")
+            w.setProperty(f"ParentalGuide.MVotes.{y}", val)
+        except:
+            w.setProperty(f"ParentalGuide.MVotes.{y}", "N/A")
+        
+        w.setProperty(f"ParentalGuide.Cat.{y}", f"special://home/addons/script.parentalguide/resources/skins/Default/media/tags/{str(entry.get('cat', 'NA'))}.png")
+    
+    # Set default summary to first item
+    if details:
+        summary = html.unescape(str(details[0].get('description', 'No description available.')))
+        w.setProperty("ParentalGuide.Desc.Summary", summary)
 
 def _clearProperties():
-    i = 0
-    for i in [0,20]:
-        if i < 20:
-                y = i + 1
-                sectionTag = "ParentalGuide.%s.Section" % y
-                ratingTag = "ParentalGuide.%s.Rating" % y
-                
-                xbmcgui.Window(10000).clearProperty(sectionTag)
-                             
-                cattag = 'ParentalGuide.Cat.Name.%s' % y
-                xbmcgui.Window(10000).clearProperty(cattag)
-                
-                Description = ''
-                
-                DescProperty = "ParentalGuide.Desc.%s" % y
-                xbmcgui.Window(10000).setProperty(DescProperty, "")
-                
-                DescSumProperty = "ParentalGuide.Desc.Summary"
-                xbmcgui.Window(10000).clearProperty(DescSumProperty)
-                              
-                SectionVotesProperty = "ParentalGuide.Votes.%s" % y
-                xbmcgui.Window(10000).clearProperty(SectionVotesProperty)
+    w = xbmcgui.Window(10000)
+    log("ParentalGuide: Clearing item properties")
+    for i in range(1, 11):
+        w.clearProperty(f"ParentalGuide.{i}.Section")
+        w.clearProperty(f"ParentalGuide.Cat.Name.{i}")
+        w.setProperty(f"ParentalGuide.Desc.{i}", "")
+        w.clearProperty(f"ParentalGuide.Votes.{i}")
+        w.clearProperty(f"ParentalGuide.MVotes.{i}")
+        w.clearProperty(f"ParentalGuide.Cat.{i}")
+    w.setProperty("ParentalGuide.Desc.Summary", "")
 
-                MainVotesProperty = ("ParentalGuide.MVotes.%s") % y
-                xbmcgui.Window(10000).clearProperty(MainVotesProperty)
-                    
-                CatRating = ("ParentalGuide.Cat.%s") % y
-                xbmcgui.Window(10000).clearProperty(CatRating)
-
-        i = i + 1
-  
-  
 if __name__ == '__main__':
-    xbmcgui.Window(10025).setProperty("ParentalGuideTestContextMenu", "true")
-
-    # First check to see if we have a TV Show of a Movie
-    IMDBID = videoName = xbmcgui.Window(10000).getProperty("CurrentId")
-    #IMDBID = xbmc.getInfoLabel("ListItem.IMDBNumber")
-    videoName = xbmcgui.Window(10000).getProperty("CurrentItem")
+    w = xbmcgui.Window(10000)
     
-        
-# wid = xbmcgui.getCurrentWindowId()
-# win = xbmcgui.Window(wid)
-# cid = win.getFocusId()
-# control = cid.getFocus()
-# item = control.getSelectedItem() #.getProperty("SelectedCat") #.getSelectedPosition
-# Pos = xbmcgui.Window(xbmcgui.getCurrentWindowId()).getFocus().getSelectedPosition
-# Item = self.listitem.getProperty('SelectedCat')
-
-xbmcgui.Window(10000).clearProperty("ParentalGuide.Desc.section") 
-xbmcgui.Window(10000).clearProperty("ParentalGuide.Desc.Summary") 
-        
-provider = xbmcgui.Window(10000).getProperty("SelectedProvider")
-cont = xbmcgui.Window(10000).getProperty("SelectedContainer")
-
-if cont == "ProviderCont":
-    _clearProperties()
-        
-    s = requests.Session()
-    wid = xbmcgui.getCurrentWindowId()
-    newdata = getData(videoName, IMDBID, s, wid, provider, 1)
-    xbmcgui.Window(10000).close()
+    # Check if we are already running for this exact request
+    current_provider = w.getProperty("SelectedProvider")
+    last_processed = w.getProperty("ParentalGuide.LastProcessedProvider")
     
-    if newdata['review-items'] not in [None,""," "]:
-        #_setProperties(newdata['review-items'])
-        xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ('Hi', "Selected: " + provider , ADDON.getAddonInfo('icon')))
-        viewer = SummaryViewer("summary.xml", CWD, title=videoName, details=newdata)
-        viewer.doModal()
-        del viewer
+    container = w.getProperty("SelectedContainer")
+    cat_index = w.getProperty("SelectedCat")
+    
+    imdb_id = w.getProperty("CurrentId")
+    video_name = w.getProperty("CurrentItem")
+    
+    window_open = w.getProperty("ParentalGuide.WindowOpen")
+    
+    log(f"ParentalGuide Script: Start (WindowOpen={window_open}, Provider={current_provider}, Container={container}, Cat={cat_index}, ID={imdb_id}, Name={video_name})")
+    
+    # Safety check: Don't run if CurrentId and CurrentItem are not set (dialog not open yet)
+    if not imdb_id or not video_name:
+        log("ParentalGuide Script: CurrentId or CurrentItem not set, skipping (dialog not open yet)")
+        sys.exit(0)
 
-cat = xbmcgui.Window(10000).getProperty("SelectedCat") 
-#xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ('Hi', "Selected: " + provider , ADDON.getAddonInfo('icon')))
-
-DescProperty = ("ParentalGuide.Desc.%s") % cat
-SecProperty = ("ParentalGuide.%s.Section") % cat 
-CatIcon = ("ParentalGuide.Cat.%s") % cat
-CatProperty = ("ParentalGuide.Cat.Name.%s") % cat
-FinalPiece = xbmcgui.Window(10000).getProperty(DescProperty)
-FinalSection = xbmcgui.Window(10000).getProperty(SecProperty)
-FinalCat = xbmcgui.Window(10000).getProperty(CatProperty)
-FinalIcon = xbmcgui.Window(10000).getProperty(CatIcon)
-
-xbmcgui.Window(10000).setProperty('ParentalGuide.Desc.Summary', str(FinalPiece))
-xbmcgui.Window(10000).setProperty('ParentalGuide.Desc.section', str(FinalSection))
-xbmcgui.Window(10000).setProperty('ParentalGuide.Sec.Cat', str(FinalCat))
-xbmcgui.Window(10000).setProperty('ParentalGuide.Sec.Cat.Icon', str(FinalIcon))
-
-VotesProperty = ("ParentalGuide.Votes.%s") % cat
-FinalVotes = xbmcgui.Window(10000).getProperty(VotesProperty)
-xbmcgui.Window(10000).setProperty('ParentalGuide.Votes.section', str(FinalVotes))
-
-
-        
-
-#Load Window
-# Snippit = xbmcgui.WindowXMLDialog('Custom_1333_Plot.xml', CWD, text=cat)
-# Snippit.doModal()
+    if container == "ProviderCont":
+        if current_provider == last_processed and window_open == "true":
+            log("ParentalGuide: Provider hasn't changed, skipping update")
+        else:
+            log(f"ParentalGuide: Updating to provider {current_provider}")
+            w.setProperty("ParentalGuide.LastProcessedProvider", current_provider)
+            _clearProperties()
+            session = requests.Session()
+            data = getData(video_name, imdb_id, session, 10000, current_provider, 1)
+            
+            if data and 'review-items' in data and data['review-items']:
+                _setProperties(data['review-items'])
+                if window_open == "true":
+                    log("ParentalGuide: Refreshing container 4500 and setting focus")
+                    w.setProperty("SelectedCat", "1")
+                    # Signal the viewer to refresh by setting a flag
+                    w.setProperty("ParentalGuide.ProviderChanged", str(xbmc.getInfoLabel("System.Time")))
+                else:
+                    log("ParentalGuide: Launching SummaryViewer")
+                    viewer = SummaryViewer("summary.xml", CWD, title=video_name, details=data)
+                    viewer.doModal()
+                    del viewer
+            else:
+                log(f"ParentalGuide: No data found for {current_provider}")
+                xbmc.executebuiltin(f'Notification(Parental Guide, No data for {current_provider}, 3000)')
+            
+    elif cat_index:
+        log(f"ParentalGuide: Cat focused {cat_index}")
+        desc = w.getProperty(f"ParentalGuide.Desc.{cat_index}")
+        if desc:
+            w.setProperty("ParentalGuide.Desc.Summary", desc)
+            log(f"ParentalGuide: Updated summary to cat {cat_index}")
+            # Signal viewer to update by toggling a refresh flag
+            w.setProperty("ParentalGuide.RefreshTextbox", str(xbmc.getInfoLabel("System.Time")))
+        else:
+            log(f"ParentalGuide: No desc for cat {cat_index}")
+            
+    # Cleanup only if window is closing
+    if window_open != "true":
+        log("ParentalGuide: Cleaning up session properties")
+        w.clearProperty("SelectedContainer")
+        w.clearProperty("SelectedProvider")
+        w.clearProperty("SelectedCat")
+        w.clearProperty("ParentalGuide.LastProcessedProvider")

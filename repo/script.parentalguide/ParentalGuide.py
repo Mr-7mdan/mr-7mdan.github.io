@@ -4,25 +4,20 @@ import xbmc
 import xbmcaddon
 import xbmcgui
 import traceback
-#import requests
+import requests
 
 # Import the common settings
 from resources.lib.settings import Settings
-from resources.lib.scraper import KidsInMindScraper
-from resources.lib.scraper import IMDBScraper
-from resources.lib.scraper import DoveFoundationScraper
-from resources.lib.scraper import MovieGuideOrgScraper
+from resources.lib.viewer import DetailViewer
+from resources.lib.viewer import SummaryViewer
 from resources.lib.settings import log
+from threading import Thread
+from NudityCheck import getData, getIMDBID, API_BASE_URL, CopyPropertiesToGlobal, db
 
 if sys.version_info >= (2, 7):
     import json
 else:
     import simplejson as json
-
-# Import the common settings
-from resources.lib.settings import log
-#from resources.lib.core import ParentalGuideCore
-#from core import ParentalGuideCore
 
 ADDON = xbmcaddon.Addon(id='script.parentalguide')
 CWD = ADDON.getAddonInfo('path')#.decode("utf-8")
@@ -42,104 +37,85 @@ def getIsTvShow():
     return False
 
 def runForVideo(videoName, isTvShow=False):
-        log("ParentalGuideCore: Video Name = %s" % videoName)
-        # Get the initial Source to use
-        searchSource = Settings.getDefaultSource()
-        #xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % (ADDON.getLocalizedString(searchSource), " is Default Source", ADDON.getAddonInfo('icon')))
-        
-        selectedViewer = Settings.getDefaultViewer()
+    log("ParentalGuideCore: Video Name = %s" % videoName)
+    # Get the initial Source to use
+    searchSource = Settings.getDefaultSource()
+    selectedViewer = Settings.getDefaultViewer()
 
-        while searchSource is not None:
-            dataScraper = None
-            searchMatches = []
-            xbmc.executebuiltin("ActivateWindow(busydialog)")
-            try:
-                if searchSource == Settings.KIDS_IN_MIND:
-                    dataScraper = KidsInMindScraper(videoName, isTvShow)
-                elif searchSource == Settings.MOVIE_GUIDE_ORG:
-                    dataScraper = MovieGuideOrgScraper(videoName, isTvShow)
-                else:
-                    dataScraper = IMDBScraper(videoName, isTvShow)
-
-                searchMatches = dataScraper.getSelection(videoName)
+    while searchSource is not None:
+        xbmc.executebuiltin("ActivateWindow(busydialog)")
+        try:
+            params = {
+                "video_name": videoName,
+                "provider": searchSource.lower()
+            }
+            response = requests.get(API_BASE_URL, params=params, timeout=15)
+            response.raise_for_status()
+            data = response.json()
+            
+            # Check for failed status from API
+            status = data.get("status", "")
+            if status == "Failed":
+                log("runForVideo: API returned Failed status for %s" % searchSource, xbmc.LOGWARNING)
+                selectedItem = None
+                details = None
+            elif data and 'review-items' in data:
+                review_items = data.get('review-items')
+                if review_items is None:
+                    review_items = []
                 
-                #xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % (ADDON.getLocalizedString(str(dataScraper)), " Running", ADDON.getAddonInfo('icon')))
-            except:
-                log("runForVideo: Failed to run scraper: %s" % traceback.format_exc(), xbmc.LOGERROR)
-                xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % (ADDON.getLocalizedString(32001).encode('utf-8'), ADDON.getLocalizedString(32037).encode('utf-8'), ADDON.getAddonInfo('icon')))
-
-            xbmc.executebuiltin("Dialog.Close(busydialog)")
-            selectedItem = None
-
-            # Work out what provider we would switch to if the user wants to switch
-            switchSource = Settings.getNextSource(searchSource)
-
-            if len(searchMatches) < 1:
-                # Offer searching by the other provider if there is one
-                if switchSource is not None:
-                    msg1 = "%s %s" % (ADDON.getLocalizedString(32005), videoName)
-                    msg2 = "%s %s" % (ADDON.getLocalizedString(32010), ADDON.getLocalizedString(switchSource))
-                    switchSearch = xbmcgui.Dialog().yesno(ADDON.getLocalizedString(32001), msg1, msg2)
-                    # If the user wants to switch the search then tidy up then loop again
-                    if switchSearch:
-                        searchSource = switchSource
-                    else:
-                        searchSource = None
+                # Check if we got actual data
+                if review_items or data.get('recommended-age'):
+                    selectedItem = {
+                        'name': data.get('title', videoName),
+                        'link': data.get('review-link', '')
+                    }
+                    details = {
+                        'review-items': review_items,
+                        'recommended-age': data.get('recommended-age'),
+                        'review-link': data.get('review-link')
+                    }
                 else:
-                    searchSource = None
-            elif len(searchMatches) == 1:
-                selectedItem = searchMatches[0]
-            elif len(searchMatches) > 1:
-                displayList = []
-                for aMatch in searchMatches:
-                    displayList.append(searchMatches[0])
-                select = xbmcgui.Dialog().select(ADDON.getLocalizedString(32004), displayList)
-                if select == -1:
-                    log("ParentalGuide: Cancelled by user")
                     selectedItem = None
-                    msg = "%s %s" % (ADDON.getLocalizedString(32010), ADDON.getLocalizedString(switchSource))
-                    switchSearch = xbmcgui.Dialog().yesno(ADDON.getLocalizedString(32001), msg)
-                    # If the user wants to switch the search then tidy up then loop again
-                    if switchSearch:
-                        searchSource = switchSource
-                    else:
-                        searchSource = None
-                else:
-                    log("ParentalGuide: Selected item %d" % select)
-                    selectedItem = searchMatches[select]
+                    details = None
+            else:
+                selectedItem = None
+                details = None
 
-            displayTitle = None
-            displayContent = ""
+        except requests.Timeout as e:
+            log("runForVideo: Timeout fetching data from API: %s" % str(e), xbmc.LOGERROR)
+            xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % (ADDON.getLocalizedString(32001).encode('utf-8'), "API Timeout - Try again later", ADDON.getAddonInfo('icon')))
+            selectedItem = None
+            details = None
+        except requests.RequestException as e:
+            log("runForVideo: Failed to fetch data from API: %s" % str(e), xbmc.LOGERROR)
+            xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % (ADDON.getLocalizedString(32001).encode('utf-8'), ADDON.getLocalizedString(32037).encode('utf-8'), ADDON.getAddonInfo('icon')))
+            selectedItem = None
             details = None
 
-            if selectedItem is None:
-                log("ParentalGuide: No matching movie found")
+        xbmc.executebuiltin("Dialog.Close(busydialog)")
+
+        # Work out what provider we would switch to if the user wants to switch
+        switchSource = Settings.getNextSource(searchSource)
+
+        if selectedItem is None:
+            # Offer searching by the other provider if there is one
+            if switchSource is not None:
+                msg1 = "%s %s" % (ADDON.getLocalizedString(32005), videoName)
+                msg2 = "%s %s" % (ADDON.getLocalizedString(32010), ADDON.getLocalizedString(switchSource))
+                switchSearch = xbmcgui.Dialog().yesno(ADDON.getLocalizedString(32001), msg1, msg2)
+                # If the user wants to switch the search then tidy up then loop again
+                if switchSearch:
+                    searchSource = switchSource
+                else:
+                    searchSource = None
             else:
-                xbmc.executebuiltin("ActivateWindow(busydialog)")
-                try:
-                    # Now get the details of the single film
-                    displayTitle = "%s: %s" % (ADDON.getLocalizedString(searchSource), selectedItem['name'])
-                    log("ParentalGuide: Found film with name: %s" % selectedItem['name'])
-
-                    details = dataScraper.getParentalGuideData(selectedItem['link'])
-                    print(details)
-                    log(details)
-                    if details not in [None, ""]:
-                        displayContent = dataScraper.getTextView(details)
-                except:
-                    log("runForVideo: Failed to run scraper: %s" % traceback.format_exc(), xbmc.LOGERROR)
-                    xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % (ADDON.getLocalizedString(32001).encode('utf-8'), ADDON.getLocalizedString(32037).encode('utf-8'), ADDON.getAddonInfo('icon')))
-
-                xbmc.executebuiltin("Dialog.Close(busydialog)")
-
-                # Clear the search source as that will be used to decide if we close the window or
-                # loop again
                 searchSource = None
+        else:
+            displayTitle = "%s: %s" % (ADDON.getLocalizedString(searchSource), selectedItem['name'])
+            log("ParentalGuide: Found content with name: %s" % selectedItem['name'])
 
-            if dataScraper not in [None, ""]:
-                del dataScraper
-
-            if displayContent not in [None, ""]:
+            if details is not None:
                 # Allow TvTunes to continue playing
                 xbmcgui.Window(12000).setProperty("TvTunesContinuePlaying", "True")
 
@@ -148,9 +124,9 @@ def runForVideo(videoName, isTvShow=False):
                     viewer = None
                     # Create the type of viewer we need
                     if selectedViewer == Settings.VIEWER_DETAILED:
-                        viewer = DetailViewer.createDetailViewer(switchSource, displayTitle, displayContent)
+                        viewer = DetailViewer.createDetailViewer(switchSource, displayTitle, details)
                     else:
-                        viewer = SummaryViewer.createSummaryViewer(switchSource, displayTitle, details["details"])
+                        viewer = SummaryViewer.createSummaryViewer(switchSource, displayTitle, details["review-items"])
 
                     # Display the viewer
                     viewer.doModal()
@@ -172,7 +148,8 @@ def runForVideo(videoName, isTvShow=False):
 
                 # No need to force TvTunes now we have closed the dialog
                 xbmcgui.Window(12000).clearProperty("TvTunesContinuePlaying")
-
+            else:
+                searchSource = None
 
 #########################
 # Main
@@ -191,8 +168,82 @@ if __name__ == '__main__':
     if videoName in [None, ""]:
         videoName = xbmc.getInfoLabel("ListItem.Title")
          
-    #xbmcgui.my_window(CWD+"\resouces\skins\Default\1080i\DialogContextMenu.xml")
-    dialog = xbmcgui.WindowXMLDialog("Summary.xml",xbmcaddon.Addon(id='script.parentalguide').getAddonInfo('path'), 'default', '1080i')
-    dialog.doModal()
-    del dialog
-       
+    # Get ListItem properties to pass to dialog
+    movie_title = xbmc.getInfoLabel("ListItem.Title")
+    movie_year = xbmc.getInfoLabel("ListItem.Year")
+    movie_mpaa = xbmc.getInfoLabel("ListItem.MPAA")
+    imdb_id = xbmc.getInfoLabel("ListItem.IMDBNumber")
+    
+    # Look up IMDB ID if not available
+    if not imdb_id or imdb_id == '':
+        log("ParentalGuide: No IMDB ID found, looking up via OMDB")
+        try:
+            imdb_id = getIMDBID(videoName, movie_year)
+        except Exception as e:
+            log(f"ParentalGuide: OMDB lookup failed: {str(e)}")
+            imdb_id = None
+
+    log(f"ParentalGuide: Movie info - Title: '{movie_title}', Year: '{movie_year}', MPAA: '{movie_mpaa}', IMDB: '{imdb_id}'")
+
+    # Set window properties so dialog can access them
+    w = xbmcgui.Window(10000)
+    w.setProperty("ParentalGuide.Dialog.Title", movie_title)
+    w.setProperty("ParentalGuide.Dialog.Year", movie_year)
+    w.setProperty("ParentalGuide.Dialog.MPAA", movie_mpaa)
+
+    # Fetch data from all enabled providers BEFORE opening dialog
+    xbmc.executebuiltin("ActivateWindow(busydialog)")
+
+    providers = []
+    if ADDON.getSetting("IMDBProvider") == "true":
+        providers.append("IMDB")
+    if ADDON.getSetting("kidsInMindProvider") == "true":
+        providers.append("KidsInMind")
+    if ADDON.getSetting("movieGuideOrgProvider") == "true":
+        providers.append("MovieGuide")
+    if ADDON.getSetting("DoveFoundationProvider") == "true":
+        providers.append("DoveFoundation")
+    if ADDON.getSetting("ParentPreviewsProvider") == "true":
+        providers.append("ParentPreviews")
+    if ADDON.getSetting("CringMDBProvider") == "true":
+        providers.append("cring")
+    if ADDON.getSetting("RaisingChildrenProvider") == "true":
+        providers.append("RaisingChildren")
+    if ADDON.getSetting("CSMProvider") == "true":
+        providers.append("CSM")
+
+    threads = []
+    for i, provider in enumerate(providers):
+        t = Thread(target=getData, args=(videoName, imdb_id, None, 10000, provider, i))
+        t.start()
+        threads.append(t)
+
+    for t in threads:
+        t.join(timeout=15)
+
+    # Copy per-movie properties to global so skin and dialog can read them
+    if imdb_id and providers:
+        CopyPropertiesToGlobal(imdb_id, providers)
+
+    xbmc.executebuiltin("Dialog.Close(busydialog)")
+
+    # Get first available provider's cached data for initial display
+    first_details = None
+    for provider in providers:
+        if imdb_id:
+            key = imdb_id + "_" + provider.lower()
+        else:
+            key = videoName.replace(":", "").replace("-", "_").replace(" ", "_").lower() + "_" + provider.lower()
+        cached = db.get(key)
+        if cached and cached.get('review-items'):
+            first_details = cached
+            break
+
+    viewer = SummaryViewer("summary.xml", CWD, title=movie_title, details=first_details, imdb_id=imdb_id, video_name=videoName, movie_title=movie_title, movie_year=movie_year, movie_mpaa=movie_mpaa)
+    viewer.doModal()
+    del viewer
+    
+    # Clear properties after dialog closes
+    w.clearProperty("ParentalGuide.Dialog.Title")
+    w.clearProperty("ParentalGuide.Dialog.Year")
+    w.clearProperty("ParentalGuide.Dialog.MPAA")

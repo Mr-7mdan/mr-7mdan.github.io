@@ -53,20 +53,18 @@ class SqliteCache:
 
     def __init__(self):
         ADDON = xbmcaddon.Addon(id='script.parentalguide')
-        temp_dir = xbmcvfs.translatePath('special://temp')
-        temp_dir = ADDON.getAddonInfo('path')
-        logger.info('temp dir is ' + temp_dir)
-        cache_dir = os.path.join(temp_dir, 'cache', ADDON.getAddonInfo('id'))
+        # Use addon_data directory which is writable (not the addon install path which is read-only)
+        addon_data_dir = xbmcvfs.translatePath('special://profile/addon_data/script.parentalguide/')
+        logger.info('addon data dir is ' + addon_data_dir)
+        cache_dir = os.path.join(addon_data_dir, 'cache')
         if not xbmcvfs.exists(cache_dir):
-            xbmcvfs.mkdir(cache_dir)
+            xbmcvfs.mkdirs(cache_dir)
         logger.info('the cache dir is ' + cache_dir)
         
         self.path = cache_dir
     
     def _get_conn(self):
-
         """ Returns a Sqlite connection """
-
         if self.connection:
             return self.connection
 
@@ -74,7 +72,7 @@ class SqliteCache:
         cache_db_path = os.path.join(self.path, 'cache.sqlite')
 
         # setup the connection
-        conn = sqlite3.Connection(cache_db_path, timeout=60)
+        conn = sqlite3.Connection(cache_db_path, timeout=60, check_same_thread=False)
         logger.debug('Connected to {path}'.format(path=cache_db_path))
 
         # ensure that the table schema is available. The
@@ -102,7 +100,7 @@ class SqliteCache:
             
             # # loop the response rows looking for a result
             # # that is not expired
-            # for row in conn.execute(self._get_sql, (key,)):
+            # # for row in conn.execute(self._get_sql, (key,)):
                 # #return_value = loads(row[0])
                 
                 # expire = loads(row[1])
@@ -176,7 +174,9 @@ class SqliteCache:
         # leave it as a non-expiring value. Other-
         # wise, we add the timeout in seconds to
         # the current time
-        Default_caching_period = 30*24*60*60 ## 30days
+        # Note: timeout is now passed from getData() with conditional caching logic
+        # Default to permanent cache (0) if no timeout specified
+        Default_caching_period = 0  # 0 = permanent cache
         expire = time() + Default_caching_period if not timeout else time() + timeout
 
         # serialize the value with protocol 2
@@ -207,9 +207,11 @@ class SqliteCache:
         # leave it as a non-expiring value. Other-
         # wise, we add the timeout in seconds to
         # the current time
-        logx.info("Trying to save results to cache for [%s] [%s]" % (show_info["title"], show_info["provider"]))
+        # logx.info("Trying to save results to cache for [%s] [%s]" % (show_info["title"], show_info["provider"]))
         
-        Default_caching_period = 30*24*60*60 ## 30days
+        # Note: timeout is now passed from getData() with conditional caching logic
+        # Default to permanent cache (0) if no timeout specified
+        Default_caching_period = 0  # 0 = permanent cache
         expire = time() + Default_caching_period if not timeout else time() + timeout
 
         # serialize the value with protocol 2

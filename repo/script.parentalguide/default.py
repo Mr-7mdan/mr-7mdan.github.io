@@ -6,34 +6,22 @@ import xbmcgui
 import traceback
 from threading import Thread
 import re
-#import requests
+import requests
 
 # Import the common settings
 from resources.lib.settings import Settings
-from resources.lib.scraper import KidsInMindScraper
-from resources.lib.scraper import IMDBScraper
-from resources.lib.scraper import DoveFoundationScraper
-from resources.lib.scraper import MovieGuideOrgScraper
-from resources.lib.viewer import DetailViewer
 from resources.lib.viewer import SummaryViewer
 from resources.lib.settings import log
-from resources.lib import imdb
-from resources.lib.NudityCheck import getData
-from resources.lib.NudityCheck import getIMDBID
 from resources.lib.utils import logger
+from NudityCheck import getData, getIMDBID, API_BASE_URL
 
 if sys.version_info >= (2, 7):
     import json
 else:
     import simplejson as json
 
-# Import the common settings
-from resources.lib.settings import log
-#from resources.lib.core import ParentalGuideCore
-#from core import ParentalGuideCore
-
 ADDON = xbmcaddon.Addon(id='script.parentalguide')
-CWD = ADDON.getAddonInfo('path')#.decode("utf-8")
+CWD = ADDON.getAddonInfo('path')
 
 def getIsTvShow():
     if xbmc.getCondVisibility("Container.Content(tvshows)"):
@@ -44,116 +32,143 @@ def getIsTvShow():
         return True
     if xbmc.getInfoLabel("container.folderpath") == "videodb://tvshows/titles/":
         return True  # TvShowTitles
-
     return False
 
 def runForVideo(videoName, IMDBID, isTvShow=False):
     logger.info("ParentalGuideCore: Video Name = %s" % videoName)
-    # Get the initial Source to use
-    #searchSource = Settings.getDefaultSource()
-
     
+    # Try multiple providers until we find one with data
+    providers = ["imdb", "csm", "movieguide", "kidsinmind"]
+    details = None
     
-    details = IMDBScraper.parentsguide(IMDBID, videoName)
-
-    i = 0
-
-    
-    if len(details)>0:
-        if details not in [None,""]:
-            for entry in details['review-items']:
-                if i < 9:
-                    if "Sex" in details['review-items'][i]['name']:
-                        xMainVotes = [int(s) for s in re.findall(r'\b\d+\b', details['review-items'][i]['votes'])]
-                        xbmcgui.Window(10000).setProperty(IMDBID + '-NVotes', (str(xMainVotes[0]) + "/" + str(xMainVotes[1])))
-                        xbmcgui.Window(10000).setProperty(IMDBID + '-NIcon', "tags/" + str(details['review-items'][i]['cat']) + ".png")
-            #selectedViewer = Settings.getDefaultViewer()                
-            viewer = SummaryViewer("summary.xml", CWD, title=videoName, details=details)
+    for provider in providers:
+        try:
+            params = {
+                "video_name": videoName,
+                "imdb_id": IMDBID,
+                "provider": provider
+            }
             
-            viewer.doModal()
-            del viewer
+            response = requests.get(API_BASE_URL, params=params, timeout=10)
+            response.raise_for_status()
+            provider_details = response.json()
+            
+            if provider_details and 'review-items' in provider_details and provider_details['review-items'] and len(provider_details['review-items']) > 0:
+                details = provider_details
+                logger.info(f"Found data from provider: {provider}")
+                break
+        except Exception as e:
+            logger.error(f"Error fetching from {provider}: {str(e)}")
+            continue
+    
+    try:
+        if details and 'review-items' in details and details['review-items'] and len(details['review-items']) > 0:
+            for entry in details['review-items']:
+                if "Sex" in entry['name']:
+                    votes_str = "N/A"
+                    if entry.get('votes') and entry['votes']:
+                        xMainVotes = [int(s) for s in re.findall(r'\b\d+\b', entry['votes'])]
+                        if len(xMainVotes) >= 2:
+                            votes_str = f"{xMainVotes[0]}/{xMainVotes[1]}"
+                        elif len(xMainVotes) == 1:
+                            votes_str = f"{xMainVotes[0]}"
+                    xbmcgui.Window(10000).setProperty(IMDBID + '-NVotes', votes_str)
+                    xbmcgui.Window(10000).setProperty(IMDBID + '-NIcon', f"tags/{entry['cat']}.png")
+            
+            try:
+                # Get movie info for dialog display
+                movie_title = xbmc.getInfoLabel("ListItem.Title")
+                movie_year = xbmc.getInfoLabel("ListItem.Year")
+                movie_mpaa = xbmc.getInfoLabel("ListItem.MPAA")
+                
+                viewer = SummaryViewer("summary.xml", CWD, title=videoName, details=details, imdb_id=IMDBID, video_name=videoName, movie_title=movie_title, movie_year=movie_year, movie_mpaa=movie_mpaa)
+                viewer.doModal()
+                del viewer
+            except Exception as dialog_error:
+                logger.error(f"Error opening dialog: {str(dialog_error)}")
+                import traceback
+                logger.error(traceback.format_exc())
+                xbmc.executebuiltin('Notification(%s,%s,5000,%s)' % ("ParentalGuide", "Error opening dialog", ADDON.getAddonInfo('icon')))
         else:
-            xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ("ParentalGuide", "No Parental Review Found" , ADDON.getAddonInfo('icon')))
-    else:
-            xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ("ParentalGuide", "No Parental Review Found" , ADDON.getAddonInfo('icon')))
-
+            logger.info("No review items found in response")
+            xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ("ParentalGuide", "No Parental Review Found", ADDON.getAddonInfo('icon')))
+    except requests.RequestException as e:
+        logger.error(f"Error fetching data from API: {str(e)}")
+        xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ("ParentalGuide", "Error fetching data", ADDON.getAddonInfo('icon')))
+    except Exception as e:
+        logger.error(f"Unexpected error in runForVideo: {str(e)}")
+        import traceback
+        logger.error(traceback.format_exc())
+        xbmc.executebuiltin('Notification(%s,%s,5000,%s)' % ("ParentalGuide", "Unexpected error occurred", ADDON.getAddonInfo('icon')))
 
 def runforimdb(IMDBID):
-    # Get the initial Source to use
-    #IMDBID="tt0499549"
-    dataScraper = IMDBScraper.parentsguide(IMDBID,videoName)
-    details = dataScraper
-    i = 0
     wid = xbmcgui.getCurrentWindowId()
-    #xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ('Hi', "Selected: " + str(wid) , ADDON.getAddonInfo('icon')))
-    if details not in [None,""]:    
-        for entry in details['review-items']:
-            if i < 9:
-                if "Sex" in details['review-items'][i]['name']:
-                    xMainVotes = [int(s) for s in re.findall(r'\b\d+\b', details['review-items'][i]['votes'])]
-                    # xbmcgui.Window(10000).setProperty(IMDBID + '-Nvotes', (str(xMainVotes[0]) + "/" + str(xMainVotes[1])))
-                    # xbmcgui.Window(10000).setProperty(IMDBID + '-Nicon', "special://home/addons/script.parentalguide/resources/skins/Default/media/tags/" + str(details['review-items'][i]['Cat']) + ".png")
-                    xbmcgui.Window(wid).setProperty(IMDBID + '-NVotes', (str(xMainVotes[0]) + "/" + str(xMainVotes[1])))
-                    xbmcgui.Window(wid).setProperty(IMDBID + '-NIcon', "special://home/addons/script.parentalguide/resources/skins/Default/media/tags/" + str(details['review-items'][i]['cat']) + ".png")
-                    #xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ('icon', str(xbmcgui.Window(wid).getProperty(IMDBID + '-Nicon')) , ADDON.getAddonInfo('icon')))  
-                    #xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ('votes', str(xbmcgui.Window(wid).getProperty(IMDBID + '-Nvotes')) , ADDON.getAddonInfo('icon'))) 
-                    xbmc.executebuiltin('Notification(%s,%s,5000,%s)' % ('Nudity : ' + str(details['review-items'][i]['cat']), str(xbmcgui.Window(wid).getProperty(IMDBID + '-NVotes') + " Votes") , str(xbmcgui.Window(wid).getProperty(IMDBID + '-NIcon')))) 
-                    # dialog = xbmcgui.Dialogger.info()
-                    # dialog.notification('Nudity : ' + str(details[i]['Cat']), str(xbmcgui.Window(wid).getProperty(IMDBID + '-Nvotes') + " Votes"), xbmcgui.NOTIFICATION_INFO, 5000)
-                    # li = xbmcgui.ListItem()
-                    # li.setProperty(IMDBID + '-Nvotes', (str(xMainVotes[0]) + "/" + str(xMainVotes[1])))
-                    # li.setProperty(IMDBID + '-Nicon', "special://home/addons/script.parentalguide/resources/skins/Default/media/tags/" + str(details[i]['Cat']) + ".png")
-                    # li.setProperty('Nvotes', (str(xMainVotes[0]) + "/" + str(xMainVotes[1])))
-                    # li.setProperty('Nicon', "special://home/addons/script.parentalguide/resources/skins/Default/media/tags/" + str(details[i]['Cat']) + ".png")
-                    # xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ('Property for ' + IMDBID, str(li.getProperty('Nvotes')) , str(li.getProperty('Nicon'))))
-                    # xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ('property name ', str(li.getProperty(IMDBID + '-Nvotes')) , str(li.getProperty(IMDBID + '-Nicon'))))
-                # if "Sex" not in details[0]['name']:
-                    # xMainVotes = [int(s) for s in re.findall(r'\b\d+\b', details[i]['Votes'])]
-                    # xbmcgui.Window(10000).setProperty(IMDBID + '-Nvotes', "NA")
-                    # xbmcgui.Window(10000).setProperty(IMDBID + '-Nicon', "tags/" + "Clean.png")
-                    # xbmcgui.Window(wid).setProperty(IMDBID + '-Nvotes', "NA")
-                    # xbmcgui.Window(wid).setProperty(IMDBID + '-Nicon', "special://home/addons/script.parentalguide/resources/skins/Default/media/tags/" + "Clean.png")
-                    # #xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ('icon', str(xbmcgui.Window(wid).getProperty(IMDBID + '-Nicon')) , ADDON.getAddonInfo('icon')))  
-                    # #xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ('votes', str(xbmcgui.Window(wid).getProperty(IMDBID + '-Nvotes')) , ADDON.getAddonInfo('icon'))) 
-                    # # xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ('Property', str(xbmcgui.Window(10000).getProperty(IMDBID + '-Nvotes')) , str(xbmcgui.Window(wid).getProperty(IMDBID + '-Nicon')))) 
-                    # li = xbmcgui.ListItem()
-                    # li.setProperty(IMDBID + '-Nvotes', (str(xMainVotes[0]) + "/" + str(xMainVotes[1])))
-                    # li.setProperty(IMDBID + '-Nicon', "special://home/addons/script.parentalguide/resources/skins/Default/media/tags/" + str(details[i]['Cat']) + ".png")
-                    # xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ('Property for ' + IMDBID, str(li.getProperty(IMDBID + '-Nvotes')) , str(li.getProperty(IMDBID + '-Nicon'))))
-    else:
-        xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ("ParentalGuide", "No Parental Guide Rating Found" , ADDON.getAddonInfo('icon')))
+    
+    params = {
+        "imdb_id": IMDBID,
+        "provider": "imdb"
+    }
+    
+    try:
+        response = requests.get(API_BASE_URL, params=params)
+        response.raise_for_status()
+        details = response.json()
+        
+        if details and 'review-items' in details:
+            for entry in details['review-items']:
+                if "Sex" in entry['name']:
+                    xMainVotes = [int(s) for s in re.findall(r'\b\d+\b', entry['votes'])]
+                    if len(xMainVotes) >= 2:
+                        votes_str = f"{xMainVotes[0]}/{xMainVotes[1]}"
+                    elif len(xMainVotes) == 1:
+                        votes_str = f"{xMainVotes[0]}"
+                    else:
+                        votes_str = "N/A"
+                    xbmcgui.Window(wid).setProperty(IMDBID + '-NVotes', votes_str)
+                    xbmcgui.Window(wid).setProperty(IMDBID + '-NIcon', f"special://home/addons/script.parentalguide/resources/skins/Default/media/tags/{entry['cat']}.png")
+                    xbmc.executebuiltin('Notification(%s,%s,5000,%s)' % (f"Nudity : {entry['cat']}", f"{votes_str} Votes", xbmcgui.Window(wid).getProperty(IMDBID + '-NIcon')))
+        else:
+            xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ("ParentalGuide", "No Parental Guide Rating Found", ADDON.getAddonInfo('icon')))
+    except requests.RequestException as e:
+        logger.error(f"Error fetching data from API: {str(e)}")
+        xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ("ParentalGuide", "Error fetching data", ADDON.getAddonInfo('icon')))
+    except Exception as e:
+        logger.error(f"Unexpected error in runforimdb: {str(e)}")
+        xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ("ParentalGuide", "Unexpected error occurred", ADDON.getAddonInfo('icon')))
+
 #########################
 # Main
 #########################
 if __name__ == '__main__':
     logger.info("ParentalGuide: Started")
-    IMDBID = None
     IMDBID = xbmc.getInfoLabel("ListItem.IMDBNumber")
     year = xbmc.getInfoLabel("ListItem.Year")
     logger.info("ParentalGuide: Year " + year)
+    
+    # Get movie info for dialog display
+    movie_title = xbmc.getInfoLabel("ListItem.Title")
+    movie_year = xbmc.getInfoLabel("ListItem.Year")
+    movie_mpaa = xbmc.getInfoLabel("ListItem.MPAA")
+    logger.info(f"ParentalGuide: Movie info - Title: '{movie_title}', Year: '{movie_year}', MPAA: '{movie_mpaa}'")
+    
     videoName = None
     isTvShow = getIsTvShow()
 
-    # First check to see if we have a TV Show of a Movie
     if isTvShow:
         videoName = xbmc.getInfoLabel("ListItem.TVShowTitle")
         logger.info("ParentalGuide: TV Show detected %s" % videoName)
-        
-    # If we do not have the title yet, get the default title
+    
     if videoName in [None, ""]:
         videoName = xbmc.getInfoLabel("ListItem.Title")
         logger.info("ParentalGuide: Movie detected %s" % videoName)
-        
+    
     if IMDBID in [None, ""]:
-        logger.info("ParentalGuide: Video ID not found for %s, trying to loaded it from OMDB" % videoName)
-        IMDBID = getIMDBID(videoName,year)
+        logger.info("ParentalGuide: Video ID not found for %s, trying to load it from OMDB" % videoName)
+        IMDBID = getIMDBID(videoName, year)
 
-    # If there is no video name available prompt for it
     if videoName in [None, ""]:
-        # Prompt the user for the new name
         keyboard = xbmc.Keyboard('', ADDON.getLocalizedString(32032), False)
         keyboard.doModal()
-
         if keyboard.isConfirmed():
             try:
                 videoName = keyboard.getText().decode("utf-8")
@@ -162,21 +177,9 @@ if __name__ == '__main__':
 
     if IMDBID not in [None, ""]:
         provider = xbmcgui.Window(10000).getProperty("SelectedProvider")
-    
-        #logger.info("ParentalGuide: Video detected %s" % videoName)
-        #xbmc.executebuiltin('Notification(%s,%s,3000,%s)' % ("ParentalGuide", "Fetching Guide data for " + videoName + "/" + IMDBID, ADDON.getAddonInfo('icon')))
         runForVideo(videoName, IMDBID, isTvShow)
-        #runforimdb(IMDBID)
-        #print("ListItem.Title")
-        #print("ListItem.IMDBNumber")
     else:
         logger.info("ParentalGuide: Failed to detect media")
-        xbmcgui.Dialogger.info().ok(ADDON.getLocalizedString(32001), ADDON.getLocalizedString(32011))
+        xbmcgui.Dialog().ok(ADDON.getLocalizedString(32001), ADDON.getLocalizedString(32011))
 
     logger.info("ParentalGuide: Ended")
-
-#########################
-# Main
-#########################
-#class ParentalGuideCore():
-#    @staticmethod
