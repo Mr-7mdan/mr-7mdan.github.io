@@ -37,24 +37,36 @@ def getIsTvShow():
 def runForVideo(videoName, IMDBID, isTvShow=False):
     logger.info("ParentalGuideCore: Video Name = %s" % videoName)
     
-    # Try multiple providers until we find one with data
-    providers = ["imdb", "csm", "movieguide", "kidsinmind"]
+    # Cache-first: reuse whatever the background service (service_monitor/NudityCheck)
+    # already prepared for this item, and inherit its 3-retry logic on a real miss.
+    # This fixes the tvOS "No Parental Review Found": the old code re-fetched live with a
+    # single 10s no-retry call and ignored the cache, so on a slow device it lost the race
+    # against data-prep even though the service had already cached it.
+    # Provider names match service_monitor's so cache keys line up (key = id_provider.lower()),
+    # and calling getData refreshes each provider's -Status property the dialog's list reads.
+    session = requests.Session()
+    wid = xbmcgui.getCurrentWindowId()
+    # Respect the per-provider enable settings (same setting ids service_monitor uses),
+    # ordered data-rich first so the dialog opens on the first hit without extra calls.
+    provider_settings = [
+        ("IMDBProvider", "IMDB"),
+        ("CSMProvider", "CSM"),
+        ("DoveFoundationProvider", "DoveFoundation"),
+        ("CringMDBProvider", "cring"),
+        ("ParentPreviewsProvider", "ParentPreviews"),
+        ("movieGuideOrgProvider", "MovieGuide"),
+        ("kidsInMindProvider", "KidsInMind"),
+        ("RaisingChildrenProvider", "RaisingChildren"),
+    ]
+    providers = [name for setting_id, name in provider_settings if ADDON.getSetting(setting_id) == "true"]
+    logger.info(f"ParentalGuide: enabled providers = {providers}")
     details = None
-    
+
     for provider in providers:
         try:
-            params = {
-                "video_name": videoName,
-                "imdb_id": IMDBID,
-                "provider": provider
-            }
-            
-            response = requests.get(API_BASE_URL, params=params, timeout=10)
-            response.raise_for_status()
-            provider_details = response.json()
-            
-            if provider_details and 'review-items' in provider_details and provider_details['review-items'] and len(provider_details['review-items']) > 0:
-                details = provider_details
+            info = getData(videoName, IMDBID, session, wid, provider, 0)
+            if info and info.get('review-items') and len(info['review-items']) > 0:
+                details = info
                 logger.info(f"Found data from provider: {provider}")
                 break
         except Exception as e:
