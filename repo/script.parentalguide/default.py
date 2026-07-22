@@ -13,7 +13,7 @@ from resources.lib.settings import Settings
 from resources.lib.viewer import SummaryViewer
 from resources.lib.settings import log
 from resources.lib.utils import logger
-from NudityCheck import getData, getIMDBID, API_BASE_URL
+from NudityCheck import getData, getIMDBID, API_BASE_URL, CopyPropertiesToGlobal
 
 if sys.version_info >= (2, 7):
     import json
@@ -60,18 +60,30 @@ def runForVideo(videoName, IMDBID, isTvShow=False):
     ]
     providers = [name for setting_id, name in provider_settings if ADDON.getSetting(setting_id) == "true"]
     logger.info(f"ParentalGuide: enabled providers = {providers}")
-    details = None
 
+    # Fetch ALL enabled providers (cache-first via getData) so the dialog has a complete,
+    # current-movie picture, then copy each provider's id-prefixed props to the generic
+    # {provider}-Status/-N* props the dialog reads. Without this, the dialog depends on the
+    # background monitor having kept up - which it doesn't on slow tvOS ("Previous fetch still
+    # running, skipping"), so it showed "No parental guide data available" despite valid data.
+    details = None
     for provider in providers:
         try:
             info = getData(videoName, IMDBID, session, wid, provider, 0)
             if info and info.get('review-items') and len(info['review-items']) > 0:
-                details = info
-                logger.info(f"Found data from provider: {provider}")
-                break
+                if details is None:
+                    details = info
+                    logger.info(f"Found data from provider: {provider}")
         except Exception as e:
             logger.error(f"Error fetching from {provider}: {str(e)}")
             continue
+
+    # Refresh the generic (current-movie) properties the dialog's provider list reads,
+    # independent of the background service's timing.
+    try:
+        CopyPropertiesToGlobal(IMDBID, providers)
+    except Exception as e:
+        logger.error(f"Error copying properties to global: {str(e)}")
     
     try:
         if details and 'review-items' in details and details['review-items'] and len(details['review-items']) > 0:
