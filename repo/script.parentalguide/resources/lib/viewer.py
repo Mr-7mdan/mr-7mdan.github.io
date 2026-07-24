@@ -5,7 +5,7 @@ import sys
 import xbmc
 import traceback
 import json
-from threading import Thread
+from threading import Thread, Lock
 from datetime import datetime, timedelta
 import re
 from resources.lib.settings import log
@@ -67,6 +67,13 @@ class SummaryViewer(ParentalGuideViewer):
         self.details = kwargs.get('details', '')
         self.imdb_id = kwargs.get('imdb_id', '')
         self.video_name = kwargs.get('video_name', '')
+        # Dialog is self-contained: it renders from this data, never from global {provider}-Status
+        # props (those raced with the background service on slow tvOS).
+        self.providers_data = kwargs.get('providers_data', {}) or {}
+        self.pending = set(kwargs.get('pending_providers', []) or [])
+        self._data_lock = Lock()
+        _summary = {k: bool(v and v.get('review-items')) for k, v in self.providers_data.items()}
+        xbmc.log(f"PGDIAG: __init__ imdb_id='{self.imdb_id}' cached={_summary} pending={sorted(self.pending)}", xbmc.LOGINFO)
         if self.details not in [None, ""]:
             self._setProperties(self.details['review-items'])
 
@@ -95,6 +102,7 @@ class SummaryViewer(ParentalGuideViewer):
         w.clearProperty("ParentalGuide.Desc.Summary")
         w.clearProperty("ParentalGuide.RefreshTextbox")
         w.clearProperty("ParentalGuide.ProviderChanged")
+        w.clearProperty("ParentalGuide.Dialog.Loading")
         w.clearProperty("CurrentId")
         w.clearProperty("CurrentItem")
         ParentalGuideViewer.close(self)
@@ -134,47 +142,95 @@ class SummaryViewer(ParentalGuideViewer):
         self._monitor_thread = Thread(target=self._monitorProviderChange)
         self._monitor_thread.daemon = True
         self._monitor_thread.start()
-    
+
+        # Fetch any providers not yet in cache in the background; the poll loop refreshes rows
+        # as results land. Loading prop drives the spinner in the skin.
+        if self.pending:
+            w.setProperty("ParentalGuide.Dialog.Loading", "true")
+            self._fetch_thread = Thread(target=self._fetchPending)
+            self._fetch_thread.daemon = True
+            self._fetch_thread.start()
+        else:
+            w.clearProperty("ParentalGuide.Dialog.Loading")
+
+    def _fetchPending(self):
+        """Background: fetch every provider that wasn't cached, update providers_data in place.
+        Uses getData (handles retries, caching, and the service's id-prefixed props)."""
+        try:
+            import requests
+            from NudityCheck import getData
+            session = requests.Session()
+            for provider in list(self.pending):
+                if not getattr(self, '_monitor_active', False):
+                    return
+                try:
+                    info = getData(self.video_name, self.imdb_id, session, 10000, provider, 0)
+                except Exception as e:
+                    xbmc.log(f"PGDIAG: _fetchPending {provider} error {str(e)}", xbmc.LOGINFO)
+                    info = None
+                with self._data_lock:
+                    self.providers_data[provider] = info
+                    self.pending.discard(provider)
+                    remaining = len(self.pending)
+                xbmc.log(f"PGDIAG: _fetchPending {provider} done items={len(info.get('review-items')) if (info and info.get('review-items')) else 0} remaining={remaining}", xbmc.LOGINFO)
+                if remaining == 0:
+                    xbmcgui.Window(10000).clearProperty("ParentalGuide.Dialog.Loading")
+        except Exception as e:
+            xbmc.log(f"PGDIAG: _fetchPending fatal {str(e)}", xbmc.LOGINFO)
+            xbmcgui.Window(10000).clearProperty("ParentalGuide.Dialog.Loading")
+
+    # Human labels for provider keys (order comes from self.providers_data).
+    PROVIDER_LABELS = {
+        "IMDB": "IMDB",
+        "CSM": "Common Sense Media",
+        "DoveFoundation": "Dove Foundation",
+        "cring": "CringMDB",
+        "ParentPreviews": "Parent Previews",
+        "MovieGuide": "Movie Guide",
+        "KidsInMind": "Kids In Mind",
+        "RaisingChildren": "Raising Children",
+    }
+
     def _rebuildProviderList(self):
-        """Rebuild the provider list with greyed out styling for providers without data"""
+        """Build the provider list from self.providers_data (the dialog's own data), preserving
+        insertion order. has_data / loading come from the data, NOT from global props."""
         try:
             try:
                 provider_list = self.getControl(4400)
             except Exception as e:
                 log(f"SummaryViewer: Cannot get provider list control yet: {str(e)}")
                 return
-            
+
             w = xbmcgui.Window(10000)
-            
-            # Clear existing items
             provider_list.reset()
-            
-            # Define all providers in order
-            providers = [
-                ("IMDB", "IMDB"),
-                ("Kids In Mind", "KidsInMind"),
-                ("Movie Guide Org", "MovieGuide"),
-                ("Dove Foundation", "DoveFoundation"),
-                ("Common Sense Media", "CSM"),
-                ("Raising Children", "RaisingChildren")
-            ]
-            
-            for label, provider_key in providers:
-                icon = w.getProperty(f"{provider_key}-Icon")
-                status = w.getProperty(f"{provider_key}-Status")
-                has_data = (status == "true")
-                
+
+            with self._data_lock:
+                items = list(self.providers_data.items())
+                pending = set(self.pending)
+
+            first_with_data = -1
+            for idx, (provider_key, info) in enumerate(items):
+                has_data = bool(info and info.get('review-items'))
+                loading = provider_key in pending
+                icon = w.getProperty(f"{provider_key}-Icon")  # ribbon icon (service-maintained, cosmetic)
+                label = self.PROVIDER_LABELS.get(provider_key, provider_key)
+
                 listitem = xbmcgui.ListItem(label=label)
-                listitem.setArt({'icon': icon, 'thumb': icon})
+                if icon:
+                    listitem.setArt({'icon': icon, 'thumb': icon})
                 listitem.setProperty('provider_key', provider_key)
                 listitem.setProperty('has_data', str(has_data))
-                
+                listitem.setProperty('loading', 'true' if loading else 'false')
                 provider_list.addItem(listitem)
-            
-            # Set focus to first item with data, or just first item
+
+                if has_data and first_with_data < 0:
+                    first_with_data = idx
+                xbmc.log(f"PGDIAG: providerlist {provider_key}: has_data={has_data} loading={loading}", xbmc.LOGINFO)
+
+            # Focus first provider that has data (fall back to first row).
             if provider_list.size() > 0:
-                provider_list.selectItem(0)
-            
+                provider_list.selectItem(first_with_data if first_with_data >= 0 else 0)
+
             log(f"SummaryViewer: Provider list rebuilt with {provider_list.size()} items")
         except Exception as e:
             log(f"SummaryViewer: Error rebuilding provider list: {str(e)}")
@@ -213,29 +269,13 @@ class SummaryViewer(ParentalGuideViewer):
                     if current_provider_pos != last_provider_pos and current_provider_pos >= 0:
                         last_provider_pos = current_provider_pos
                         selected_item = provider_list.getSelectedItem()
-                        
+
                         if selected_item:
                             provider_key = selected_item.getProperty('provider_key')
-                            has_data = selected_item.getProperty('has_data')
-                            
-                            log(f"SummaryViewer: Provider focus changed to {provider_key} (has_data={has_data})")
-                            
-                            # Clear description first
-                            w.clearProperty("ParentalGuide.Desc.Summary")
-                            textbox = self.getControl(5)
-                            textbox.setText("")
-                            
-                            # Clear categories
-                            category_list = self.getControl(4500)
-                            category_list.reset()
-                            
-                            # Rebuild if provider has data
-                            if has_data == "True":
-                                self._rebuildCategoryListForProvider(provider_key)
-                            else:
-                                log(f"SummaryViewer: Provider {provider_key} has no data")
-                            
-                            # Reset category position tracking
+                            log(f"SummaryViewer: Provider focus changed to {provider_key}")
+                            # Always rebuild from the dialog's own data. The method renders the
+                            # provider's data, or a "loading" / "no data" note as appropriate.
+                            self._rebuildCategoryListForProvider(provider_key)
                             last_category_pos = -1
                 except Exception as e:
                     if "Non-Existent Control" not in str(e):
@@ -270,32 +310,33 @@ class SummaryViewer(ParentalGuideViewer):
                     if "Non-Existent Control" not in str(e):
                         log(f"SummaryViewer: Error checking category position: {str(e)}")
 
-                # Every ~2 seconds, check if new provider data has arrived
-                if check_count % 14 == 0:
+                # ~1s: if a background fetch changed the data, refresh the rows in place.
+                if check_count % 7 == 0:
                     try:
                         provider_list = self.getControl(4400)
+                        with self._data_lock:
+                            data_snapshot = {k: bool(v and v.get('review-items')) for k, v in self.providers_data.items()}
+                            pending_snapshot = set(self.pending)
                         needs_rebuild = False
                         for idx in range(provider_list.size()):
                             item = provider_list.getListItem(idx)
-                            provider_key = item.getProperty('provider_key')
-                            current_status = w.getProperty(f"{provider_key}-Status")
-                            old_has_data = item.getProperty('has_data')
-                            new_has_data = str(current_status == "true")
-                            if new_has_data != old_has_data:
+                            pk = item.getProperty('provider_key')
+                            new_has = str(data_snapshot.get(pk, False))
+                            new_loading = 'true' if pk in pending_snapshot else 'false'
+                            if new_has != item.getProperty('has_data') or new_loading != item.getProperty('loading'):
                                 needs_rebuild = True
                                 break
 
                         if needs_rebuild:
                             saved_pos = provider_list.getSelectedPosition()
                             self._rebuildProviderList()
-                            if saved_pos >= 0:
-                                provider_list = self.getControl(4400)
+                            provider_list = self.getControl(4400)
+                            if 0 <= saved_pos < provider_list.size():
                                 provider_list.selectItem(saved_pos)
-                                # Refresh categories for currently focused provider
-                                selected_item = provider_list.getSelectedItem()
-                                if selected_item and selected_item.getProperty('has_data') == "True":
-                                    self._rebuildCategoryListForProvider(selected_item.getProperty('provider_key'))
-                            log("SummaryViewer: Provider list refreshed - new data detected")
+                                sel = provider_list.getSelectedItem()
+                                if sel:
+                                    self._rebuildCategoryListForProvider(sel.getProperty('provider_key'))
+                            log("SummaryViewer: Provider list refreshed - background data arrived")
                     except Exception as e:
                         if "Non-Existent Control" not in str(e):
                             log(f"SummaryViewer: Error checking for new data: {str(e)}")
@@ -358,6 +399,7 @@ class SummaryViewer(ParentalGuideViewer):
                         textbox = self.getControl(5)
                         textbox.setText(desc)
             
+            xbmc.log(f"PGDIAG: rebuildCategoryList(initial) built {category_list.size()} items from ParentalGuide.N.Section props", xbmc.LOGINFO)
             log(f"SummaryViewer: Category list rebuilt with {category_list.size()} items")
         except Exception as e:
             log(f"SummaryViewer: Error rebuilding category list: {str(e)}")
@@ -370,21 +412,27 @@ class SummaryViewer(ParentalGuideViewer):
             
             # Clear existing items
             category_list.reset()
-            
-            # Get the cached data for this provider from the database
-            from NudityCheck import db
-            
-            # Build cache key
-            video_name = self.video_name
-            imdb_id = self.imdb_id
-            if imdb_id:
-                key = f"{imdb_id}_{provider_key.lower()}"
-            else:
-                key = f"{video_name.replace(':', '').replace('-', '_').replace(' ', '_').lower()}_{provider_key.lower()}"
-            
-            # Get data from cache
-            show_info = db.get(key)
-            
+
+            # Prefer the dialog's OWN data (passed in / filled by the bg fetcher); fall back to
+            # the SQLite cache. Never gate on global props.
+            with self._data_lock:
+                show_info = self.providers_data.get(provider_key)
+                is_pending = provider_key in self.pending
+            if not (show_info and show_info.get('review-items')):
+                try:
+                    from NudityCheck import db
+                    if self.imdb_id:
+                        key = f"{self.imdb_id}_{provider_key.lower()}"
+                    else:
+                        key = f"{self.video_name.replace(':', '').replace('-', '_').replace(' ', '_').lower()}_{provider_key.lower()}"
+                    cached = db.get(key)
+                    if cached and cached.get('review-items'):
+                        show_info = cached
+                except Exception as e:
+                    log(f"SummaryViewer: cache fallback failed for {provider_key}: {str(e)}")
+            _hit = bool(show_info and show_info.get('review-items'))
+            xbmc.log(f"PGDIAG: catForProvider {provider_key} hit={_hit} pending={is_pending}", xbmc.LOGINFO)
+
             if show_info and show_info.get('review-items'):
                 log(f"SummaryViewer: Found cached data for {provider_key}, building category list")
                 
@@ -440,11 +488,12 @@ class SummaryViewer(ParentalGuideViewer):
                 
                 log(f"SummaryViewer: Category list rebuilt for {provider_key} with {category_list.size()} items")
             else:
-                log(f"SummaryViewer: No cached data found for {provider_key}")
-                # Show empty message
-                w.setProperty("ParentalGuide.Desc.Summary", f"No parental guide data available from {provider_key}")
+                label = self.PROVIDER_LABELS.get(provider_key, provider_key)
+                msg = f"Loading {label}..." if is_pending else f"No parental guide data available from {label}"
+                log(f"SummaryViewer: {provider_key} -> {msg}")
+                w.setProperty("ParentalGuide.Desc.Summary", msg)
                 textbox = self.getControl(5)
-                textbox.setText(f"No parental guide data available from {provider_key}")
+                textbox.setText(msg)
                 
         except Exception as e:
             log(f"SummaryViewer: Error rebuilding category list for {provider_key}: {str(e)}")

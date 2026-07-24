@@ -50,16 +50,29 @@
                 <width>1584</width>
                 <height>128</height>
                 
-                <!-- Title -->
-                <control type="label">
+                <!-- Logo / spinner: always shown to the LEFT of the title. Rotates while
+                     background provider fetches are pending; stays as a static logo when done. -->
+                <control type="image">
                     <left>0</left>
                     <top>0</top>
-                    <width>1200</width>
-                    <height>40</height>
+                    <width>52</width>
+                    <height>52</height>
+                    <texture>special://home/addons/script.parentalguide/icon.png</texture>
+                    <aspectratio>keep</aspectratio>
+                    <animation effect="rotate" start="0" end="360" center="auto" time="1000" loop="true" condition="!String.IsEmpty(Window(10000).Property(ParentalGuide.Dialog.Loading))">Conditional</animation>
+                </control>
+
+                <!-- Title (to the right of the logo, vertically centered against it) -->
+                <control type="label">
+                    <left>68</left>
+                    <top>0</top>
+                    <width>1132</width>
+                    <height>52</height>
                     <font>font_head_bold</font>
                     <textcolor>FFFFFFFF</textcolor>
                     <label>Parental Guide</label>
                     <align>left</align>
+                    <aligny>center</aligny>
                 </control>
 
                 <!-- Movie Title -->

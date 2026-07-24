@@ -161,6 +161,25 @@ def getData(videoName, ID, Session, wid, Provider, order):
         AddFurnitureProperties(show_info, Provider, wid, ID)
     return show_info
 
+def getCachedData(videoName, ID, Provider):
+    """Cache-ONLY lookup. Never touches the network.
+    Returns (show_info_or_None, found_in_cache: bool).
+      (dict with review-items, True)  -> provider has data
+      ({... 'review-items': None}, True) -> cached blank = known "no data", do NOT refetch
+      (None, False)                   -> never fetched -> caller should background-fetch
+    """
+    try:
+        if ID:
+            key = ID + "_" + Provider.lower()
+        else:
+            key = videoName.replace(":", "").replace("-", "_").replace(" ", "_").lower() + "_" + Provider.lower()
+        with db_lock:
+            show_info = db.get(key)
+        return show_info, show_info is not None
+    except Exception as e:
+        logger.error(f"getCachedData failed for {Provider}: {str(e)}")
+        return None, False
+
 def callParentalGuideAPI(videoName, ID, Provider, timeout=15):
     """
     Call the Parental Guide API and handle responses.
